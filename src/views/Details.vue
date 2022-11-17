@@ -82,6 +82,14 @@
               >执行</el-button
             >
             <el-button
+              v-else-if="value == '查询余额'"
+              style="width: 80%; background-color: #5295fe; border: none"
+              type="primary"
+              round
+              @click="ethGetBlance('ruleForm')"
+              >执行</el-button
+            >
+            <el-button
               v-else
               style="width: 80%; background-color: #5295fe; border: none"
               type="primary"
@@ -954,16 +962,16 @@ export default {
 
     //eth 地址解析
     ethUrlextend(formName) {
+      this.fullscreenLoading = true;
       const { ens_abi } = require("../utils/ENSRegistry.json");
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           let Url = this.ruleForm;
-          const ensRegistryAddr = "0x7aaBFF488e35810E8D931C96561F341d91eE0641";
+          const ensRegistryAddr = Url.ensRegistryAddr; // "0x7aaBFF488e35810E8D931C96561F341d91eE0641";
           const provider = new ethers.providers.JsonRpcProvider(
             localStorage.getItem("nodeApi")
           );
-          let privateKey =
-            "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
+          let privateKey = Url.privateKey; //  "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
           let wallet = new ethers.Wallet(privateKey, provider);
           const ensRegistry = new ethers.Contract(
             ensRegistryAddr,
@@ -973,6 +981,7 @@ export default {
           const nodeHash = ethers.utils.namehash(Url.url);
           const resolverAddr = await ensRegistry.resolver(nodeHash);
           console.log("test2.one 的域名解析地址", resolverAddr);
+          this.fullscreenLoading = false;
           this.$notify({
             title: "查询成功",
             dangerouslyUseHTMLString: true,
@@ -1034,16 +1043,14 @@ export default {
 
     //eth 转账
     ethChangeContral(formName) {
+      this.fullscreenLoading = true;
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
           let ruleForm = this.ruleForm;
-          console.log(Number(ruleForm.value));
-
           const provider = new ethers.providers.JsonRpcProvider(
             localStorage.getItem("nodeApi")
           );
-          let privateKey =
-            "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
+          let privateKey = ruleForm.privateKey; //"7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
           let wallet = new ethers.Wallet(privateKey, provider);
           let gasPrice = await provider.getGasPrice();
           console.log(gasPrice);
@@ -1053,7 +1060,38 @@ export default {
             to: ruleForm.toaddress,
             value: ethers.utils.parseUnits(ruleForm.value),
           });
+          this.fullscreenLoading = false;
           console.log("Sent in Transaction: " + tx.hash);
+        }
+      });
+    },
+
+    //eth 查询余额
+
+    ethGetBlance(formName) {
+      this.fullscreenLoading = true;
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          let ruleForm = this.ruleForm;
+          const provider = new ethers.providers.JsonRpcProvider(
+            localStorage.getItem("nodeApi")
+          );
+          let heightBlock = await provider.getBlockNumber();
+          console.log(heightBlock);
+          let address = ruleForm.address;
+          provider.getBalance(address).then((balance) => {
+            // 余额是 BigNumber (in wei); 格式化为 ether 字符串
+            let etherString = ethers.utils.formatEther(balance);
+            console.log("Balance: " + etherString);
+            this.fullscreenLoading = false;
+            this.$notify({
+              title: "查询成功",
+              dangerouslyUseHTMLString: true,
+              message: `余额为${etherString}`,
+              type: "success",
+              duration: 0,
+            });
+          });
         }
       });
     },

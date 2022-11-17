@@ -37,7 +37,7 @@
                       <h3>我的账户</h3>
                       <h6>当前账户地址</h6>
                       <h6>
-                        {{ addressInfo }} <i class="el-icon-copy-document"></i>
+                        {{ addressInfo }}
                       </h6>
                     </div>
 
@@ -82,11 +82,11 @@
         <div @click="getSetting" class="return">
           <i class="el-icon-arrow-left"></i>
         </div>
-        <el-button
+        <!-- <el-button
           type="text"
           @click="(visible = true), (addForm.formValue = [])"
           >新增操作</el-button
-        >
+        > -->
       </el-col>
     </el-row>
     <el-dialog
@@ -234,6 +234,43 @@ export default {
     this.$route.name == "Home"
       ? (this.outState = false)
       : (this.outState = true);
+
+    if (JSON.parse(localStorage.getItem("plugAll"))) {
+      this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
+        JSON.parse(localStorage.getItem("plugAll")).length - 1
+      ].plug.plugName;
+      this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
+    }
+
+    if (localStorage.getItem("netList")) {
+      var arr = JSON.parse(localStorage.getItem("netList")).netList;
+      this.options = arr;
+      // this.options = this.options.concat(arr);
+      this.value = this.options[0].netName;
+      this.options.forEach((item) => {
+        if (this.value == item.netName) {
+          localStorage.setItem("nodeApi", item.node);
+          localStorage.setItem("chain", item.chain);
+        }
+      });
+    } else {
+      let netList = {
+        netList: [
+          {
+            netName: "开放网络",
+            node: "https://xuper.baidu.com/nodeapi",
+            chain: "xuper",
+          },
+        ],
+      };
+      localStorage.setItem("netList", JSON.stringify(netList));
+      this.options.forEach((item) => {
+        if (this.value == item.netName) {
+          localStorage.setItem("nodeApi", item.node);
+          localStorage.setItem("chain", item.chain);
+        }
+      });
+    }
   },
   methods: {
     //添加参数

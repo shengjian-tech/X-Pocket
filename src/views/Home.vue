@@ -31,7 +31,12 @@
       <img class="avatarImg" src="../assets/headerlogo.png" alt="" />
       <div class="addressfont">区块链地址 <i class="el-icon-sort"></i></div>
       <div class="addresstext">
-        {{ addressInfo }} <i class="el-icon-copy-document"></i>
+        {{ addressInfo }}
+        <i
+          class="el-icon-copy-document copycont"
+          :data-clipboard-text="address"
+          @click="copy"
+        ></i>
       </div>
 
       <div class="plugContent">
@@ -320,6 +325,7 @@
 import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
 import Header from "../components/Header";
 import { plusXing } from "../assets/js/index";
+import Clipboard from "clipboard";
 import { ethers } from "ethers";
 import axios from "axios";
 export default {
@@ -373,37 +379,25 @@ export default {
       5,
       5
     );
-    if (localStorage.getItem("netList")) {
-      var arr = JSON.parse(localStorage.getItem("netList")).netList;
-      this.options = this.options.concat(arr);
-      this.options.forEach((item) => {
-        if (this.value == item.netName) {
-          this.node = item.node;
-          this.chain = item.chain;
-          this.balance(item.node, item.chain);
-        }
-      });
-    } else {
-      this.options.forEach((item) => {
-        if (this.value == item.netName) {
-          this.node = item.node;
-          this.chain = item.chain;
-          this.balance(item.node, item.chain);
-        }
-      });
-    }
-    localStorage.setItem("nodeApi", this.options[0].node);
-    localStorage.setItem("chain", this.options[0].chain);
+
+    // localStorage.setItem("nodeApi", this.options[0].node);
+    // localStorage.setItem("chain", this.options[0].chain);
     // if (localStorage.getItem("chain") == "xuper") {
     //   this.addFromState = "xuper";
     // } else if (localStorage.getItem("chain") == "eth") {
     //   this.addFromState = "eth";
     // }
     if (JSON.parse(localStorage.getItem("plugAll"))) {
-      this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
-        JSON.parse(localStorage.getItem("plugAll")).length - 1
-      ].plug.plugName;
+      this.plugname = localStorage.getItem("plugname");
       this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
+    }
+    this.node = localStorage.getItem("nodeApi");
+    this.chain = localStorage.getItem("chain");
+
+    if (this.chain == "xuper") {
+      this.balance();
+    } else if (this.chain == "eth") {
+      this.ethBalance();
     }
   },
   methods: {
@@ -418,18 +412,17 @@ export default {
           this.componentsList = res.data.result;
           console.log(this.componentsList);
           if (localStorage.getItem("array_id")) {
-            JSON.parse(localStorage.getItem("array_id")).array_id.forEach(
-              (resf) => {
-                console.log(resf);
-                this.componentsList.map((resmap) => {
-                  if (resmap.id == resf) {
-                    resmap.type = 1;
-                  } else {
-                    resmap.type = 0;
-                  }
-                });
+            this.componentsList.map((resmap) => {
+              if (
+                JSON.parse(localStorage.getItem("array_id")).array_id.includes(
+                  resmap.id
+                )
+              ) {
+                resmap.type = 1;
+              } else {
+                resmap.type = 0;
               }
-            );
+            });
           }
           this.drawer = true;
         } else {
@@ -445,7 +438,7 @@ export default {
           this.chain = item.chain;
           localStorage.setItem("nodeApi", item.node);
           localStorage.setItem("chain", item.chain);
-          // this.balance();
+          this.balance();
           if (item.chain == "eth") {
             //如果是以太坊 调用以太坊相关方法
             this.addFromState = "eth";
@@ -492,6 +485,8 @@ export default {
     async balance() {
       const node = this.node;
       const chain = this.chain;
+      console.log(node);
+      console.log(chain);
       const params = {
         server: node, // ip, port
         fee: "400", // fee
@@ -537,6 +532,23 @@ export default {
       this.isplugList = JSON.parse(localStorage.getItem("plugAll"));
       this.isdrawer = true;
     },
+    //复制
+    copy() {
+      var clipboard = new Clipboard(".copycont");
+      clipboard.on("success", (e) => {
+        this.$message.success("复制成功！");
+        console.log(e);
+        //  释放内存
+        clipboard.destroy();
+      });
+      clipboard.on("error", (e) => {
+        this.$message.success("当前浏览器不支持复制！");
+        console.log(e);
+        // 不支持复制
+        // 释放内存
+        clipboard.destroy();
+      });
+    },
 
     //安装
     installFile(index) {
@@ -549,15 +561,23 @@ export default {
         netList: JSON.parse(that.componentsList[index].json).netList,
       };
       //已安装插件id集合
-      this.idArray.push(that.componentsList[index].id);
+      if (JSON.parse(localStorage.getItem("array_id"))) {
+        that.idArray = JSON.parse(localStorage.getItem("array_id")).array_id;
+      }
+
+      that.idArray.push(that.componentsList[index].id);
       let array_id = {
-        array_id: this.idArray,
+        array_id: that.idArray,
       };
+      if (JSON.parse(localStorage.getItem("plugAll"))) {
+        that.plugList = JSON.parse(localStorage.getItem("plugAll"));
+      }
       that.plugList.push(JSON.parse(that.componentsList[index].json));
       localStorage.setItem("netList", JSON.stringify(netList));
       localStorage.setItem("addForm", JSON.stringify(addList));
       localStorage.setItem("array_id", JSON.stringify(array_id));
       localStorage.setItem("plugAll", JSON.stringify(that.plugList));
+      localStorage.setItem("plugname", that.componentsList[index].name);
       that.$message.success("安装成功");
       that.drawer = false;
       window.location.reload();
@@ -573,9 +593,20 @@ export default {
       };
       localStorage.setItem("netList", JSON.stringify(netList));
       localStorage.setItem("addForm", JSON.stringify(addList));
+
+      localStorage.setItem(
+        "nodeApi",
+        JSON.parse(localStorage.getItem("plugAll"))[index].netList[0].node
+      );
+      localStorage.setItem(
+        "chain",
+        JSON.parse(localStorage.getItem("plugAll"))[index].netList[0].chain
+      );
+
       this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
         index
       ].plug.plugName;
+      localStorage.setItem("plugname", this.plugname);
       that.isdrawer = false;
       window.location.reload();
     },
@@ -592,6 +623,7 @@ export default {
         // 余额是 BigNumber (in wei); 格式化为 ether 字符串
         let etherString = ethers.utils.formatEther(balance);
         console.log("Balance: " + etherString);
+        this.balanceMoney = etherString;
       });
     },
   },

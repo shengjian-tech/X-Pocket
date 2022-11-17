@@ -1,9 +1,9 @@
 <template>
   <div class="login">
-    <Header />
+    <!-- <Header /> -->
     <div class="headerDefoult">
-      <img src="../assets/logo.png" alt="" />
-      <div>欢迎使用OpenNFT钱包插件</div>
+      <img src="../assets/headerlogo.png" alt="" />
+      <div>欢迎使用X Pocket钱包</div>
     </div>
     <div class="write">
       <el-row :gutter="10">
@@ -17,7 +17,7 @@
         <el-col :span="12">
           <div class="grid-content bg-purple-light">
             <el-button
-              style="background-color: #ff7300; border: none"
+              style="background-color: #5295fe; border: none"
               type="primary"
               @click="clickLoad"
               >选择私钥文件</el-button
@@ -51,7 +51,7 @@
     <div class="submit">
       <el-button
         @click="getLogin"
-        style="width: 80%; background-color: #ff7300; border: none"
+        style="width: 80%; background-color: #5295fe; border: none"
         type="primary"
         round
         >登录</el-button
@@ -162,7 +162,7 @@ export default {
 .login .help {
   text-align: left;
 }
-.login .help img{
+.login .help img {
   width: 68px;
 }
 
@@ -177,10 +177,14 @@ export default {
   margin-top: 30px;
   margin-bottom: 30px;
 }
-.headerDefoult img{
-  width: 150px;
+.headerDefoult {
+  margin-top: 70px;
+  margin-bottom: 70px;
 }
-.headerDefoult div{
+.headerDefoult img {
+  width: 75px;
+}
+.headerDefoult div {
   margin-bottom: 20px;
   font-size: 14px;
   color: #cccccc;

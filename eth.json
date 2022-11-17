@@ -1,0 +1,52 @@
+{
+    "netList": [
+        {
+            "netName": "以太坊",
+            "node": "https://rpc-mumbai.maticvigil.com",
+            "chain": "eth"
+          }
+    ],
+    "plug":
+        {
+            "company":"以太坊",
+            "plugName":"ETH"
+        }
+    ,
+    "tabCont":[
+        [],[],[],[],[]
+    ],
+    "addList":
+            [
+                {
+                    "name": "查询余额", 
+                    "contractName": "ethblance", 
+                    "methodName": "getBlance", 
+                    "formValue": [
+                        { "value": "address", "label": "账户地址" }
+                    ], 
+                    "type": "transaction"
+                },
+                {
+                    "name": "地址解析",
+                    "contractName": "eth",
+                    "type": "query",
+                    "methodName": "eth",
+                    "formValue": [
+                        { "value": "url", "label": "域名地址" },
+                        { "value": "ensRegistryAddr", "label": "注册表地址" },
+                        { "value": "privateKey", "label": "私钥" }
+                    ]
+                },
+                {
+                    "name": "地址转账",
+                    "contractName": "eth",
+                    "type": "query",
+                    "methodName": "eth",
+                    "formValue": [
+                        { "value": "privateKey", "label": "私钥" },
+                        { "value": "toaddress", "label": "转账地址" },
+                        { "value": "value", "label": "转账金额" }
+                    ]
+                }
+            ]
+}
