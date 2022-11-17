@@ -1,0 +1,41 @@
+{
+	"manifest_version": 2,
+	"name": "MakerONE",
+	"version": "0.0.3",
+	"description": "MakerONE 创造我热爱的世界",
+	"permissions": [
+        "management",
+        "<all_urls>"
+    ],
+	"background": {
+        "scripts": [
+            "./bg.js"
+        ]
+    },
+  "content_security_policy":"script-src 'self' 'unsafe-eval'; object-src 'self'",
+	"icons":
+	{
+		"16": "./avatar.png",
+		"48": "./avatar.png",
+		"128": "./avatar.png"
+	},
+  "browser_action": {
+    "default_icon": "./avatar.png",
+    "default_title": "MakerOne",
+    "default_popup": "./index.html"
+  },
+  "content_scripts": [{
+        "matches": [
+            "*://*/*"
+        ],
+        "js": [
+            "./set.js"
+        ],
+        "run_at": "document_start",
+        "all_frames": true
+    }],
+	"externally_connectable": {
+		"matches": ["http://192.168.32.169:4000/"]
+	}
+
+}

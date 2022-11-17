@@ -1,0 +1,42 @@
+{
+    "netList": [
+
+    ],
+    "plug":
+        {
+            "company":"盛见",
+            "plugName":"openNft"
+        }
+    ,
+    "tabCont":[
+        [],[],[],[],[]
+    ],
+    "addList":
+            [
+                {
+                    "name": "转移资产", 
+                    "contractName": "opennft", 
+                    "methodName": "safeTransferFrom", 
+                    "formValue": [
+                        { "value": "address", "label": "接受者账户" },
+                        { "value": "token_id", "label": "资产ID" },
+                        { "value": "num", "label": "数量" }
+                    ], 
+                    "type": "transaction"
+                },
+                {
+                    "name": "查询NFT余额",
+                    "contractName": "opennft",
+                    "type": "query",
+                    "methodName": "balanceOf",
+                    "formValue": [{ "value": "token_id", "label": "资产ID" }]
+                },
+                {
+                    "name": "查询交易",
+                    "contractName": "opennft",
+                    "type": "query",
+                    "methodName": "getTokenBytes",
+                    "formValue": [{ "value": "txId", "label": "交易ID" }]
+                }
+            ]
+}
