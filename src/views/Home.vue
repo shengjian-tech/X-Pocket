@@ -1,13 +1,20 @@
 <template>
   <div class="home">
     <div class="help">
-      <Header />
+      <Header @transfer="getAccound" />
     </div>
-    <!-- <div class="avatarHeader">
+    <div class="avatarHeader">
       <div class="address_el">
-        <div class="addressTitle">Address</div>
+        <div class="addressTitle">区块链地址</div>
 
-        <div class="addressCont">{{ addressInfo }}</div>
+        <div class="addressCont">
+          {{ addressInfo }}
+          <i
+            class="el-icon-copy-document copycont"
+            :data-clipboard-text="address"
+            @click="copy"
+          ></i>
+        </div>
       </div>
       <div></div>
       <div class="dropdown_el">
@@ -26,24 +33,67 @@
           </el-dropdown-menu>
         </el-dropdown>
       </div>
-    </div> -->
+    </div>
     <div class="avatar">
       <img class="avatarImg" src="../assets/headerlogo.png" alt="" />
-      <div class="addressfont">区块链地址 <i class="el-icon-sort"></i></div>
-      <div class="addresstext">
-        {{ addressInfo }}
-        <i
-          class="el-icon-copy-document copycont"
-          :data-clipboard-text="address"
-          @click="copy"
-        ></i>
+      <div class="nowPlugin">
+        正在展示{{ plugname }}插件
+        <i class="el-icon-sort newPluginIcon" @click="changePlug()"></i>
+      </div>
+      <div class="tab tabSetList">
+        <!-- <div
+          class="grid-content bg-purple-light tablistCont"
+          style="cursor: pointer"
+          v-for="(item, index) in tabsSetList"
+          :key="index"
+          @click="getDetails(item.name)"
+        >
+          <p class="eliconFat"><i class="el-icon-view"></i></p>
+          <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
+        </div> -->
+        <div
+          class="grid-content bg-purple tablistCont"
+          style="cursor: pointer"
+          @click=""
+        >
+          <p class="eliconFat"><i class="el-icon-search"></i></p>
+          <p class="eliconFont" style="font-size: 14px">查询</p>
+        </div>
+        <div
+          class="grid-content bg-purple tablistCont"
+          style="cursor: pointer"
+          @click=""
+        >
+          <p class="eliconFat"><i class="el-icon-sort"></i></p>
+          <p class="eliconFont" style="font-size: 14px">转移</p>
+        </div>
+
+        <div
+          class="grid-content bg-purple tablistCont"
+          style="cursor: pointer"
+          @click="getPlugMethod()"
+        >
+          <p class="eliconFat"><i class="el-icon-menu"></i></p>
+          <p class="eliconFont" style="font-size: 14px">插件市场</p>
+        </div>
+
+        <div
+          class="grid-content bg-purple tablistCont"
+          style="cursor: pointer"
+          v-for="(item, index) in tabsSetList.addList"
+          :key="index"
+          @click="getDetails(index)"
+        >
+          <p class="eliconFat"><i class="el-icon-sort"></i></p>
+          <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
+        </div>
       </div>
 
-      <div class="plugContent">
+      <!-- <div class="plugContent">
         <div v-if="plugname">正在使用的插件:{{ plugname }}</div>
         <div v-else>还未安装 快安装插件使用吧</div>
         <el-button type="primary" @click="changePlug()">切换插件</el-button>
-      </div>
+      </div> -->
 
       <!-- <el-row>
         <el-col :span="18">
@@ -67,45 +117,7 @@
         </el-col>
       </el-row> -->
     </div>
-    <div class="tab tabSetList">
-      <div
-        class="grid-content bg-purple-light tablistCont"
-        style="cursor: pointer"
-        v-for="(item, index) in tabsSetList"
-        :key="index"
-        @click="getDetails(item.name)"
-      >
-        <p class="eliconFat"><i class="el-icon-view"></i></p>
-        <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
-      </div>
 
-      <!-- <div
-        class="grid-content bg-purple tablistCont"
-        style="cursor: pointer"
-        @click="getDetails('转移资产')"
-      >
-        <p class="eliconFat"><i class="el-icon-sort"></i></p>
-        <p class="eliconFont" style="font-size: 14px">转移</p>
-      </div>
-
-      <div
-        class="grid-content bg-purple tablistCont"
-        style="cursor: pointer"
-        @click="getDetails('查询交易')"
-      >
-        <p class="eliconFat"><i class="el-icon-top"></i></p>
-        <p class="eliconFont" style="font-size: 14px">升级</p>
-      </div> -->
-
-      <div
-        class="grid-content bg-purple tablistCont"
-        style="cursor: pointer"
-        @click="handleCommand()"
-      >
-        <p class="eliconFat"><i class="el-icon-menu"></i></p>
-        <p class="eliconFont" style="font-size: 14px">插件市场</p>
-      </div>
-    </div>
     <!-- <div class="tab" v-if="addFromState == 'eth'">
       <el-row>
         <el-col :span="8">
@@ -140,146 +152,141 @@
         </el-col>
       </el-row>
     </div> -->
-    <br />
 
-    <div class="detailTabs">
-      <el-tabs class="tabslist" v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane name="1">
-          <span slot="label"><i class="el-icon-date"></i> NFTS</span>
-          <div class="balance">
-            <el-row>
-              <el-col :span="6">
-                <h4 style="text-align: right">Address</h4>
-              </el-col>
-              <el-col :span="18">
-                <div class="grid-content bg-purple">
-                  <h4 style="padding: 0 20px 0 20px; word-wrap: break-word">
-                    {{ addressInfo }}
-                  </h4>
-                </div>
-              </el-col>
-            </el-row>
-            <br />
-            <el-row>
-              <el-col :span="6">
-                <div class="grid-content bg-purple">
-                  <h4 style="text-align: right">账户余额</h4>
-                </div>
-              </el-col>
-              <el-col :span="18">
-                <div class="grid-content bg-purple">
-                  <p style="padding: 0 20px 0 20px; word-wrap: break-word">
-                    ￥{{ balanceMoney }}&nbsp;
-                    <i
-                      @click="balance"
-                      style="font-weight: 700; color: #008bd7; cursor: pointer"
-                      class="el-icon-refresh-left"
-                    ></i>
-                    <a
-                      href="https://xuper.baidu.com/n/console#/finance/wallet/recharge"
-                      target="_blank"
-                      style="
-                        text-decoration: none;
-                        color: #5295fe;
-                        float: right;
-                      "
-                    >
-                      去充值
-                    </a>
-                  </p>
-                  <p
-                    style="color: red; font-size: 14px"
-                    v-if="balanceMoney === 0"
-                  >
-                    建议在百度超级链充值0.1元，体验插件功能
-                  </p>
-                </div>
-              </el-col>
-            </el-row>
-          </div>
-          <div class="balancelist">
-            <el-row :gutter="20" style="margin-top: 10px">
-              <el-col :span="12">
-                <div class="grid-content bg-purple">
-                  <div><img src="../assets/test.png" alt="" srcset="" /></div>
-                  <div>福虎</div>
-                </div>
-              </el-col>
-              <el-col :span="12">
-                <div class="grid-content bg-purple">
-                  <div><img src="../assets/test.png" alt="" srcset="" /></div>
-                  <div>福虎</div>
-                </div>
-              </el-col>
-            </el-row>
-            <el-row :gutter="20" style="margin-top: 10px">
-              <el-col :span="12">
-                <div class="grid-content bg-purple">
-                  <div><img src="../assets/test.png" alt="" srcset="" /></div>
-                  <div>福虎</div>
-                </div>
-              </el-col>
-              <el-col :span="12">
-                <div class="grid-content bg-purple">
-                  <div><img src="../assets/test.png" alt="" srcset="" /></div>
-                  <div>福虎</div>
-                </div>
-              </el-col>
-            </el-row>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane name="2">
-          <span slot="label"><i class="el-icon-date"></i> Tokens</span>
-        </el-tab-pane>
-        <el-tab-pane name="3">
-          <span slot="label"><i class="el-icon-date"></i> 版权存证</span>
-        </el-tab-pane>
-        <el-tab-pane name="4">
-          <span slot="label"><i class="el-icon-date"></i> 游戏道具</span>
-        </el-tab-pane>
-        <el-tab-pane name="5">
-          <span slot="label"><i class="el-icon-date"></i> 区块链域名</span>
-        </el-tab-pane>
-      </el-tabs>
-    </div>
+    <el-tabs type="border-card" class="firstTabs">
+      <el-tab-pane label="NFTS">
+        <div class="detailTabs">
+          <el-tabs
+            class="tabslist"
+            v-model="activeName"
+            @tab-click="handleClick"
+          >
+            <el-tab-pane name="1">
+              <span slot="label" class="el-dropdown-link">
+                <el-dropdown trigger="click" class="tabsDropdown">
+                  <span class="el-dropdown-link"
+                    ><i class="el-icon-date"></i> NFTS
+                  </span>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>1</el-dropdown-item>
+                    <el-dropdown-item>2</el-dropdown-item>
+                    <el-dropdown-item>3</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </span>
+              <div class="balancelist">
+                <el-row :gutter="20" style="margin-top: 10px">
+                  <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                      <div>
+                        <img src="../assets/test.png" alt="" srcset="" />
+                      </div>
+                      <div>福虎</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                      <div>
+                        <img src="../assets/test.png" alt="" srcset="" />
+                      </div>
+                      <div>福虎</div>
+                    </div>
+                  </el-col>
+                </el-row>
+                <el-row :gutter="20" style="margin-top: 10px">
+                  <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                      <div>
+                        <img src="../assets/test.png" alt="" srcset="" />
+                      </div>
+                      <div>福虎</div>
+                    </div>
+                  </el-col>
+                  <el-col :span="12">
+                    <div class="grid-content bg-purple">
+                      <div>
+                        <img src="../assets/test.png" alt="" srcset="" />
+                      </div>
+                      <div>福虎</div>
+                    </div>
+                  </el-col>
+                </el-row>
+              </div>
+            </el-tab-pane>
+            <el-tab-pane name="2">
+              <span slot="label"><i class="el-icon-date"></i> 版权存证</span>
+            </el-tab-pane>
+            <el-tab-pane name="3">
+              <span slot="label"><i class="el-icon-date"></i> 游戏道具</span>
+            </el-tab-pane>
+            <el-tab-pane name="4">
+              <span slot="label"><i class="el-icon-date"></i> 区块链域名</span>
+            </el-tab-pane>
+          </el-tabs>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="Tokens">配置管理</el-tab-pane>
+    </el-tabs>
 
-    <el-drawer title="钱包插件" :visible.sync="drawer" size="70%">
-      <div
-        class="drawerBtn"
-        v-for="(item, index) in componentsList"
-        :key="index"
-      >
-        <img src="../assets/avatar.png" alt="" />
-        <div>{{ item.name }}</div>
-        <el-button
-          v-if="item.type == 1"
-          class="drawerDisable"
-          type="primary"
-          plain
-          >已安装</el-button
-        >
-        <el-button
-          v-else
-          class="drawerPrimary"
-          type="primary"
-          plain
-          @click="installFile(index)"
-          >安装</el-button
-        >
+    <el-drawer title="插件市场" :visible.sync="drawer" size="80%">
+      <div class="drawerBtn">
+        <div class="plugList">
+          <div
+            class="listdetail"
+            v-for="(item, index) in pluginsList"
+            :key="index"
+          >
+            <img src="../assets/logo.png" alt="" />
+            <span>{{ item[1].name }}</span>
+            <el-button
+              v-if="item[3].state && item[3].state == 1"
+              class="addNetBtn drawerDisable"
+              type="primary"
+              round
+              >已安装</el-button
+            >
+            <el-button
+              v-else
+              class="addNetBtn"
+              type="primary"
+              round
+              @click="installFile(index)"
+              >安装</el-button
+            >
+          </div>
+        </div>
       </div>
     </el-drawer>
 
     <el-drawer title="已安装插件" :visible.sync="isdrawer" size="70%">
-      <div class="drawerBtn" v-for="(item, index) in isplugList" :key="index">
-        <img src="../assets/avatar.png" alt="" />
-        <div>{{ item.plug.plugName }}</div>
+      <div class="drawerBtn">
+        <div class="plugList">
+          <div
+            class="listdetail"
+            v-for="(item, index) in isplugList"
+            :key="index"
+          >
+            <img src="../assets/logo.png" alt="" />
+            <span>{{ item.plugName }}</span>
+
+            <el-button
+              class="addNetBtn"
+              type="primary"
+              round
+              @click="selectChangePlug(index)"
+              >选择</el-button
+            >
+          </div>
+        </div>
+        <!-- <img src="../assets/avatar.png" alt="" />
+        <div>{{ item.plugName }}</div>
         <el-button
           class="drawerPrimary"
           type="primary"
           plain
           @click="selectChangePlug(index)"
           >选择</el-button
-        >
+        > -->
       </div>
     </el-drawer>
 
@@ -333,7 +340,7 @@ export default {
   data() {
     return {
       addressInfo: "",
-      address: JSON.parse(localStorage.getItem("acc")).address,
+      address: "",
       balanceMoney: 0,
       dialogVisible: false,
       ruleForm: {
@@ -370,15 +377,32 @@ export default {
       plugname: "",
       plugList: [], //已经安装的插件集合
       idArray: [], //已经安装的插件id
+      pluginsList: [], //
     };
   },
   components: { Header },
   created() {
     this.addressInfo = plusXing(
-      JSON.parse(localStorage.getItem("acc")).address,
+      JSON.parse(localStorage.getItem("currentAccont")).address,
       5,
       5
     );
+
+    let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+    let installed = JSON.parse(localStorage.getItem("installed"));
+    if (currentPlug) {
+      //如果已经有已经安装的插件列表,默认显示 最后一个安装的插件
+      this.plugname = currentPlug.plugName;
+      this.tabsSetList = currentPlug;
+      console.log(this.tabsSetList);
+    } else {
+      if (installed) {
+        let currentPlug = installed[installed.length - 1];
+        this.plugname = currentPlug.plugName;
+        this.tabsSetList = currentPlug;
+        localStorage.setItem("currentPlug", JSON.stringify(currentPlug));
+      }
+    }
 
     // localStorage.setItem("nodeApi", this.options[0].node);
     // localStorage.setItem("chain", this.options[0].chain);
@@ -387,18 +411,18 @@ export default {
     // } else if (localStorage.getItem("chain") == "eth") {
     //   this.addFromState = "eth";
     // }
-    if (JSON.parse(localStorage.getItem("plugAll"))) {
-      this.plugname = localStorage.getItem("plugname");
-      this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
-    }
-    this.node = localStorage.getItem("nodeApi");
-    this.chain = localStorage.getItem("chain");
+    // if (JSON.parse(localStorage.getItem("plugAll"))) {
+    //   this.plugname = localStorage.getItem("plugname");
+    //   this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
+    // }
+    // this.node = localStorage.getItem("nodeApi");
+    // this.chain = localStorage.getItem("chain");
 
-    if (this.chain == "xuper") {
-      this.balance();
-    } else if (this.chain == "eth") {
-      this.ethBalance();
-    }
+    // if (this.chain == "xuper") {
+    //   this.balance();
+    // } else if (this.chain == "eth") {
+    //   this.ethBalance();
+    // }
   },
   methods: {
     handleCommand() {
@@ -430,6 +454,92 @@ export default {
         }
       });
     },
+    //打开插件页面
+    getPluglist() {
+      this.$router.push({ path: "/Pluglist" });
+    },
+    //通过合约获取已经安装的插件
+    getPlugMethod() {
+      let that = this;
+      that.pluginsList = [];
+      let netWork = JSON.parse(localStorage.getItem("currentNet"));
+      if (netWork.type == "xuper") {
+        const node = netWork.node;
+        const chain = netWork.chain;
+        const xsdk = new XuperSDK({ node, chain });
+        const acc = JSON.parse(localStorage.getItem("currentAccont"));
+        const queryNFTBalance = async () => {
+          try {
+            const args = {};
+            const demo = await xsdk.invokeSolidityContarct(
+              "pluginQuery",
+              "allIds",
+              "evm",
+              args,
+              "0",
+              acc
+            );
+            const len = demo.preExecutionTransaction.response.responses.length;
+            if (len > 0) {
+              const str =
+                demo.preExecutionTransaction.response.responses[len - 1].body;
+              const result = Buffer.from(str, "base64").toString("ascii");
+              let idsArray = JSON.parse(JSON.parse(result)[0]["0"]);
+              console.log(idsArray);
+              idsArray.map(async (idItem) => {
+                const argsById = {
+                  pluginId: JSON.stringify(idItem),
+                };
+                const pluginById = await xsdk.invokeSolidityContarct(
+                  "pluginQuery",
+                  "getPluginById",
+                  "evm",
+                  argsById,
+                  "0",
+                  acc
+                );
+                const pluginByIdlen =
+                  pluginById.preExecutionTransaction.response.responses.length;
+                if (pluginByIdlen > 0) {
+                  const pluginstr =
+                    pluginById.preExecutionTransaction.response.responses[
+                      pluginByIdlen - 1
+                    ].body;
+                  const result = Buffer.from(pluginstr, "base64").toString(
+                    "ascii"
+                  );
+                  //增加已安装的状态。
+                  let resultArray = JSON.parse(result);
+                  let aninsplug = localStorage.getItem("installed");
+                  if (aninsplug) {
+                    let newArray = [];
+                    JSON.parse(aninsplug).map((item) => {
+                      newArray.push(item.id);
+                    });
+                    console.log(newArray.includes(resultArray[0].id));
+                    if (newArray.includes(resultArray[0].id)) {
+                      resultArray.push({ state: 1 });
+                    } else {
+                      resultArray.push({ state: 0 });
+                    }
+                  } else {
+                    resultArray.push({ state: 0 });
+                  }
+                  that.pluginsList.push(resultArray);
+                }
+              });
+            }
+            console.log(that.pluginsList);
+            this.drawer = true;
+          } catch (err) {
+            console.log(err);
+          }
+        };
+        queryNFTBalance();
+      } else {
+      }
+    },
+
     //判断数据
     getSelect(value) {
       this.options.forEach((item) => {
@@ -476,11 +586,10 @@ export default {
     },
     //查询余额
     getDetails(index) {
-      if (this.balanceMoney === 0) {
-        this.$message.warning("请您至少充值0.1元即可正常体验插件功能");
-      } else {
-        this.$router.push({ path: "/Details", query: { index: index } });
-      }
+      this.$router.push({
+        path: "/Pluglist",
+        query: { index: JSON.stringify(index) },
+      });
     },
     async balance() {
       const node = this.node;
@@ -521,6 +630,18 @@ export default {
       getBalance(this.address);
     },
 
+    //接受 header 子组件传递过来的内容
+
+    getAccound(msg) {
+      console.log(msg);
+      localStorage.setItem("currentAccont", JSON.stringify(msg));
+      this.addressInfo = plusXing(
+        JSON.parse(localStorage.getItem("currentAccont")).address,
+        5,
+        5
+      );
+    },
+
     //切换选项卡
     handleClick(tab, event) {
       console.log(tab, event);
@@ -529,7 +650,7 @@ export default {
     //切换插件
 
     changePlug() {
-      this.isplugList = JSON.parse(localStorage.getItem("plugAll"));
+      this.isplugList = JSON.parse(localStorage.getItem("installed"));
       this.isdrawer = true;
     },
     //复制
@@ -553,62 +674,76 @@ export default {
     //安装
     installFile(index) {
       let that = this;
-      console.log(JSON.parse(that.componentsList[index].json));
-      let addList = {
-        addList: JSON.parse(that.componentsList[index].json).addList,
-      };
-      let netList = {
-        netList: JSON.parse(that.componentsList[index].json).netList,
-      };
-      //已安装插件id集合
-      if (JSON.parse(localStorage.getItem("array_id"))) {
-        that.idArray = JSON.parse(localStorage.getItem("array_id")).array_id;
+      let plug = that.pluginsList;
+      let installData = plug[index];
+      let installId = installData[0].id;
+      let installName = installData[1].name;
+      let installedPlugin = JSON.parse(localStorage.getItem("installed"));
+      let some = [];
+      console.log(installId);
+      let netWork = JSON.parse(localStorage.getItem("currentNet"));
+      if (netWork.type == "xuper") {
+        const node = netWork.node;
+        const chain = netWork.chain;
+        const xsdk = new XuperSDK({ node, chain });
+        const acc = JSON.parse(localStorage.getItem("currentAccont"));
+        const queryNFTBalance = async () => {
+          try {
+            const args = {
+              pluginId: installId,
+            };
+            const demo = await xsdk.invokeSolidityContarct(
+              "pluginQuery",
+              "getPluginData",
+              "evm",
+              args,
+              "0",
+              acc
+            );
+            const len = demo.preExecutionTransaction.response.responses.length;
+            if (len > 0) {
+              const str =
+                demo.preExecutionTransaction.response.responses[len - 1].body;
+              const result = Buffer.from(str, "base64").toString("utf-8");
+              console.log(JSON.parse(JSON.parse(result)[0].data));
+              let indata = JSON.parse(JSON.parse(result)[0].data);
+              indata.id = installId;
+              indata.plugName = installName;
+              if (!installedPlugin) {
+                installedPlugin = [];
+              }
+              installedPlugin.push(indata);
+              //去重
+              installedPlugin.forEach((el) => {
+                if (!some.some((e) => e.id == el.id)) {
+                  some.push(el);
+                }
+              });
+              localStorage.setItem("installed", JSON.stringify(some));
+              that.plugname = installName;
+              console.log("--------");
+              console.log(indata);
+              that.tabsSetList = indata;
+              localStorage.setItem("currentPlug", JSON.stringify(indata));
+              this.drawer = false;
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        };
+        queryNFTBalance();
+      } else {
       }
-
-      that.idArray.push(that.componentsList[index].id);
-      let array_id = {
-        array_id: that.idArray,
-      };
-      if (JSON.parse(localStorage.getItem("plugAll"))) {
-        that.plugList = JSON.parse(localStorage.getItem("plugAll"));
-      }
-      that.plugList.push(JSON.parse(that.componentsList[index].json));
-      localStorage.setItem("netList", JSON.stringify(netList));
-      localStorage.setItem("addForm", JSON.stringify(addList));
-      localStorage.setItem("array_id", JSON.stringify(array_id));
-      localStorage.setItem("plugAll", JSON.stringify(that.plugList));
-      localStorage.setItem("plugname", that.componentsList[index].name);
-      that.$message.success("安装成功");
-      that.drawer = false;
-      window.location.reload();
     },
 
     selectChangePlug(index) {
       let that = this;
-      let addList = {
-        addList: JSON.parse(localStorage.getItem("plugAll"))[index].addList,
-      };
-      let netList = {
-        netList: JSON.parse(localStorage.getItem("plugAll"))[index].netList,
-      };
-      localStorage.setItem("netList", JSON.stringify(netList));
-      localStorage.setItem("addForm", JSON.stringify(addList));
-
-      localStorage.setItem(
-        "nodeApi",
-        JSON.parse(localStorage.getItem("plugAll"))[index].netList[0].node
-      );
-      localStorage.setItem(
-        "chain",
-        JSON.parse(localStorage.getItem("plugAll"))[index].netList[0].chain
-      );
-
-      this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
-        index
-      ].plug.plugName;
-      localStorage.setItem("plugname", this.plugname);
+      let installed = JSON.parse(localStorage.getItem("installed"));
+      let currentPlug = installed[index];
+      that.plugname = installed[index].plugName;
+      that.tabsSetList = currentPlug;
+      localStorage.setItem("currentPlug", JSON.stringify(currentPlug));
       that.isdrawer = false;
-      window.location.reload();
     },
 
     //eth查询余额
@@ -631,7 +766,7 @@ export default {
 </script>
 <style scoped>
 .home {
-  width: 400px;
+  width: 635px;
   margin: auto;
 }
 
@@ -647,6 +782,7 @@ export default {
   margin-top: 30px;
   margin-bottom: 30px;
   padding: 0 30px;
+  padding-bottom: 20px;
 }
 .home .tab i {
   color: #ffffff;
@@ -659,30 +795,46 @@ export default {
 }
 .avatar {
   margin: 0 auto;
-  width: 80%;
+  background: url("../assets/fontbg.png") no-repeat;
+  background-size: 100% 100%;
+  color: #ffffff;
+}
+.nowPlugin {
+  color: #6cfff4;
+  margin-top: 20px;
 }
 .avatarHeader {
   height: 60px;
-  border-bottom: 1px solid #e7e7e7;
-  margin-bottom: 30px;
+  display: flex;
+  background-color: #7657b1;
+  flex-direction: row;
+  height: 82px;
+  color: #ffffff;
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 .addressTitle {
   font-size: 16px;
   font-weight: bold;
 }
 .addressCont {
-  font-size: 14px;
+  font-size: 12px;
   margin-top: 10px;
-  color: #bcbcbc;
+  color: #ffffff;
 }
 .avatarImg {
-  width: 60px;
-  margin-top: 30px;
+  width: 90px;
+  height: 90px;
+  margin-top: 34px;
+}
+.newPluginIcon {
+  color: #ffffff;
+  margin-left: 12px;
 }
 .eliconFat {
-  background-color: #5295fe;
+  background-color: #ffffff;
   width: 50px;
   height: 50px;
   border-radius: 50px;
@@ -693,17 +845,22 @@ export default {
   align-items: center;
   margin: 0 auto;
 }
+.eliconFat .el-icon-menu,
+.eliconFat .el-icon-search,
+.eliconFat .el-icon-sort {
+  color: #5832a0 !important;
+}
 .eliconFont {
   font-size: 14px;
-  margin-top: 8px;
-  color: #5295fe;
+  margin-top: 17px;
+  color: #ffffff;
 }
 .detailTabs .el-tabs__item {
   font-size: 12px;
   padding: 0 8px;
 }
 .detailTabs .el-tabs__active-bar {
-  left: 16px;
+  left: 118px;
 }
 .el-tabs__item.is-active {
   color: #5295fe !important;
@@ -797,10 +954,47 @@ export default {
 }
 .tabSetList {
   display: flex;
+  flex-direction: row;
+  width: 360px;
+  margin: 0 auto;
   flex-wrap: wrap;
-  width: 330px;
+  justify-content: space-between;
 }
 .tablistCont {
   margin: 0 0px 20px 10px;
+  width: 30%;
+}
+.tabsDropdown .el-dropdown-link {
+  color: #333333 !important;
+}
+.plugList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.listdetail {
+  display: flex;
+  flex-direction: column;
+  width: 33.33%;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+.listdetail img {
+  width: 100px;
+  height: 100px;
+  border-radius: 100px;
+  margin-top: 30px;
+  box-shadow: 4px 4px 4px 4px #f3f3f3;
+}
+.plugList .addNetBtn {
+  height: 22px;
+  background-color: #9327fc;
+  border: none;
+  line-height: 3px;
+}
+.listdetail span {
+  margin: 20px 0;
 }
 </style>

@@ -1,33 +1,32 @@
 <template>
   <div class="header">
     <el-row>
-      <el-col :span="12" v-if="get_out_state" class="help_out_more">
+      <el-col :span="12" class="help_out_more">
         <el-row style="width: 100%">
           <el-col :span="8">
             <div class="headerFant">
               <img
                 class="headerlogo"
-                src="../assets/headerlogo.png"
+                src="../assets/X_Pocket.png"
                 alt=""
                 srcset=""
               />
-              <h3>X Pocket</h3>
             </div>
           </el-col>
-          <el-col :span="12">
+          <el-col :span="14">
             <div class="headerSelect">
               <el-select @change="getSelect" v-model="value">
                 <el-option
                   v-for="(item, index) in options"
                   :key="index"
                   :label="item.netName"
-                  :value="item.netName"
+                  :value="index"
                 >
                 </el-option>
               </el-select>
             </div>
           </el-col>
-          <el-col :span="4">
+          <el-col :span="2">
             <div class="headerImgLogo">
               <div class="dropdown_el">
                 <el-dropdown trigger="click" @command="handleCommand">
@@ -35,11 +34,16 @@
                   <el-dropdown-menu slot="dropdown">
                     <div class="dropHeader">
                       <h3>我的账户</h3>
-                      <h6>当前账户地址</h6>
-                      <h6>
-                        {{ addressInfo }}
-                      </h6>
                     </div>
+
+                    <el-dropdown-item
+                      v-for="(item, index) in accountAllList"
+                      :key="index"
+                      @click.native="changeAccount(item)"
+                      command="list"
+                      class="dropHeaderItem"
+                      >{{ item.address }}</el-dropdown-item
+                    >
 
                     <el-dropdown-item icon="el-icon-plus" command="a"
                       >新建地址</el-dropdown-item
@@ -69,24 +73,6 @@
             </div>
           </el-col>
         </el-row>
-
-        <!-- <el-button
-          class="exit_helpout"
-          v-if="!outState"
-          type="text"
-          @click="getOut()"
-          >退出</el-button
-        > -->
-      </el-col>
-      <el-col :span="12" v-else class="help_out">
-        <div @click="getSetting" class="return">
-          <i class="el-icon-arrow-left"></i>
-        </div>
-        <!-- <el-button
-          type="text"
-          @click="(visible = true), (addForm.formValue = [])"
-          >新增操作</el-button
-        > -->
       </el-col>
     </el-row>
     <el-dialog
@@ -205,9 +191,6 @@ export default {
           { required: true, message: "选择您的操作类型", trigger: "change" },
         ],
       },
-      routeState: false,
-      get_out_state: false,
-      outState: false,
       options: [
         {
           netName: "开放网络",
@@ -216,61 +199,67 @@ export default {
         },
       ],
       value: "开放网络",
+      accountAllList: [],
     };
   },
   mounted() {
+    //设置默认网络
+    let netList = JSON.parse(localStorage.getItem("netList"));
+    this.options = JSON.parse(localStorage.getItem("netList"));
+    let acc = JSON.parse(localStorage.getItem("currentAccont"));
+    this.value = acc.type == "xuper" ? "开放网络" : "以太坊";
+    console.log(this.value);
+    if (localStorage.getItem("accountAllList")) {
+      this.accountAllList = JSON.parse(localStorage.getItem("accountAllList"));
+    }
     this.addressInfo = plusXing(
-      JSON.parse(localStorage.getItem("acc")).address,
+      JSON.parse(localStorage.getItem("currentAccont")).address,
       5,
       5
     );
-    this.$route.name == "Details"
-      ? (this.routeState = false)
-      : (this.routeState = true);
 
-    this.$route.name == "Login" || this.$route.name == "Home"
-      ? ((this.get_out_state = true), (this.outState = true))
-      : (this.get_out_state = false);
-    this.$route.name == "Home"
-      ? (this.outState = false)
-      : (this.outState = true);
-
-    if (JSON.parse(localStorage.getItem("plugAll"))) {
-      this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
-        JSON.parse(localStorage.getItem("plugAll")).length - 1
-      ].plug.plugName;
-      this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
+    if (acc.type == "xuper") {
+      localStorage.setItem("currentNet", JSON.stringify(netList[0]));
+    } else if (acc.type == "eth") {
+      localStorage.setItem("currentNet", JSON.stringify(netList[1]));
     }
 
-    if (localStorage.getItem("netList")) {
-      var arr = JSON.parse(localStorage.getItem("netList")).netList;
-      this.options = arr;
-      // this.options = this.options.concat(arr);
-      this.value = this.options[0].netName;
-      this.options.forEach((item) => {
-        if (this.value == item.netName) {
-          localStorage.setItem("nodeApi", item.node);
-          localStorage.setItem("chain", item.chain);
-        }
-      });
-    } else {
-      let netList = {
-        netList: [
-          {
-            netName: "开放网络",
-            node: "https://xuper.baidu.com/nodeapi",
-            chain: "xuper",
-          },
-        ],
-      };
-      localStorage.setItem("netList", JSON.stringify(netList));
-      this.options.forEach((item) => {
-        if (this.value == item.netName) {
-          localStorage.setItem("nodeApi", item.node);
-          localStorage.setItem("chain", item.chain);
-        }
-      });
-    }
+    // if (JSON.parse(localStorage.getItem("plugAll"))) {
+    //   this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
+    //     JSON.parse(localStorage.getItem("plugAll")).length - 1
+    //   ].plug.plugName;
+    //   this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
+    // }
+
+    // if (localStorage.getItem("netList")) {
+    //   var arr = JSON.parse(localStorage.getItem("netList")).netList;
+    //   this.options = arr;
+    //   // this.options = this.options.concat(arr);
+    //   this.value = this.options[0].netName;
+    //   this.options.forEach((item) => {
+    //     if (this.value == item.netName) {
+    //       localStorage.setItem("nodeApi", item.node);
+    //       localStorage.setItem("chain", item.chain);
+    //     }
+    //   });
+    // } else {
+    //   let netList = {
+    //     netList: [
+    //       {
+    //         netName: "开放网络",
+    //         node: "https://xuper.baidu.com/nodeapi",
+    //         chain: "xuper",
+    //       },
+    //     ],
+    //   };
+    //   localStorage.setItem("netList", JSON.stringify(netList));
+    //   this.options.forEach((item) => {
+    //     if (this.value == item.netName) {
+    //       localStorage.setItem("nodeApi", item.node);
+    //       localStorage.setItem("chain", item.chain);
+    //     }
+    //   });
+    // }
   },
   methods: {
     //添加参数
@@ -316,57 +305,75 @@ export default {
 
     //判断数据
     getSelect(value) {
-      this.options.forEach((item) => {
-        if (value == item.netName) {
-          this.node = item.node;
-          this.chain = item.chain;
-          localStorage.setItem("nodeApi", item.node);
-          localStorage.setItem("chain", item.chain);
-          // this.balance();
-          if (item.chain == "eth") {
-            //如果是以太坊 调用以太坊相关方法
-            this.addFromState = "eth";
-            this.ethBalance();
-          } else if (chain == "xuper") {
-            this.addFromState = "xuper";
-            this.balance();
-          }
-        }
+      //切换网络，先看看 是否存在同类型网络账户，如果没有，前去登录。
+      let that = this;
+      let accountList = JSON.parse(localStorage.getItem("acc"));
+      let netList = JSON.parse(localStorage.getItem("netList"));
+      let type = netList[value].type;
+      console.log(value);
+
+      let mapresult = accountList.some(function (item) {
+        return item.type == type;
       });
+      if (!mapresult) {
+        //不存在同网络类型账户,前去登录
+        this.$router.push("/login");
+      } else {
+        that.accountAllList = []; //符合当前网络类型的 账户列表
+        accountList.map((item) => {
+          if (item.type == type) {
+            that.accountAllList.push(item);
+          }
+        });
+        localStorage.setItem(
+          "accountAllList",
+          JSON.stringify(that.accountAllList)
+        );
+        this.$emit(
+          "transfer",
+          JSON.parse(localStorage.getItem("accountAllList"))[0]
+        );
+      }
+
+      //存一下正在使用的网络
+
+      localStorage.setItem("currentNet", JSON.stringify(netList[value]));
+
+      // console.log(mapresult);
+
+      // this.options.forEach((item) => {
+      //   if (value == item.netName) {
+      //     this.node = item.node;
+      //     this.chain = item.chain;
+      //     localStorage.setItem("nodeApi", item.node);
+      //     localStorage.setItem("chain", item.chain);
+      //     // this.balance();
+      //     if (item.chain == "eth") {
+      //       //如果是以太坊 调用以太坊相关方法
+      //       this.addFromState = "eth";
+      //       this.ethBalance();
+      //     } else if (chain == "xuper") {
+      //       this.addFromState = "xuper";
+      //       this.balance();
+      //     }
+      //   }
+      // });
     },
 
     handleCommand(command) {
-      if (command == "c") {
-        axios({
-          url: `https://testmakerone.shengjian.net/qianbao/api/qianbao/qbplugins/list`,
-          method: "POST",
-          headers: {},
-          data: {},
-        }).then((res) => {
-          if (res.data.status == "success" && res.data.statusCode == "200") {
-            this.componentsList = res.data.result;
-            console.log(this.componentsList);
-            if (localStorage.getItem("array_id")) {
-              JSON.parse(localStorage.getItem("array_id")).array_id.forEach(
-                (resf) => {
-                  console.log(resf);
-                  this.componentsList.map((resmap) => {
-                    if (resmap.id == resf) {
-                      resmap.type = 1;
-                    } else {
-                      resmap.type = 0;
-                    }
-                  });
-                }
-              );
-            }
-            this.drawer = true;
-          } else {
-            message.error(res.data.message);
-          }
-        });
+      if (command == "a") {
+        this.$router.push("/login");
+      } else if (command == "c") {
+        this.$router.push("/Set");
       }
+
       console.log(command);
+    },
+
+    //给父组件传递消息
+    changeAccount(item) {
+      this.$emit("transfer", item);
+      // window.location.reload();
     },
   },
 };
@@ -374,9 +381,8 @@ export default {
 
 <style>
 .header {
-  height: 88px;
-  background-color: #f2f4f6;
-  margin-bottom: 10px;
+  height: 84px;
+  background-color: #f2f2f2;
 }
 
 .header .return {
@@ -407,19 +413,28 @@ export default {
   width: 93% !important;
 }
 .headerFant {
-  margin-top: 20px;
+  margin-top: 15px;
   text-align: center;
-  font-size: 12px;
+}
+.headerFant img {
+  width: 53px;
+  height: 58px;
 }
 .headerlogo {
   width: 42px;
 }
 .headerSelect {
   margin-top: 25px;
-  margin-left: 16px;
+  margin-left: 100px;
+  border: 1px solid #cccccc;
+  border-radius: 20px;
+  background: #ffffff;
+  width: 220px;
 }
 .headerSelect .el-input__inner {
   border-radius: 20px !important;
+  border: none;
+  width: 150px;
 }
 .headerImgLogo img {
   width: 42px;
@@ -433,10 +448,10 @@ export default {
 }
 .el-dropdown-menu {
   width: 200px !important;
-  left: 180px !important;
+  right: 10px !important;
 }
 .popper__arrow::after {
-  margin-left: -18px !important;
+  margin-left: -6px !important;
 }
 .dropHeader {
   padding: 0px 22px;
@@ -446,6 +461,17 @@ export default {
 .dropHeader h6 {
   font-weight: normal;
   margin-top: 10px;
+  word-break: break-all;
+  text-decoration: underline;
+}
+.dropHeaderItem {
+  font-weight: normal;
+  margin-top: 10px;
+  word-break: break-all;
+  text-decoration: underline;
+  font-size: 12px !important;
+  color: #000000 !important;
+  line-height: 30px !important;
 }
 .showdropBtn {
   text-align: center;
