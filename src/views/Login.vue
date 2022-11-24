@@ -50,8 +50,8 @@
         </div>
 
         <p class="alertP">
-          <span style="border-bottom: 1px solid #9327fc"
-            >*暂无私钥，点击立即下载</span
+          <a href="https://xuper.baidu.com/n/console#/xuperos/info"
+            >*暂无私钥，点击立即下载</a
           >
         </p>
         <el-input

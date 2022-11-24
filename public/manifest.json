@@ -1,8 +1,8 @@
 {
 	"manifest_version": 2,
-	"name": "MakerONE",
+	"name": "X Pocket",
 	"version": "0.0.3",
-	"description": "MakerONE 创造我热爱的世界",
+	"description": "Your Daily Space for Connecting Daily Digital Asset",
 	"permissions": [
         "management",
         "<all_urls>"

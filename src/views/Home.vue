@@ -240,14 +240,14 @@
             <span>{{ item[1].name }}</span>
             <el-button
               v-if="item[3].state && item[3].state == 1"
-              class="addNetBtn drawerDisable"
+              class="addNetBtnHome drawerDisable"
               type="primary"
               round
               >已安装</el-button
             >
             <el-button
               v-else
-              class="addNetBtn"
+              class="addNetBtnHome"
               type="primary"
               round
               @click="installFile(index)"
@@ -780,9 +780,9 @@ export default {
 }
 .home .tab {
   margin-top: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 0px;
   padding: 0 30px;
-  padding-bottom: 20px;
+  padding-bottom: 40px;
 }
 .home .tab i {
   color: #ffffff;
@@ -989,6 +989,12 @@ export default {
   box-shadow: 4px 4px 4px 4px #f3f3f3;
 }
 .plugList .addNetBtn {
+  height: 22px;
+  background-color: #9327fc;
+  border: none;
+  line-height: 3px;
+}
+.plugList .addNetBtnHome {
   height: 22px;
   background-color: #9327fc;
   border: none;

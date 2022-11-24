@@ -25,6 +25,16 @@
         </el-form-item>
       </el-form>
     </div>
+
+    <el-dialog title="详细" :visible.sync="dialogVisible" width="30%">
+      <pre>{{ doalogContent }}</pre>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -45,6 +55,8 @@ export default {
       setName: "",
       formData: [],
       currentMethod: "", //当前操作的方法集合
+      dialogVisible: false,
+      doalogContent: "",
     };
   },
   components: { Header },
@@ -53,6 +65,25 @@ export default {
     this.getFromData();
   },
   methods: {
+    //取值
+    findKey(data, field) {
+      let finding = "";
+      let that = this;
+      for (const key in data) {
+        if (key === field) {
+          finding = data[key];
+        }
+        // if (typeof data[key] === "object") {
+        //   finding = that.findKey(data[key], field);
+        // }else{
+
+        // }
+        if (finding) {
+          return finding;
+        }
+      }
+      return null;
+    },
     goHome() {
       this.$router.push("/Home");
     },
@@ -95,24 +126,39 @@ export default {
           const node = currentNet.node;
           const chain = currentNet.chain;
           const acc = currentAccont;
+          const params = {
+            server: node, // ip, port
+            fee: "400", // fee
+            endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
+            endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
+          };
+          let xsdk;
+          if (addList.type == "query") {
+            //查询操作
+            xsdk = new XuperSDK({ node, chain });
+          } else {
+            xsdk = new XuperSDK({
+              node,
+              chain,
+              plugins: [
+                Endorsement({
+                  transfer: params,
+                  makeTransaction: params,
+                }),
+              ],
+            });
+          }
           const commonFunc = async (type, contractName, methodName, args) => {
             try {
               if (addList.txType == 0) {
                 //api方法，无需调用合约
                 if (addList.txName && addList.txName == "queryTransaction") {
                   //查询交易
-                  const xsdk = new XuperSDK({
-                    node,
-                    chain,
-                  });
                   const demo = await xsdk.queryTransaction(
                     Buffer.from(
                       this.form[this.formData[0].value],
                       "hex"
                     ).toString("base64")
-                  );
-                  var txID = Buffer.from(demo.tx.txid, "base64").toString(
-                    "hex"
                   );
                   var txReqJson = JSON.parse(
                     Buffer.from(
@@ -120,21 +166,45 @@ export default {
                       "base64"
                     ).toString()
                   );
-
-                  console.log(txReqJson);
+                  console.log(addList.search);
+                  console.log(this.findKey(demo, addList.search));
+                  this.doalogContent = this.findKey(demo, addList.search);
+                  this.dialogVisible = true;
+                  // this.$alert(txReqJson, "详细内容", {
+                  //   confirmButtonText: "确定",
+                  // });
                 }
               } else if (addList.txType == 1) {
                 //需要调用到合约
+                console.log(args);
+                if (args.from) {
+                  args.from = XchainAddrToEvm(args.from);
+                }
+                if (args.to) {
+                  args.to = XchainAddrToEvm(args.to);
+                }
+                const demo = await xsdk.invokeSolidityContarct(
+                  contractName,
+                  methodName,
+                  "evm",
+                  args,
+                  "0",
+                  acc
+                );
+                this.doalogContent = demo;
+                this.dialogVisible = true;
+                // this.$alert(demo, "详细内容", {
+                //   confirmButtonText: "确定",
+                // });
+                // const len =
+                //   demo.preExecutionTransaction.response.responses.length;
+                // const str =
+                //   demo.preExecutionTransaction.response.responses[len - 1].body;
+                // const result = Buffer.from(str, "base64").toString("ascii");
+                // this.$alert(result, "详细内容", {
+                //   confirmButtonText: "确定",
+                // });
               }
-
-              // const demo = await xsdk.invokeSolidityContarct(
-              //   contractName,
-              //   methodName,
-              //   "evm",
-              //   args,
-              //   "0",
-              //   acc
-              // );
             } catch (err) {
               if (err) {
                 console.log(err);
@@ -253,5 +323,16 @@ export default {
   margin-top: 40px;
   background-color: #9327fc;
   border: none !important;
+}
+.el-dialog {
+  height: 70%;
+  width: 75% !important;
+}
+.el-dialog__body {
+  overflow-y: scroll;
+  height: 70%;
+}
+.el-dialog__header {
+  padding: 10px;
 }
 </style>
