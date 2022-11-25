@@ -129,7 +129,8 @@ export default {
 </script>
 <style>
 .set {
-  width: 635px;
+  width: 460px;
+  /* height: 460px; */
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
   text-align: left;

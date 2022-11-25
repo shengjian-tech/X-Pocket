@@ -42,6 +42,8 @@
 import Header from "../components/Header";
 import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
 import { XchainAddrToEvm, EvmToXchainAddr } from "../assets/js/index";
+import { ethers } from "ethers";
+import { async } from "q";
 export default {
   name: "Netlist",
   data() {
@@ -109,11 +111,69 @@ export default {
     goAdd() {
       console.log(this.form);
       let currentNet = JSON.parse(localStorage.getItem("currentNet"));
-      if (currentNet.type == "xuper") {
+      let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+      if (currentNet.type == "xuper" && currentPlug.type== 'xuper' ) {
         //开放网络
         this.publicMethod("form");
+      }else if(currentNet.type == "eth" && currentPlug.type== 'eth' ){
+        //以太通用方法
+        this.publicETHers("form")
+      }else{
+        this.$message.error("请切换到对应网络");
       }
     },
+    //以太坊通用方法
+    publicETHers(formName){
+      let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+      let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+      let addList = currentPlug.addList[this.index];
+      let that =this;
+      this.$refs[formName].validate(async (valid) => {
+        if (valid) {
+          console.log(addList)
+          const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
+          if(addList.methodName== 'getBlance'){
+            let address = that.form.address;
+            provider.getBalance(address).then((balance) => {
+              // 余额是 BigNumber (in wei); 格式化为 ether 字符串
+              let etherString = ethers.utils.formatEther(balance);
+              console.log("Balance: " + etherString);
+              this.doalogContent = `Balance: ${etherString}`;
+              this.dialogVisible = true;
+            });
+          }else if(addList.methodName== 'addrContract'){//地址解析
+            const { ens_abi } = require("../utils/ENSRegistry.json");
+            const ensRegistryAddr = that.form.ensRegistryAddr; 
+            const ensRegistry = new ethers.Contract(
+              ensRegistryAddr,
+              ens_abi,
+              provider
+            );
+            const nodeHash = ethers.utils.namehash(that.form.url);
+            const resolverAddr = await ensRegistry.resolver(nodeHash);
+            this.doalogContent = `域名解析地址: ${resolverAddr}`;
+            this.dialogVisible = true;
+          }else if(addList.methodName== 'transfer'){//地址转账
+            let privateKey = that.form.privateKey; 
+            let wallet = new ethers.Wallet(privateKey, provider);
+            let gasPrice = await provider.getGasPrice();
+            let tx = await wallet.sendTransaction({
+              gasLimit: 21000,
+              gasPrice: gasPrice,
+              to: that.form.toaddress,
+              value: ethers.utils.parseUnits(that.form.value),
+            });
+            this.doalogContent = `交易哈希: ${tx.hash}`;
+            this.dialogVisible = true;
+          }
+        } else {
+          this.$message.error("请填写完整相关信息");
+        }
+      });
+    },
+
+
     //通用方法
     publicMethod(formName) {
       let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
@@ -191,19 +251,18 @@ export default {
                   "0",
                   acc
                 );
-                this.doalogContent = demo;
+
+                if (demo.preExecutionTransaction) {
+                  let len =
+                    demo.preExecutionTransaction.response.responses.length;
+                  let result =
+                    demo.preExecutionTransaction.response.responses[len - 1]
+                      .body;
+                  this.doalogContent = result;
+                } else {
+                  this.doalogContent = demo;
+                }
                 this.dialogVisible = true;
-                // this.$alert(demo, "详细内容", {
-                //   confirmButtonText: "确定",
-                // });
-                // const len =
-                //   demo.preExecutionTransaction.response.responses.length;
-                // const str =
-                //   demo.preExecutionTransaction.response.responses[len - 1].body;
-                // const result = Buffer.from(str, "base64").toString("ascii");
-                // this.$alert(result, "详细内容", {
-                //   confirmButtonText: "确定",
-                // });
               }
             } catch (err) {
               if (err) {
@@ -233,7 +292,8 @@ export default {
 </script>
 <style>
 .set {
-  width: 635px;
+  width: 460px;
+  height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
   text-align: left;
@@ -325,12 +385,12 @@ export default {
   border: none !important;
 }
 .el-dialog {
-  height: 70%;
+  height: 60%;
   width: 75% !important;
 }
 .el-dialog__body {
   overflow-y: scroll;
-  height: 70%;
+  height: 60%;
 }
 .el-dialog__header {
   padding: 10px;

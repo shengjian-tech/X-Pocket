@@ -60,9 +60,10 @@
                         round
                         type="primary"
                         class="dropReset"
+                        @click="goout()"
                         >重置账户</el-button
                       >
-                      <el-button size="mini" type="info" class="dropOut"
+                      <el-button size="mini" type="info" class="dropOut"  @click="goout()"
                         >退出</el-button
                       >
                     </div>
@@ -223,43 +224,6 @@ export default {
     } else if (acc.type == "eth") {
       localStorage.setItem("currentNet", JSON.stringify(netList[1]));
     }
-
-    // if (JSON.parse(localStorage.getItem("plugAll"))) {
-    //   this.plugname = JSON.parse(localStorage.getItem("plugAll"))[
-    //     JSON.parse(localStorage.getItem("plugAll")).length - 1
-    //   ].plug.plugName;
-    //   this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
-    // }
-
-    // if (localStorage.getItem("netList")) {
-    //   var arr = JSON.parse(localStorage.getItem("netList")).netList;
-    //   this.options = arr;
-    //   // this.options = this.options.concat(arr);
-    //   this.value = this.options[0].netName;
-    //   this.options.forEach((item) => {
-    //     if (this.value == item.netName) {
-    //       localStorage.setItem("nodeApi", item.node);
-    //       localStorage.setItem("chain", item.chain);
-    //     }
-    //   });
-    // } else {
-    //   let netList = {
-    //     netList: [
-    //       {
-    //         netName: "开放网络",
-    //         node: "https://xuper.baidu.com/nodeapi",
-    //         chain: "xuper",
-    //       },
-    //     ],
-    //   };
-    //   localStorage.setItem("netList", JSON.stringify(netList));
-    //   this.options.forEach((item) => {
-    //     if (this.value == item.netName) {
-    //       localStorage.setItem("nodeApi", item.node);
-    //       localStorage.setItem("chain", item.chain);
-    //     }
-    //   });
-    // }
   },
   methods: {
     //添加参数
@@ -317,7 +281,7 @@ export default {
       });
       if (!mapresult) {
         //不存在同网络类型账户,前去登录
-        this.$router.push("/login");
+        this.$router.push({path: "/login",query: { state: 1}});
       } else {
         that.accountAllList = []; //符合当前网络类型的 账户列表
         accountList.map((item) => {
@@ -338,32 +302,14 @@ export default {
       //存一下正在使用的网络
 
       localStorage.setItem("currentNet", JSON.stringify(netList[value]));
-
-      // console.log(mapresult);
-
-      // this.options.forEach((item) => {
-      //   if (value == item.netName) {
-      //     this.node = item.node;
-      //     this.chain = item.chain;
-      //     localStorage.setItem("nodeApi", item.node);
-      //     localStorage.setItem("chain", item.chain);
-      //     // this.balance();
-      //     if (item.chain == "eth") {
-      //       //如果是以太坊 调用以太坊相关方法
-      //       this.addFromState = "eth";
-      //       this.ethBalance();
-      //     } else if (chain == "xuper") {
-      //       this.addFromState = "xuper";
-      //       this.balance();
-      //     }
-      //   }
-      // });
     },
 
     handleCommand(command) {
       if (command == "a") {
-        this.$router.push("/login");
-      } else if (command == "c") {
+        this.$router.push({path: "/login",query: { state: 1}});
+      } else if (command == "b") {
+        this.$message.error("待开放");
+      }else if (command == "c") {
         this.$router.push("/Set");
       }
 
@@ -375,6 +321,13 @@ export default {
       this.$emit("transfer", item);
       // window.location.reload();
     },
+
+    //goout
+    goout(){
+      //退出
+      localStorage.clear();
+      this.$router.push("/login");
+    }
   },
 };
 </script>
@@ -425,7 +378,7 @@ export default {
 }
 .headerSelect {
   margin-top: 25px;
-  margin-left: 100px;
+  /* margin-left: 100px; */
   border: 1px solid #cccccc;
   border-radius: 20px;
   background: #ffffff;

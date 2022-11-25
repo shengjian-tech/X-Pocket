@@ -1,6 +1,8 @@
 <template>
   <div class="login">
-    <!-- <Header /> -->
+    <div class="headermap" v-if="state==1">
+      <i class="el-icon-arrow-left" @click="goHome"></i>添加账户
+    </div>
     <div class="headerDefoult">
       <img src="../assets/testlogo.png" alt="" />
       <div>Your Daily Space for Connecting</div>
@@ -96,6 +98,7 @@ export default {
   name: "Login",
   data() {
     return {
+      state:this.$route.query.state,
       private_key: "",
       password: "",
       key: "",
@@ -129,7 +132,12 @@ export default {
     };
   },
   components: { Header },
-  created() {
+  mounted() {
+    if(localStorage.getItem("currentAccont") && !this.$route.query.state==1){
+      this.$router.push("/Home");
+    }
+
+
     if (localStorage.getItem("netList")) {
       let netList = localStorage.getItem("netList");
       localStorage.setItem("netList", netList);
@@ -138,6 +146,9 @@ export default {
     }
   },
   methods: {
+    goHome() {
+      this.$router.push("/Home");
+    },
     //开放网络
     getLogin() {
       if (this.private_key == "") {
@@ -279,7 +290,8 @@ export default {
 </script>
 <style>
 .login {
-  width: 635px;
+  width: 460px;
+  height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
 }
@@ -289,7 +301,20 @@ export default {
 .login .help img {
   width: 68px;
 }
-
+.headermap {
+  height: 80px;
+  line-height: 80px;
+  background-color: #7657b1;
+  color: #ffffff;
+  font-size: 16px;
+  text-align: left;
+}
+.headermap i {
+  font-size: 16px;
+  vertical-align: -1px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
 .login .write {
   overflow: hidden;
   margin: auto;
@@ -334,7 +359,7 @@ h2 {
   margin-right: 20px;
 }
 .setLoginFrom {
-  width: 60%;
+  width: 82%;
   margin: 0 auto;
 }
 .setLoginFrom h3 {

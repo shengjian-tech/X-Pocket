@@ -16,23 +16,6 @@
           ></i>
         </div>
       </div>
-      <div></div>
-      <div class="dropdown_el">
-        <el-dropdown trigger="click" @command="handleCommand">
-          <span class="el-dropdown-link"><i class="el-icon-more"></i></span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item icon="el-icon-plus" command="a"
-              >创建新账户</el-dropdown-item
-            >
-            <el-dropdown-item icon="el-icon-sort" command="b"
-              >切换账户</el-dropdown-item
-            >
-            <el-dropdown-item icon="el-icon-download" command="c"
-              >钱包插件</el-dropdown-item
-            >
-          </el-dropdown-menu>
-        </el-dropdown>
-      </div>
     </div>
     <div class="avatar">
       <img class="avatarImg" src="../assets/headerlogo.png" alt="" />
@@ -41,31 +24,21 @@
         <i class="el-icon-sort newPluginIcon" @click="changePlug()"></i>
       </div>
       <div class="tab tabSetList">
-        <!-- <div
-          class="grid-content bg-purple-light tablistCont"
-          style="cursor: pointer"
-          v-for="(item, index) in tabsSetList"
-          :key="index"
-          @click="getDetails(item.name)"
-        >
-          <p class="eliconFat"><i class="el-icon-view"></i></p>
-          <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
-        </div> -->
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
-          @click=""
+          @click="noFun()"
         >
           <p class="eliconFat"><i class="el-icon-search"></i></p>
-          <p class="eliconFont" style="font-size: 14px">查询</p>
+          <p class="eliconFont" style="font-size: 14px" >查询</p>
         </div>
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
-          @click=""
+          @click="noFun()"
         >
           <p class="eliconFat"><i class="el-icon-sort"></i></p>
-          <p class="eliconFont" style="font-size: 14px">转移</p>
+          <p class="eliconFont" style="font-size: 14px" >转移</p>
         </div>
 
         <div
@@ -88,71 +61,7 @@
           <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
         </div>
       </div>
-
-      <!-- <div class="plugContent">
-        <div v-if="plugname">正在使用的插件:{{ plugname }}</div>
-        <div v-else>还未安装 快安装插件使用吧</div>
-        <el-button type="primary" @click="changePlug()">切换插件</el-button>
-      </div> -->
-
-      <!-- <el-row>
-        <el-col :span="18">
-          <el-select @change="getSelect" style="width: 100%" v-model="value">
-            <el-option
-              v-for="(item, index) in options"
-              :key="index"
-              :label="item.netName"
-              :value="item.netName"
-            >
-            </el-option>
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-button
-            style="float: right; color: #5295FE"
-            type="text"
-            @click="dialogVisible = true"
-            >添加网络</el-button
-          >
-        </el-col>
-      </el-row> -->
     </div>
-
-    <!-- <div class="tab" v-if="addFromState == 'eth'">
-      <el-row>
-        <el-col :span="8">
-          <div
-            class="grid-content bg-purple"
-            style="cursor: pointer"
-            @click="getDetails('地址解析')"
-          >
-            <p class="eliconFat"><i class="el-icon-coin"></i></p>
-            <p class="eliconFont" style="font-size: 14px">地址解析</p>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div
-            class="grid-content bg-purple"
-            style="cursor: pointer"
-            @click="getDetails('域名注册查询')"
-          >
-            <p class="eliconFat"><i class="el-icon-coin"></i></p>
-            <p class="eliconFont" style="font-size: 14px">域名注册查询</p>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div
-            class="grid-content bg-purple"
-            style="cursor: pointer"
-            @click="getDetails('地址转账')"
-          >
-            <p class="eliconFat"><i class="el-icon-coin"></i></p>
-            <p class="eliconFont" style="font-size: 14px">地址转账</p>
-          </div>
-        </el-col>
-      </el-row>
-    </div> -->
-
     <el-tabs type="border-card" class="firstTabs">
       <el-tab-pane label="NFTS">
         <div class="detailTabs">
@@ -168,9 +77,7 @@
                     ><i class="el-icon-date"></i> NFTS
                   </span>
                   <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>1</el-dropdown-item>
-                    <el-dropdown-item>2</el-dropdown-item>
-                    <el-dropdown-item>3</el-dropdown-item>
+                    <el-dropdown-item>MakerONE</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
               </span>
@@ -258,7 +165,7 @@
       </div>
     </el-drawer>
 
-    <el-drawer title="已安装插件" :visible.sync="isdrawer" size="70%">
+    <el-drawer title="已安装插件" :visible.sync="isdrawer" size="80%">
       <div class="drawerBtn">
         <div class="plugList">
           <div
@@ -425,6 +332,9 @@ export default {
     // }
   },
   methods: {
+    noFun(){
+      this.$message.error("暂未开放，请添加插件使用");
+    },
     handleCommand() {
       axios({
         url: `https://testmakerone.shengjian.net/qianbao/api/qianbao/qbplugins/list`,
@@ -536,7 +446,8 @@ export default {
           }
         };
         queryNFTBalance();
-      } else {
+      }else{
+        this.$message.error("该网络暂无插件，请切换网络");
       }
     },
 
@@ -766,7 +677,8 @@ export default {
 </script>
 <style scoped>
 .home {
-  width: 635px;
+  width: 460px;
+  height: 1012px;
   margin: auto;
 }
 

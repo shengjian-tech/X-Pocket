@@ -1100,7 +1100,7 @@ export default {
 </script>
 <style scoped>
 .details {
-  width: 400px;
+  width: 460px;
   min-height: 500px;
   margin: auto;
 }
