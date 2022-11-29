@@ -50,6 +50,11 @@ const routes = [
     name: "Pluglist",
     component: () => import("../views/Pluglist.vue"),
   },
+  {
+    path: "/Search",
+    name: "Search",
+    component: () => import("../views/Search.vue"),
+  },
 ];
 
 const router = new VueRouter({

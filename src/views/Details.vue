@@ -352,9 +352,10 @@
 // import { xsdk } from "../utils/index";
 import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
 import { XchainAddrToEvm, EvmToXchainAddr } from "../assets/js/index";
+import { ethers } from "ethers";
 import Clipboard from "clipboard";
 import Header from "../components/Header";
-import { ethers } from "ethers";
+
 export default {
   name: "Details",
   data() {

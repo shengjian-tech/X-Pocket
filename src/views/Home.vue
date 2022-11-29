@@ -27,18 +27,18 @@
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
-          @click="noFun()"
+          @click="goSearchFun()"
         >
           <p class="eliconFat"><i class="el-icon-search"></i></p>
-          <p class="eliconFont" style="font-size: 14px" >查询</p>
+          <p class="eliconFont" style="font-size: 14px">查询</p>
         </div>
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
-          @click="noFun()"
+          @click="goSearchFun()"
         >
           <p class="eliconFat"><i class="el-icon-sort"></i></p>
-          <p class="eliconFont" style="font-size: 14px" >转移</p>
+          <p class="eliconFont" style="font-size: 14px">转移</p>
         </div>
 
         <div
@@ -77,57 +77,39 @@
                     ><i class="el-icon-date"></i> NFTS
                   </span>
                   <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>MakerONE</el-dropdown-item>
+                    <el-dropdown-item
+                      v-for="(item, index) in pluginsTabList[0]"
+                      :key="index"
+                      @click.native="gettablist(item)"
+                      >{{ item.nftsname }}</el-dropdown-item
+                    >
                   </el-dropdown-menu>
                 </el-dropdown>
               </span>
               <div class="balancelist">
-                <el-row :gutter="20" style="margin-top: 10px">
-                  <el-col :span="12">
-                    <div class="grid-content bg-purple">
-                      <div>
-                        <img src="../assets/test.png" alt="" srcset="" />
-                      </div>
-                      <div>福虎</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="12">
-                    <div class="grid-content bg-purple">
-                      <div>
-                        <img src="../assets/test.png" alt="" srcset="" />
-                      </div>
-                      <div>福虎</div>
-                    </div>
-                  </el-col>
-                </el-row>
-                <el-row :gutter="20" style="margin-top: 10px">
-                  <el-col :span="12">
-                    <div class="grid-content bg-purple">
-                      <div>
-                        <img src="../assets/test.png" alt="" srcset="" />
-                      </div>
-                      <div>福虎</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="12">
-                    <div class="grid-content bg-purple">
-                      <div>
-                        <img src="../assets/test.png" alt="" srcset="" />
-                      </div>
-                      <div>福虎</div>
-                    </div>
-                  </el-col>
-                </el-row>
+                <div
+                  class="grid-content bg-purple nftsClass"
+                  v-for="(items, index) in nfts"
+                  :key="index"
+                >
+                  <div>
+                    <img :src="items.image_uri" alt="" srcset="" />
+                  </div>
+                  <div>{{ items.name }}</div>
+                </div>
               </div>
             </el-tab-pane>
             <el-tab-pane name="2">
               <span slot="label"><i class="el-icon-date"></i> 版权存证</span>
+              <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="3">
               <span slot="label"><i class="el-icon-date"></i> 游戏道具</span>
+              <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="4">
               <span slot="label"><i class="el-icon-date"></i> 区块链域名</span>
+              <div>暂无更多数据</div>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -285,6 +267,8 @@ export default {
       plugList: [], //已经安装的插件集合
       idArray: [], //已经安装的插件id
       pluginsList: [], //
+      pluginsTabList: [],
+      nfts: [], //当年账户的nfts
     };
   },
   components: { Header },
@@ -298,10 +282,10 @@ export default {
     let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
     let installed = JSON.parse(localStorage.getItem("installed"));
     if (currentPlug) {
-      //如果已经有已经安装的插件列表,默认显示 最后一个安装的插件
       this.plugname = currentPlug.plugName;
       this.tabsSetList = currentPlug;
       console.log(this.tabsSetList);
+      this.pluginsTabList = currentPlug.tabCont;
     } else {
       if (installed) {
         let currentPlug = installed[installed.length - 1];
@@ -332,8 +316,11 @@ export default {
     // }
   },
   methods: {
-    noFun(){
+    noFun() {
       this.$message.error("暂未开放，请添加插件使用");
+    },
+    goSearchFun() {
+      this.$router.push({ path: "/Search" });
     },
     handleCommand() {
       axios({
@@ -373,11 +360,20 @@ export default {
       let that = this;
       that.pluginsList = [];
       let netWork = JSON.parse(localStorage.getItem("currentNet"));
+      const acc = JSON.parse(localStorage.getItem("currentAccont"));
       if (netWork.type == "xuper") {
         const node = netWork.node;
         const chain = netWork.chain;
-        const xsdk = new XuperSDK({ node, chain });
-        const acc = JSON.parse(localStorage.getItem("currentAccont"));
+        const xsdk = new XuperSDK({
+          node,
+          chain,
+          env: {
+            node: {
+              disableGRPC: true,
+            },
+          },
+        });
+
         const queryNFTBalance = async () => {
           try {
             const args = {};
@@ -446,7 +442,7 @@ export default {
           }
         };
         queryNFTBalance();
-      }else{
+      } else {
         this.$message.error("该网络暂无插件，请切换网络");
       }
     },
@@ -672,6 +668,27 @@ export default {
         this.balanceMoney = etherString;
       });
     },
+
+    //
+    gettablist(item) {
+      console.log(item);
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+      axios({
+        url: `http://192.168.1.16:8085/qianbao/api/qianbao/xuperChain/userAsserts/${currentAccont.address}?contract_address=${item.contract_address}`,
+        method: "GET",
+        headers: {
+          "X-API-KEY": item.xapikey,
+        },
+        data: {},
+      }).then((res) => {
+        if (res.data.status == "success" && res.data.statusCode == "200") {
+          this.nfts = JSON.parse(res.data.result);
+          console.log(this.nfts);
+        } else {
+          message.error(res.data.message);
+        }
+      });
+    },
   },
 };
 </script>
@@ -817,8 +834,18 @@ export default {
 }
 .balancelist {
   margin-top: 20px;
-  width: 97%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
 }
+.balancelist .nftsClass {
+  width: 50%;
+  margin-bottom: 20px;
+}
+.balancelist .nftsClass img {
+  width: 100px;
+}
+
 .balancelist_bus {
   padding: 20px;
 }
