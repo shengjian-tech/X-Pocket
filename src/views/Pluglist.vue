@@ -2,10 +2,9 @@
   <div class="set">
     <Header />
     <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>操作
+      <i class="el-icon-arrow-left" @click="goHome"></i>{{ setName }}
     </div>
     <div class="form">
-      <span class="inputlabel">{{ setName }}</span>
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item
           v-for="(item, index) in formData"
@@ -27,7 +26,7 @@
     </div>
 
     <el-dialog title="详细" :visible.sync="dialogVisible" width="30%">
-      <pre>{{ doalogContent }}</pre>
+      <pre class="preStyle">{{ doalogContent }}</pre>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false"
@@ -112,28 +111,30 @@ export default {
       console.log(this.form);
       let currentNet = JSON.parse(localStorage.getItem("currentNet"));
       let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
-      if (currentNet.type == "xuper" && currentPlug.type== 'xuper' ) {
+      if (currentNet.type == "xuper" && currentPlug.type == "xuper") {
         //开放网络
         this.publicMethod("form");
-      }else if(currentNet.type == "eth" && currentPlug.type== 'eth' ){
+      } else if (currentNet.type == "eth" && currentPlug.type == "eth") {
         //以太通用方法
-        this.publicETHers("form")
-      }else{
+        this.publicETHers("form");
+      } else {
         this.$message.error("请切换到对应网络");
       }
     },
     //以太坊通用方法
-    publicETHers(formName){
+    publicETHers(formName) {
       let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
       let currentNet = JSON.parse(localStorage.getItem("currentNet"));
       let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
       let addList = currentPlug.addList[this.index];
-      let that =this;
+      let that = this;
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          console.log(addList)
-          const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
-          if(addList.methodName== 'getBlance'){
+          console.log(addList);
+          const provider = new ethers.providers.JsonRpcProvider(
+            currentNet.node
+          );
+          if (addList.methodName == "getBlance") {
             let address = that.form.address;
             provider.getBalance(address).then((balance) => {
               // 余额是 BigNumber (in wei); 格式化为 ether 字符串
@@ -142,9 +143,10 @@ export default {
               this.doalogContent = `Balance: ${etherString}`;
               this.dialogVisible = true;
             });
-          }else if(addList.methodName== 'addrContract'){//地址解析
+          } else if (addList.methodName == "addrContract") {
+            //地址解析
             const { ens_abi } = require("../utils/ENSRegistry.json");
-            const ensRegistryAddr = that.form.ensRegistryAddr; 
+            const ensRegistryAddr = that.form.ensRegistryAddr;
             const ensRegistry = new ethers.Contract(
               ensRegistryAddr,
               ens_abi,
@@ -154,8 +156,9 @@ export default {
             const resolverAddr = await ensRegistry.resolver(nodeHash);
             this.doalogContent = `域名解析地址: ${resolverAddr}`;
             this.dialogVisible = true;
-          }else if(addList.methodName== 'transfer'){//地址转账
-            let privateKey = that.form.privateKey; 
+          } else if (addList.methodName == "transfer") {
+            //地址转账
+            let privateKey = that.form.privateKey;
             let wallet = new ethers.Wallet(privateKey, provider);
             let gasPrice = await provider.getGasPrice();
             let tx = await wallet.sendTransaction({
@@ -172,7 +175,6 @@ export default {
         }
       });
     },
-
 
     //通用方法
     publicMethod(formName) {
@@ -251,17 +253,7 @@ export default {
                   "0",
                   acc
                 );
-
-                if (demo.preExecutionTransaction) {
-                  let len =
-                    demo.preExecutionTransaction.response.responses.length;
-                  let result =
-                    demo.preExecutionTransaction.response.responses[len - 1]
-                      .body;
-                  this.doalogContent = result;
-                } else {
-                  this.doalogContent = demo;
-                }
+                this.doalogContent = demo;
                 this.dialogVisible = true;
               }
             } catch (err) {
@@ -296,7 +288,6 @@ export default {
   height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;
@@ -387,6 +378,7 @@ export default {
 .el-dialog {
   height: 60%;
   width: 75% !important;
+  overflow-y: scroll;
 }
 .el-dialog__body {
   overflow-y: scroll;
@@ -394,5 +386,10 @@ export default {
 }
 .el-dialog__header {
   padding: 10px;
+}
+.preStyle {
+  height: 375px;
+  text-align: left;
+  overflow-y: scroll;
 }
 </style>

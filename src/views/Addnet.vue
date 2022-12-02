@@ -2,9 +2,9 @@
   <div class="set">
     <Header />
     <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>设置/添加网络
+      <i class="el-icon-arrow-left" @click="goHome"></i>添加网络
     </div>
-    <div class="form">
+    <div class="form addnetForm">
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item>
           <span class="inputlabel">网络名称</span>
@@ -16,7 +16,7 @@
         <el-form-item>
           <span class="inputlabel">网络类型</span>
           <el-select v-model="form.type" placeholder="请选择网络类型">
-            <el-option label="开放网络" value="xuper"></el-option>
+            <el-option label="xuperchain" value="xuper"></el-option>
             <el-option label="以太坊" value="eth"></el-option>
           </el-select>
         </el-form-item>
@@ -94,7 +94,7 @@ export default {
   mounted() {},
   methods: {
     goHome() {
-      this.$router.push("/Netlist");
+      this.$router.push("/Home");
     },
     addNetList() {
       console.log(this.form);
@@ -133,7 +133,6 @@ export default {
   /* height: 460px; */
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;
@@ -185,7 +184,7 @@ export default {
 .addNetBtnFath {
   text-align: center;
 }
-.addNetBtn {
+.addnetForm .addNetBtn {
   width: 160px;
   height: 40px;
   border-radius: 40px !important;

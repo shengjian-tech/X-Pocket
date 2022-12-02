@@ -14,7 +14,7 @@
         }}<i class="el-icon-arrow-right"></i>
       </div>
     </div>
-    <div class="setbtn">
+    <div class="setbtn setNetlistBtn">
       <el-button class="addNetBtn" type="primary" round @click="goAdd()"
         >添加网络</el-button
       >
@@ -53,7 +53,6 @@ export default {
   height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;
@@ -86,7 +85,7 @@ export default {
 .setbtn {
   text-align: center;
 }
-.addNetBtn {
+.setNetlistBtn .addNetBtn {
   width: 173px;
   height: 48px;
   border-radius: 48px !important;

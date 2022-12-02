@@ -1,10 +1,10 @@
 <template>
-  <div class="set">
+  <div class="setSearch">
     <Header />
     <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>首页/自定义操作
+      <i class="el-icon-arrow-left" @click="goHome"></i>首页/操作
     </div>
-    <div class="form">
+    <div class="form formsearch">
       <el-form
         style="text-align: left"
         label-position="top"
@@ -13,24 +13,18 @@
         ref="addForm"
         label-width="100px"
       >
-        <el-row :gutter="20">
-          <el-col :span="16">
-            <el-form-item label="操作名称" prop="name">
-              <el-input
-                v-model="addForm.name"
-                placeholder="请输入您要添加的操作名称"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item label="操作类型" prop="type">
-              <el-radio-group v-model="addForm.type">
-                <el-radio label="transaction">交易</el-radio>
-                <el-radio label="query">查询</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <el-form-item label="操作名称" prop="name">
+          <el-input
+            v-model="addForm.name"
+            placeholder="请输入您要添加的操作名称"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="操作类型" prop="type">
+          <el-radio-group v-model="addForm.type">
+            <el-radio label="transaction">交易</el-radio>
+            <el-radio label="query">查询</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="合约名" prop="contractName">
           <el-input
             v-model="addForm.contractName"
@@ -88,6 +82,16 @@
         >
       </span>
     </div>
+
+    <el-dialog title="详细" :visible.sync="dialogVisible" width="30%">
+      <pre class="preStyle">{{ doalogContent }}</pre>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >确 定</el-button
+        >
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -100,6 +104,8 @@ export default {
   name: "Netlist",
   data() {
     return {
+      dialogVisible: false,
+      doalogContent: "",
       form: {
         netName: "",
         type: "",
@@ -144,6 +150,8 @@ export default {
           console.log(this.addForm);
           if (netWork.type == "xuper") {
             this.publicMethod(this.addForm);
+          } else if (netWork.type == "eth") {
+            this.etnPublicMethod(this.addForm);
           }
         } else {
           return false;
@@ -155,7 +163,6 @@ export default {
       let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
       let currentNet = JSON.parse(localStorage.getItem("currentNet"));
       let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
-      let addList = currentPlug.addList[this.index];
 
       console.log(formName);
 
@@ -206,7 +213,8 @@ export default {
             const demo = await xsdk.queryTransaction(
               Buffer.from(args.txId, "hex").toString("base64")
             );
-            console.log(demo);
+            this.doalogContent = demo;
+            this.dialogVisible = true;
           } else {
             const demo = await xsdk.invokeSolidityContarct(
               contractName,
@@ -216,15 +224,7 @@ export default {
               "0",
               acc
             );
-            if (demo.preExecutionTransaction) {
-              let len = demo.preExecutionTransaction.response.responses.length;
-              let result =
-                demo.preExecutionTransaction.response.responses[len - 1].body;
-              this.doalogContent = result;
-              console.log(result);
-            } else {
-              this.doalogContent = demo;
-            }
+            this.doalogContent = demo;
             this.dialogVisible = true;
           }
         } catch (err) {
@@ -241,6 +241,61 @@ export default {
       }
       commonFunc(contractName, methodName, formName.formValue);
     },
+
+    //
+    async etnPublicMethod(formName) {
+      let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+      let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+      console.log(formName);
+      const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
+      let from = formName.formValue;
+      const objects = Object.fromEntries(
+        from.map((item) => [item.label, item.value])
+      );
+      from = objects;
+      console.log(from);
+      if (formName.methodName == "getBlance") {
+        let address = currentAccont.address;
+        provider.getBalance(address).then((balance) => {
+          // 余额是 BigNumber (in wei); 格式化为 ether 字符串
+          let etherString = ethers.utils.formatEther(balance);
+          console.log("Balance: " + etherString);
+          this.doalogContent = `Balance: ${etherString}`;
+          this.dialogVisible = true;
+        });
+      } else if (formName.methodName == "addrContract") {
+        //地址解析
+        const { ens_abi } = require("../utils/ENSRegistry.json");
+        const ensRegistryAddr = from.ensRegistryAddr;
+        const ensRegistry = new ethers.Contract(
+          ensRegistryAddr,
+          ens_abi,
+          provider
+        );
+        const nodeHash = ethers.utils.namehash(from.url);
+        const resolverAddr = await ensRegistry.resolver(nodeHash);
+        this.doalogContent = `域名解析地址: ${resolverAddr}`;
+        this.dialogVisible = true;
+      } else if (
+        formName.type == "transaction" &&
+        formName.methodName == "transfer"
+      ) {
+        //地址转账
+        let privateKey = from.privateKey;
+        let wallet = new ethers.Wallet(privateKey, provider);
+        let gasPrice = await provider.getGasPrice();
+        let tx = await wallet.sendTransaction({
+          gasLimit: 21000,
+          gasPrice: gasPrice,
+          to: from.toaddress,
+          value: ethers.utils.parseUnits(from.value),
+        });
+        this.doalogContent = `交易哈希: ${tx.hash}`;
+        this.dialogVisible = true;
+      }
+    },
+
     //添加参数
     addParams() {
       this.addForm.formValue.push({ value: "", label: "" });
@@ -286,12 +341,11 @@ export default {
 };
 </script>
 <style>
-.set {
+.setSearch {
   width: 460px;
   /* height: 460px; */
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;
@@ -326,7 +380,7 @@ export default {
   margin: 0 auto;
   margin-top: 40px;
 }
-.form .el-form-item__content {
+.formsearch .el-form-item__content {
   margin-left: 0 !important;
 }
 .form .el-input__inner {
@@ -343,7 +397,7 @@ export default {
 .addNetBtnFath {
   text-align: center;
 }
-.addNetBtn {
+.setSearch .addNetBtn {
   width: 160px;
   height: 40px;
   border-radius: 40px !important;
@@ -351,14 +405,14 @@ export default {
   border: none !important;
   margin-top: 50px;
 }
-.set .el-radio__inner {
+.setSearch .el-radio__inner {
   border-color: #9327fc;
 }
 
-.set .el-radio__input.is-checked + .el-radio__label {
+.setSearch .el-radio__input.is-checked + .el-radio__label {
   color: #9327fc;
 }
-.set .el-radio__input.is-checked .el-radio__inner {
+.setSearch .el-radio__input.is-checked .el-radio__inner {
   border-color: #9327fc;
   background-color: #9327fc;
 }
@@ -371,5 +425,20 @@ export default {
 .submitSearch {
   background-color: #9327fc;
   border: none;
+}
+.setSearch .el-dialog {
+  height: 60%;
+  width: 75% !important;
+  overflow-y: auto;
+  border-radius: 10px;
+}
+
+.preStyle {
+  height: 375px;
+  text-align: left;
+  overflow-y: scroll;
+}
+.formsearch .el-form-item__label {
+  font-weight: bold;
 }
 </style>

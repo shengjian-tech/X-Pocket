@@ -55,6 +55,16 @@ const routes = [
     name: "Search",
     component: () => import("../views/Search.vue"),
   },
+  {
+    path: "/Transfer",
+    name: "Transfer",
+    component: () => import("../views/Transfer.vue"),
+  },
+  {
+    path: "/NftDetail",
+    name: "NftDetail",
+    component: () => import("../views/NftDetail.vue"),
+  },
 ];
 
 const router = new VueRouter({

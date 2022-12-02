@@ -16,7 +16,7 @@
         <el-form-item>
           <span class="inputlabel">网络类型</span>
           <el-select v-model="form.type" placeholder="请选择网络类型">
-            <el-option label="开放网络" value="xuper"></el-option>
+            <el-option label="xuperchain" value="xuper"></el-option>
             <el-option label="以太坊" value="eth"></el-option>
           </el-select>
         </el-form-item>
@@ -103,7 +103,6 @@ export default {
   height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;

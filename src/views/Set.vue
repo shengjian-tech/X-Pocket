@@ -10,7 +10,7 @@
           class="el-icon-arrow-right"
         ></i>
       </div>
-      <div>
+      <!-- <div>
         <i class="el-icon-lock"></i>更改密码<i class="el-icon-arrow-right"></i>
       </div>
       <div>
@@ -23,7 +23,7 @@
         <i class="el-icon-warning-outline"></i>关于<i
           class="el-icon-arrow-right"
         ></i>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -53,7 +53,6 @@ export default {
   height: 1012px;
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
-  text-align: left;
 }
 .headermap {
   height: 80px;

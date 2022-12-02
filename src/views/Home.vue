@@ -19,9 +19,13 @@
     </div>
     <div class="avatar">
       <img class="avatarImg" src="../assets/headerlogo.png" alt="" />
-      <div class="nowPlugin">
-        正在展示{{ plugname }}插件
+      <div class="blancetext">{{ balanceMoney }}</div>
+      <div class="nowPlugin" v-if="plugname">
+        <span>正在展示{{ plugname }}插件</span>
         <i class="el-icon-sort newPluginIcon" @click="changePlug()"></i>
+      </div>
+      <div class="nowPlugin" v-else>
+        <span>还未安装插件,快安装插件体验吧</span>
       </div>
       <div class="tab tabSetList">
         <div
@@ -35,7 +39,7 @@
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
-          @click="goSearchFun()"
+          @click="goTransFun()"
         >
           <p class="eliconFat"><i class="el-icon-sort"></i></p>
           <p class="eliconFont" style="font-size: 14px">转移</p>
@@ -57,7 +61,7 @@
           :key="index"
           @click="getDetails(index)"
         >
-          <p class="eliconFat"><i class="el-icon-sort"></i></p>
+          <p class="eliconFat"><i :class="item.icon"></i></p>
           <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
         </div>
       </div>
@@ -92,7 +96,7 @@
                   v-for="(items, index) in nfts"
                   :key="index"
                 >
-                  <div>
+                  <div @click="goNftDetail(items)">
                     <img :src="items.image_uri" alt="" srcset="" />
                   </div>
                   <div>{{ items.name }}</div>
@@ -114,7 +118,21 @@
           </el-tabs>
         </div>
       </el-tab-pane>
-      <el-tab-pane label="Tokens">配置管理</el-tab-pane>
+      <el-tab-pane label="Tokens">
+        <div class="tokensStyles">
+          <div class="tokenslist">
+            <span>Tokens</span>
+            <span>余额</span>
+          </div>
+          <div class="tokenslist" v-for="(items, index) in tokens" :key="index">
+            <span>
+              <img src="../assets/avatar.png" alt="" srcset="" />
+              <span>{{ items.name }}</span>
+            </span>
+            <span>{{ items.balance }}</span>
+          </div>
+        </div>
+      </el-tab-pane>
     </el-tabs>
 
     <el-drawer title="插件市场" :visible.sync="drawer" size="80%">
@@ -239,7 +257,7 @@ export default {
       },
       node: "",
       chain: "",
-      value: "开放网络",
+      value: "xuperchain",
       rules: {
         netName: [
           { required: true, message: "网络名称不能为空", trigger: "blur" },
@@ -251,7 +269,7 @@ export default {
       },
       options: [
         {
-          netName: "开放网络",
+          netName: "xuperchain",
           node: "https://xuper.baidu.com/nodeapi",
           chain: "xuper",
         },
@@ -269,6 +287,7 @@ export default {
       pluginsList: [], //
       pluginsTabList: [],
       nfts: [], //当年账户的nfts
+      tokens: [], //tokens列表
     };
   },
   components: { Header },
@@ -278,7 +297,6 @@ export default {
       5,
       5
     );
-
     let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
     let installed = JSON.parse(localStorage.getItem("installed"));
     if (currentPlug) {
@@ -294,26 +312,16 @@ export default {
         localStorage.setItem("currentPlug", JSON.stringify(currentPlug));
       }
     }
-
-    // localStorage.setItem("nodeApi", this.options[0].node);
-    // localStorage.setItem("chain", this.options[0].chain);
-    // if (localStorage.getItem("chain") == "xuper") {
-    //   this.addFromState = "xuper";
-    // } else if (localStorage.getItem("chain") == "eth") {
-    //   this.addFromState = "eth";
-    // }
-    // if (JSON.parse(localStorage.getItem("plugAll"))) {
-    //   this.plugname = localStorage.getItem("plugname");
-    //   this.tabsSetList = JSON.parse(localStorage.getItem("addForm")).addList;
-    // }
-    // this.node = localStorage.getItem("nodeApi");
-    // this.chain = localStorage.getItem("chain");
-
-    // if (this.chain == "xuper") {
-    //   this.balance();
-    // } else if (this.chain == "eth") {
-    //   this.ethBalance();
-    // }
+    //登录成功后 显示余额
+    let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+    if (currentNet.type == "xuper") {
+      //调用xuper网络
+      this.balance();
+    } else if (currentNet.type == "eth") {
+      this.ethBalance();
+    }
+    //tokens
+    this.getTokensList();
   },
   methods: {
     noFun() {
@@ -321,6 +329,9 @@ export default {
     },
     goSearchFun() {
       this.$router.push({ path: "/Search" });
+    },
+    goTransFun() {
+      this.$router.push({ path: "/Transfer" });
     },
     handleCommand() {
       axios({
@@ -455,15 +466,6 @@ export default {
           this.chain = item.chain;
           localStorage.setItem("nodeApi", item.node);
           localStorage.setItem("chain", item.chain);
-          this.balance();
-          if (item.chain == "eth") {
-            //如果是以太坊 调用以太坊相关方法
-            this.addFromState = "eth";
-            this.ethBalance();
-          } else if (chain == "xuper") {
-            this.addFromState = "xuper";
-            this.balance();
-          }
         }
       });
     },
@@ -498,11 +500,18 @@ export default {
         query: { index: JSON.stringify(index) },
       });
     },
+    //nft详情
+    goNftDetail(item) {
+      this.$router.push({
+        path: "/NftDetail",
+        query: { item: JSON.stringify(item) },
+      });
+    },
     async balance() {
-      const node = this.node;
-      const chain = this.chain;
-      console.log(node);
-      console.log(chain);
+      let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+      const node = currentNet.node;
+      const chain = currentNet.chain;
       const params = {
         server: node, // ip, port
         fee: "400", // fee
@@ -530,16 +539,17 @@ export default {
         try {
           const result = await xsdk.getBalance(address);
           this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3);
+          console.log(this.balanceMoney);
         } catch (err) {
           throw err;
         }
       };
-      getBalance(this.address);
+      getBalance(currentAccont.address);
     },
 
     //接受 header 子组件传递过来的内容
 
-    getAccound(msg) {
+    getAccound(msg, net) {
       console.log(msg);
       localStorage.setItem("currentAccont", JSON.stringify(msg));
       this.addressInfo = plusXing(
@@ -547,6 +557,23 @@ export default {
         5,
         5
       );
+      if (net) {
+        localStorage.setItem("currentNet", JSON.stringify(net));
+        if (net.type == "xuper") {
+          this.balance();
+        } else if (net.type == "eth") {
+          this.ethBalance();
+        }
+      } else {
+        let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+        if (currentNet.type == "xuper") {
+          this.balance();
+        } else if (currentNet.type == "eth") {
+          this.ethBalance();
+        }
+      }
+
+      this.getTokensList();
     },
 
     //切换选项卡
@@ -631,6 +658,7 @@ export default {
               console.log("--------");
               console.log(indata);
               that.tabsSetList = indata;
+              that.pluginsTabList = indata.tabCont;
               localStorage.setItem("currentPlug", JSON.stringify(indata));
               this.drawer = false;
             }
@@ -655,12 +683,13 @@ export default {
 
     //eth查询余额
     async ethBalance() {
-      const provider = new ethers.providers.JsonRpcProvider(
-        localStorage.getItem("nodeApi")
-      );
+      console.log();
+      let currentNet = JSON.parse(localStorage.getItem("currentNet"));
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+      const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
       let heightBlock = await provider.getBlockNumber();
       console.log(heightBlock);
-      let address = "0x519bD63FB86c375C2687AFfe773664D2959a0a48";
+      let address = currentAccont.address;
       provider.getBalance(address).then((balance) => {
         // 余额是 BigNumber (in wei); 格式化为 ether 字符串
         let etherString = ethers.utils.formatEther(balance);
@@ -674,7 +703,7 @@ export default {
       console.log(item);
       let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
       axios({
-        url: `http://192.168.1.16:8085/qianbao/api/qianbao/xuperChain/userAsserts/${currentAccont.address}?contract_address=${item.contract_address}`,
+        url: `${item.nftsurl}/${currentAccont.address}?contract_address=${item.contract_address}`,
         method: "GET",
         headers: {
           "X-API-KEY": item.xapikey,
@@ -689,6 +718,64 @@ export default {
         }
       });
     },
+
+    //获取当前网络tokens 列表
+    getTokensList() {
+      let netList = JSON.parse(localStorage.getItem("netList"));
+      let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
+
+      let tokenslist = [];
+      netList.map((item) => {
+        if (item.type == "xuper" && currentAccont.type == "xuper") {
+          const node = item.node;
+          const chain = item.chain;
+          const params = {
+            server: node, // ip, port
+            fee: "400", // fee
+            endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
+            endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
+          };
+          const xsdk = new XuperSDK({
+            node,
+            chain,
+            plugins: [
+              Endorsement({
+                transfer: params,
+                makeTransaction: params,
+              }),
+            ],
+          });
+          const getBalance = async (address) => {
+            try {
+              const result = await xsdk.getBalance(address);
+              this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3);
+              tokenslist.push({
+                name: item.chain,
+                balance: (result.bcs[0].balance / 100000).toFixed(3),
+              });
+              console.log(tokenslist);
+            } catch (err) {
+              throw err;
+            }
+          };
+          getBalance(currentAccont.address);
+        } else if (item.type == "eth" && currentAccont.type == "eth") {
+          const provider = new ethers.providers.JsonRpcProvider(item.node);
+          let address = currentAccont.address;
+          provider.getBalance(address).then((balance) => {
+            // 余额是 BigNumber (in wei); 格式化为 ether 字符串
+            let etherString = ethers.utils.formatEther(balance);
+            tokenslist.push({
+              name: item.chain,
+              balance: etherString,
+            });
+
+            console.log(tokenslist);
+          });
+        }
+      });
+      this.tokens = tokenslist;
+    },
   },
 };
 </script>
@@ -697,6 +784,11 @@ export default {
   width: 460px;
   height: 1012px;
   margin: auto;
+}
+
+.home .el-tabs--border-card {
+  border: none;
+  box-shadow: none;
 }
 
 .home .balance {
@@ -725,7 +817,7 @@ export default {
 .avatar {
   margin: 0 auto;
   background: url("../assets/fontbg.png") no-repeat;
-  background-size: 100% 100%;
+  background-size: cover;
   color: #ffffff;
 }
 .nowPlugin {
@@ -754,9 +846,14 @@ export default {
   color: #ffffff;
 }
 .avatarImg {
-  width: 90px;
-  height: 90px;
+  width: 42px;
+  height: 42px;
   margin-top: 34px;
+}
+.blancetext {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 .newPluginIcon {
   color: #ffffff;
@@ -808,7 +905,6 @@ export default {
 }
 .address_el {
   flex: 1;
-  margin-left: 35px;
 }
 .dropdown_el {
   margin-right: 20px;
@@ -839,11 +935,12 @@ export default {
   flex-wrap: wrap;
 }
 .balancelist .nftsClass {
-  width: 50%;
+  width: 33.33%;
   margin-bottom: 20px;
 }
 .balancelist .nftsClass img {
   width: 100px;
+  height: 100px;
 }
 
 .balancelist_bus {
@@ -941,5 +1038,33 @@ export default {
 }
 .listdetail span {
   margin: 20px 0;
+}
+.home .el-tabs--border-card {
+  background: #fff !important;
+  border-top: 1px solid #dcdfe6 !important;
+  border-bottom: none !important;
+}
+
+.tokensStyles {
+  width: 90%;
+  margin: 0 auto;
+}
+.tokenslist {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  border-bottom: 1px solid #f4f4f4;
+  height: 65px;
+}
+.tokenslist span img {
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  margin-right: 20px;
+}
+.tokenslist span:first-child {
+  display: flex;
+  align-items: center;
 }
 </style>

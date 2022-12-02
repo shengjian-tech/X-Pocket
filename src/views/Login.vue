@@ -1,6 +1,6 @@
 <template>
   <div class="login">
-    <div class="headermap" v-if="state==1">
+    <div class="headermap" v-if="state == 1">
       <i class="el-icon-arrow-left" @click="goHome"></i>添加账户
     </div>
     <div class="headerDefoult">
@@ -23,9 +23,10 @@
     </div>
     <!-- xuper -->
     <div class="setLoginFrom" v-if="value == 'xuper'">
-      <h3>本地私钥</h3>
+      <h3 v-if="!other_state">本地私钥</h3>
+      <h3 v-else>助记词</h3>
       <div class="write">
-        <div class="grid-content bg-purple">
+        <div v-if="!other_state" class="grid-content bg-purple">
           <el-input placeholder="本地私钥路径" v-model="private_key">
             <i
               slot="suffix"
@@ -35,7 +36,7 @@
           </el-input>
         </div>
 
-        <div class="grid-content bg-purple-light">
+        <div v-if="!other_state" class="grid-content bg-purple-light">
           <!-- <el-button
                 style="background-color: #5295fe; border: none"
                 type="primary"
@@ -51,18 +52,30 @@
           />
         </div>
 
+        <el-input
+          v-if="other_state"
+          placeholder="助记词"
+          v-model="password"
+          type="text"
+        >
+        </el-input>
+
         <p class="alertP">
           <a href="https://xuper.baidu.com/n/console#/xuperos/info"
-            >*暂无私钥，点击立即下载</a
+            >*暂无私钥，点击立即下载(右键打开)</a
           >
+          <span @click="otherLogin" v-if="other_state">私钥登录</span>
+          <span @click="otherLogin" v-else>助记词登录</span>
         </p>
         <el-input
           placeholder="安全码（可选，开放网络必填）"
           v-model="password"
-          type="password"
+          type="text"
+          v-if="!other_state"
         >
         </el-input>
       </div>
+
       <div class="submit">
         <el-button @click="getLogin" class="submitBtn" type="primary" round
           >登录</el-button
@@ -72,13 +85,23 @@
 
     <!-- eth -->
     <div class="setLoginFrom" v-if="value == 'eth'">
-      <h3>私钥</h3>
+      <h3 v-if="!other_state">私钥</h3>
+      <h3 v-else>助记词</h3>
       <div class="write">
-        <el-input placeholder="请输入您的私钥" v-model="privateKey"> </el-input>
+        <el-input
+          v-if="!other_state"
+          placeholder="请输入您的私钥"
+          v-model="privateKey"
+        >
+        </el-input>
+        <el-input v-else placeholder="请输入您的助记词" v-model="privateKey">
+        </el-input>
         <p class="alertP">
-          <span style="border-bottom: 1px solid #9327fc"
-            >*私钥只留存本地，不会上传到任何服务器
+          <span style="border-bottom: 1px solid #9327fc" @click="createPkey()"
+            >创建私钥
           </span>
+          <span @click="otherLogin" v-if="other_state">私钥登录</span>
+          <span @click="otherLogin" v-else>助记词登录</span>
         </p>
       </div>
       <div class="submit">
@@ -98,7 +121,7 @@ export default {
   name: "Login",
   data() {
     return {
-      state:this.$route.query.state,
+      state: this.$route.query.state,
       private_key: "",
       password: "",
       key: "",
@@ -118,7 +141,7 @@ export default {
       netList: [
         {
           chain: "xuper",
-          netName: "开放网络",
+          netName: "xuperchain",
           node: "https://xuper.baidu.com/nodeapi",
           type: "xuper",
         },
@@ -129,14 +152,17 @@ export default {
           type: "eth",
         },
       ],
+      other_state: false,
     };
   },
   components: { Header },
   mounted() {
-    if(localStorage.getItem("currentAccont") && !this.$route.query.state==1){
+    if (
+      localStorage.getItem("currentAccont") &&
+      !this.$route.query.state == 1
+    ) {
       this.$router.push("/Home");
     }
-
 
     if (localStorage.getItem("netList")) {
       let netList = localStorage.getItem("netList");
@@ -146,15 +172,32 @@ export default {
     }
   },
   methods: {
+    createPkey() {
+      const wallet = ethers.Wallet.createRandom().privateKey;
+      console.log(wallet);
+      this.$notify({
+        title: "获取成功",
+        dangerouslyUseHTMLString: true,
+        message: wallet,
+        type: "success",
+        duration: 0,
+      });
+    },
     goHome() {
       this.$router.push("/Home");
     },
+    //切换登录方式
+    otherLogin() {
+      this.other_state == true
+        ? (this.other_state = false)
+        : (this.other_state = true);
+    },
     //开放网络
     getLogin() {
-      if (this.private_key == "") {
+      if (this.private_key == "" && this.other_state !== true) {
         this.$message("请选择您的本地key文件以获取私钥路径");
       } else if (this.password == "") {
-        this.$message("请填写您的安全码");
+        this.$message("请完整填写信息!");
       } else {
         const node = "https://xuper.baidu.com/nodeapi";
         const chain = "xuper";
@@ -174,7 +217,14 @@ export default {
             }),
           ],
         });
-        const acc = xsdk.import(this.password, this.key);
+
+        let acc = null;
+        if (this.other_state == true) {
+          acc = xsdk.retrieve(this.password, "SimplifiedChinese");
+        } else {
+          acc = xsdk.import(this.password, this.key);
+        }
+
         if (acc) {
           let accont;
           acc.type = "xuper";
@@ -195,6 +245,25 @@ export default {
               : (obj[next.address] = true && cur.push(next));
             return cur;
           }, []);
+
+          if (localStorage.getItem("accountAllList")) {
+            let accountAllList = JSON.parse(
+              localStorage.getItem("accountAllList")
+            );
+            accountAllList.push(acc);
+            localStorage.setItem(
+              "accountAllList",
+              JSON.stringify(accountAllList)
+            );
+          } else {
+            let accountAllList = [];
+            accountAllList.push(acc);
+            localStorage.setItem(
+              "accountAllList",
+              JSON.stringify(accountAllList)
+            );
+          }
+
           localStorage.setItem("currentAccont", JSON.stringify(acc));
           localStorage.setItem("acc", JSON.stringify(newAcc));
           //如果是调用插件进来，未登录情况下，登录后，需要跳转到对应页面。
@@ -231,43 +300,54 @@ export default {
     // getEthLogin  以太坊 获取主账户
     getEthLogin() {
       if (this.privateKey == "") {
-        this.$message("请输入您的私钥");
+        this.$message("请完整填写信息");
       } else {
-        const privateKey = this.privateKey;
-        const provider = new ethers.providers.JsonRpcProvider(
-          JSON.parse(localStorage.getItem("netList"))[1].node
-        );
-        const wallet = new ethers.Wallet(privateKey, provider);
-        let accountAddress = wallet.address;
-        if (accountAddress) {
-          let accObject = {
+        let accObject;
+        if (this.other_state) {
+          //助记词登录
+          let mnemonic = this.privateKey;
+          let hdnode = ethers.utils.HDNode.fromMnemonic(mnemonic);
+          console.log(hdnode);
+          accObject = {
+            address: hdnode.address,
+            privateKey: hdnode.privateKey,
+            publicKey: hdnode.publicKey,
+            type: "eth",
+            chain: "eth",
+          };
+        } else {
+          const privateKey = this.privateKey;
+          const provider = new ethers.providers.JsonRpcProvider(
+            JSON.parse(localStorage.getItem("netList"))[1].node
+          );
+          const wallet = new ethers.Wallet(privateKey, provider);
+          let accountAddress = wallet.address;
+          accObject = {
             address: accountAddress,
             privateKey: this.privateKey,
             publicKey: "",
             type: "eth",
             chain: "eth",
           };
-          let acc;
-          if (localStorage.getItem("acc")) {
-            //先判断 本地有没有账户，如果有的话，就push进去
-            console.log(JSON.parse(localStorage.getItem("acc")));
-            acc = JSON.parse(localStorage.getItem("acc"));
-            acc.push(accObject);
-          } else {
-            acc = [];
-            acc.push(accObject);
-          }
-          let obj = {};
-          let newAcc = acc.reduce((cur, next) => {
-            obj[next.address]
-              ? ""
-              : (obj[next.address] = true && cur.push(next));
-            return cur;
-          }, []);
-          localStorage.setItem("acc", JSON.stringify(newAcc));
-          localStorage.setItem("currentAccont", JSON.stringify(accObject));
-          this.$router.push("/Home");
         }
+        let acc;
+        if (localStorage.getItem("acc")) {
+          //先判断 本地有没有账户，如果有的话，就push进去
+          console.log(JSON.parse(localStorage.getItem("acc")));
+          acc = JSON.parse(localStorage.getItem("acc"));
+          acc.push(accObject);
+        } else {
+          acc = [];
+          acc.push(accObject);
+        }
+        let obj = {};
+        let newAcc = acc.reduce((cur, next) => {
+          obj[next.address] ? "" : (obj[next.address] = true && cur.push(next));
+          return cur;
+        }, []);
+        localStorage.setItem("acc", JSON.stringify(newAcc));
+        localStorage.setItem("currentAccont", JSON.stringify(accObject));
+        this.$router.push("/Home");
       }
     },
 
@@ -289,6 +369,9 @@ export default {
 };
 </script>
 <style>
+.el-notification {
+  word-break: break-all;
+}
 .login {
   width: 460px;
   height: 1012px;
@@ -398,5 +481,12 @@ h2 {
   text-align: left;
   margin-bottom: 30px;
   margin-top: 18px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.alertP span {
+  display: inline-block;
+  cursor: pointer;
 }
 </style>

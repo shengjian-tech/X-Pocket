@@ -15,6 +15,12 @@
           </el-col>
           <el-col :span="14">
             <div class="headerSelect">
+              <img
+                class="lineState"
+                src="../assets/line.png"
+                alt=""
+                srcset=""
+              />
               <el-select @change="getSelect" v-model="value">
                 <el-option
                   v-for="(item, index) in options"
@@ -23,6 +29,9 @@
                   :value="index"
                 >
                 </el-option>
+                <div class="addNetButton">
+                  <span @click="goAddNet()">添加网络</span>
+                </div>
               </el-select>
             </div>
           </el-col>
@@ -42,10 +51,19 @@
                       @click.native="changeAccount(item)"
                       command="list"
                       class="dropHeaderItem"
-                      >{{ item.address }}</el-dropdown-item
                     >
+                      <span class="dropHeaderSpan"
+                        ><span class="addreslistindex">{{ index + 1 }}</span
+                        ><span class="addreslistspan">{{
+                          item.address
+                        }}</span></span
+                      >
+                    </el-dropdown-item>
 
-                    <el-dropdown-item icon="el-icon-plus" command="a"
+                    <el-dropdown-item
+                      icon="el-icon-plus"
+                      command="a"
+                      class="topBoderStyle"
                       >新建地址</el-dropdown-item
                     >
                     <el-dropdown-item icon="el-icon-sort" command="b"
@@ -63,7 +81,11 @@
                         @click="goout()"
                         >重置账户</el-button
                       >
-                      <el-button size="mini" type="info" class="dropOut"  @click="goout()"
+                      <el-button
+                        size="mini"
+                        type="info"
+                        class="dropOut"
+                        @click="goout()"
                         >退出</el-button
                       >
                     </div>
@@ -194,12 +216,12 @@ export default {
       },
       options: [
         {
-          netName: "开放网络",
+          netName: "xuperchain",
           node: "https://xuper.baidu.com/nodeapi",
           chain: "xuper",
         },
       ],
-      value: "开放网络",
+      value: "xuperchain",
       accountAllList: [],
     };
   },
@@ -208,21 +230,27 @@ export default {
     let netList = JSON.parse(localStorage.getItem("netList"));
     this.options = JSON.parse(localStorage.getItem("netList"));
     let acc = JSON.parse(localStorage.getItem("currentAccont"));
-    this.value = acc.type == "xuper" ? "开放网络" : "以太坊";
-    console.log(this.value);
-    if (localStorage.getItem("accountAllList")) {
-      this.accountAllList = JSON.parse(localStorage.getItem("accountAllList"));
-    }
-    this.addressInfo = plusXing(
-      JSON.parse(localStorage.getItem("currentAccont")).address,
-      5,
-      5
-    );
+    if (acc) {
+      this.value = acc.type == "xuper" ? "xuperchain" : "以太坊";
+      console.log(this.value);
+      if (localStorage.getItem("accountAllList")) {
+        this.accountAllList = JSON.parse(
+          localStorage.getItem("accountAllList")
+        );
+      }
+      this.addressInfo = plusXing(
+        JSON.parse(localStorage.getItem("currentAccont")).address,
+        5,
+        5
+      );
 
-    if (acc.type == "xuper") {
-      localStorage.setItem("currentNet", JSON.stringify(netList[0]));
-    } else if (acc.type == "eth") {
-      localStorage.setItem("currentNet", JSON.stringify(netList[1]));
+      if (acc.type == "xuper") {
+        localStorage.setItem("currentNet", JSON.stringify(netList[0]));
+      } else if (acc.type == "eth") {
+        localStorage.setItem("currentNet", JSON.stringify(netList[1]));
+      }
+    } else {
+      this.$router.push("/Login");
     }
   },
   methods: {
@@ -232,6 +260,9 @@ export default {
     },
     getSetting() {
       this.$router.push("/Home");
+    },
+    goAddNet() {
+      this.$router.push("/Addnet");
     },
     //新增操作
     submit(formName) {
@@ -281,7 +312,7 @@ export default {
       });
       if (!mapresult) {
         //不存在同网络类型账户,前去登录
-        this.$router.push({path: "/login",query: { state: 1}});
+        this.$router.push({ path: "/login", query: { state: 1 } });
       } else {
         that.accountAllList = []; //符合当前网络类型的 账户列表
         accountList.map((item) => {
@@ -295,21 +326,20 @@ export default {
         );
         this.$emit(
           "transfer",
-          JSON.parse(localStorage.getItem("accountAllList"))[0]
+          JSON.parse(localStorage.getItem("accountAllList"))[0],
+          netList[value]
         );
       }
-
       //存一下正在使用的网络
-
       localStorage.setItem("currentNet", JSON.stringify(netList[value]));
     },
 
     handleCommand(command) {
       if (command == "a") {
-        this.$router.push({path: "/login",query: { state: 1}});
+        this.$router.push({ path: "/login", query: { state: 1 } });
       } else if (command == "b") {
         this.$message.error("待开放");
-      }else if (command == "c") {
+      } else if (command == "c") {
         this.$router.push("/Set");
       }
 
@@ -317,17 +347,17 @@ export default {
     },
 
     //给父组件传递消息
-    changeAccount(item) {
-      this.$emit("transfer", item);
+    changeAccount(item, net) {
+      this.$emit("transfer", item, net);
       // window.location.reload();
     },
 
     //goout
-    goout(){
+    goout() {
       //退出
       localStorage.clear();
       this.$router.push("/login");
-    }
+    },
   },
 };
 </script>
@@ -383,6 +413,8 @@ export default {
   border-radius: 20px;
   background: #ffffff;
   width: 220px;
+  display: flex;
+  align-items: center;
 }
 .headerSelect .el-input__inner {
   border-radius: 20px !important;
@@ -396,7 +428,6 @@ export default {
 }
 .headerImgLogo {
   text-align: center;
-  margin-left: 14px;
   margin-top: 22px;
 }
 .el-dropdown-menu {
@@ -408,8 +439,11 @@ export default {
 }
 .dropHeader {
   padding: 0px 22px;
-  border-bottom: 1px solid #ebebeb;
+  /* border-bottom: 1px solid #ebebeb; */
   padding-bottom: 10px;
+}
+.topBoderStyle {
+  border-top: 1px solid #ebebeb;
 }
 .dropHeader h6 {
   font-weight: normal;
@@ -421,14 +455,35 @@ export default {
   font-weight: normal;
   margin-top: 10px;
   word-break: break-all;
-  text-decoration: underline;
+  /* text-decoration: underline; */
   font-size: 12px !important;
   color: #000000 !important;
   line-height: 30px !important;
 }
+.addreslistindex {
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  text-align: center;
+  line-height: 20px;
+  border-radius: 20px;
+  color: #ffffff;
+  background: #7657b1;
+  margin-right: 15px;
+}
+.dropHeaderSpan {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+.addreslistspan {
+  text-decoration: underline;
+}
 .showdropBtn {
   text-align: center;
 }
+
 .dropReset,
 .dropOut {
   width: 140px;
@@ -436,11 +491,42 @@ export default {
   border-radius: 6px !important;
   margin-left: 0 !important;
   margin-top: 10px !important;
+  background-color: #cdcbce !important;
+  border: none !important;
+}
+.dropReset {
+  background-color: #7657b1 !important;
 }
 .dropFooter {
   text-align: center;
   font-size: 12px;
   margin-top: 16px;
   color: #999999;
+}
+.lineState {
+  width: 12px;
+  margin-right: 10px;
+  height: 12px;
+  margin-left: 20px;
+}
+.addNetButton {
+  text-align: center;
+  font-size: 14px;
+  width: 100%;
+  margin-top: 8px;
+  border-top: 1px solid #ddd;
+}
+.addNetButton span {
+  width: 96px;
+  height: 26px;
+  line-height: 26px;
+  color: #ffffff;
+  display: inline-block;
+  background-color: #9327fc;
+  border-radius: 16px;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  margin-right: 9px;
+  cursor: pointer;
 }
 </style>
