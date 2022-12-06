@@ -19,7 +19,7 @@ contract QueryPlugin {
     }
 
     // get plugin inf byID
-    function getPluginById(uint256 pluginId) public view returns (uint256 id, string memory name, string memory desc) {
+    function getPluginById(uint256 pluginId) public view returns (uint256 id, string memory name, string memory desc, string memory logo) {
        return store.getPluginById(pluginId);
     }
 

@@ -20,6 +20,8 @@ contract StorePlugin {
         bool checked;
         // plugin owner
         address owner;
+        // icon address
+        string logo;
     }
 
     // contract owner
@@ -64,7 +66,7 @@ contract StorePlugin {
     }
 
     // add plugin info
-    function addPluginInfo(string memory name, string memory desc, string memory data, string memory typeName, string memory version) public returns (uint256) {
+    function addPluginInfo(address possessor,string memory name, string memory desc, string memory data, string memory typeName, string memory version, string memory logo) public returns (uint256) {
         require(nameToId[name] == 0, "Contract Error: this name plugin is exist");
         Plugin memory info;
         info.id = pluginID;
@@ -74,7 +76,8 @@ contract StorePlugin {
         info.version = version;
         info.typeName = typeName;
         info.checked = false;
-        info.owner = msg.sender;
+        info.owner = possessor;
+        info.logo = logo;
         idToPlugin[pluginID] = info;
         nameToId[name] = pluginID;
         pluginID ++;
@@ -91,11 +94,12 @@ contract StorePlugin {
 
     // get plugin by id 
     // return pulgin id; name; desc;
-    function getPluginById(uint256 pluginId) public view returns (uint256 id, string memory name, string memory desc) {
+    function getPluginById(uint256 pluginId) public view returns (uint256 id, string memory name, string memory desc, string memory logo) {
         require(idToPlugin[pluginId].checked, "Contract Error: this id plugin can't found!");
         id = pluginId;
         name = idToPlugin[pluginId].name;
         desc = idToPlugin[pluginId].desc;
+        logo = idToPlugin[pluginId].logo;
     }
 
     // get plugin data
@@ -105,21 +109,23 @@ contract StorePlugin {
     }
 
     // get plugin by name
-    function getPluginByName(string memory pluginName) public view returns (uint256 id, string memory name, string memory desc) {
+    function getPluginByName(string memory pluginName) public view returns (uint256 id, string memory name, string memory desc, string memory logo) {
         uint256 pluginId = nameToId[pluginName];
         require(idToPlugin[pluginId].checked, "Contract Error: this name plugin can't found");
         id = pluginId;
         name = idToPlugin[pluginId].name;
         desc = idToPlugin[pluginId].desc;
+        logo = idToPlugin[pluginId].logo;
     }
 
     // update plugin
-    function updatePlugin(uint256 pluginId, string memory desc, string memory data, string memory typeName, string memory version) public {
+    function updatePlugin(uint256 pluginId, string memory desc, string memory data, string memory typeName, string memory version, string memory logo) public {
         require(idToPlugin[pluginId].owner == msg.sender, "Contract Error: not this plugin owner!");
         idToPlugin[pluginId].desc = desc;
         idToPlugin[pluginId].data = data;
         idToPlugin[pluginId].typeName = typeName;
         idToPlugin[pluginId].version = version;
+        idToPlugin[pluginId].logo = logo;
     }
 
     // get all has checked ids
@@ -128,7 +134,7 @@ contract StorePlugin {
     }
     
     // delete plugin info
-    function deletePlugin(uint256 pluginId) public {
+    function deletePlugin(uint256 pluginId) public controllerOnly {
         idToPlugin[pluginId].checked = false;
         for (uint i = 0; i < ids.length; i++) {
             if (ids[i] == pluginId)  {
@@ -140,4 +146,3 @@ contract StorePlugin {
     }
 
 }
-

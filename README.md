@@ -97,6 +97,96 @@ Tokens
 
 ## 插件规范说明
 
+### 插件合约
+
+>#### 1.合约部署
+>
+>>由于插件ID 是在合约内部自增， 需要提供插件 ID 初始值。
+>
+>```solidity
+>// 合约初始化 插件id 的起始值
+>constructor(uint256 id) {
+>   owner = msg.sender;
+>   pluginID = id;
+>}
+>```
+>
+>#### 2.添加审核插件信息的审核者
+>
+>>此方法只能由合约部署者调用。`operater` : 审核者地址；`isApprove`: `true/false` 是否授权
+>
+>```solidity
+>function setController(address operater, bool isApprove)public ownerOnly{}
+>```
+>
+>#### 3.注册插件（添加插件信息
+>
+>>注册没有权限限制，谁都可以调用。注册的插件需要审核后才能被查询到。
+>
+>>`possessor`: 插件拥有者；`name`: 插件名称，链上唯一 ; `desc`: 插件描述； `data`: 插件数据（一般为JSON字符串）
+>
+>>`typeName`: 插件类型    `version`: 插件版本   `logo`: 插件logo
+>
+>>returns: 返回插件ID
+>
+>```solidity
+>function addPluginInfo(address possessor,string memory name, string memory desc, string memory data, string memory typeName, string memory version, string memory logo) public returns (uint256) {}
+>```
+>
+>#### 4.插件审核
+>
+>>审核者对插件进行审核通过
+>
+>>`pluginId`:插件ID
+>
+>```solidity
+>function checkPlugin(uint256 pluginId) public controllerOnly {}
+>```
+>
+>#### 5.修改插件信息 （只能由插件信息拥有者即注册人  修改）
+>
+>>`pluginId`： 插件ID；`desc`: 插件描述； `data`: 插件数据（一般为JSON字符串）
+>
+>>`typeName`: 插件类型    `version`: 插件版本   `logo`: 插件logo
+>
+>```solidity
+>function updatePlugin(uint256 pluginId, string memory desc, string memory data, string memory typeName, string memory version, string memory logo) public {}
+>```
+>
+>#### 6.查询插件信息
+>
+>>可以根据插件ID 或者 名字 查询插件
+>
+>>`pluginId`: 插件ID； `pluginName`: 插件名称
+>
+>>`id`: 插件ID； `name`: 插件名称 ； `desc`: 插件简述； `logo` : 插件logo
+>
+>```solidity
+>function getPluginById(uint256 pluginId) public view returns (uint256 id, string memory name, string memory desc, string memory logo) {}
+>
+>function getPluginByName(string memory pluginName) public view returns (uint256 id, string memory name, string memory desc, string memory logo) {}
+>```
+>
+>#### 7.查询所有插件ID
+>
+>>查询所有插件ID （审核通过的）
+>
+>>returns: 所有已审核过的插件ID
+>
+>```solidity
+>function allIds() public view returns (uint256[] memory) {}
+>```
+>
+>#### 8.删除插件（只有审核者可以调用）
+>
+>>修改插件审核状态为 false。不能被查询到。 `pluginId`: 插件ID
+>
+>```solidity
+>function deletePlugin(uint256 pluginId) public controllerOnly {}
+>```
+
+
+### 插件的JSON格式
 ```json
 {
   "addList": [
