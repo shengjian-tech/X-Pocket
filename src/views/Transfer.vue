@@ -206,23 +206,23 @@ export default {
   text-align: right;
   flex: 1;
 }
-.form {
+.transferForm {
   width: 70%;
   margin: 0 auto;
   margin-top: 40px;
 }
-.form .el-form-item__content {
+.transferForm .el-form-item__content {
   margin-left: 0 !important;
 }
-.form .el-input__inner {
+.transferForm .el-input__inner {
   height: 36px;
   border-radius: 36px;
 }
-.form .inputlabel {
+.transferForm .inputlabel {
   font-size: 18px;
   color: #000000;
 }
-.form .el-select {
+.transferForm .el-select {
   display: block;
 }
 .addNetBtnFath {

@@ -121,15 +121,19 @@
       <el-tab-pane label="Tokens">
         <div class="tokensStyles">
           <div class="tokenslist">
-            <span>Tokens</span>
-            <span>余额</span>
+            <span class="tokenslist_firstspan">Tokens</span>
+            <span class="tokenslist_lastspan">余额</span>
           </div>
-          <div class="tokenslist" v-for="(items, index) in tokens" :key="index">
-            <span>
+          <div
+            class="tokenslist tokenslistBottom"
+            v-for="(items, index) in tokens"
+            :key="index"
+          >
+            <span class="tokenslist_bottom_left">
               <img src="../assets/avatar.png" alt="" srcset="" />
               <span>{{ items.name }}</span>
             </span>
-            <span>{{ items.balance }}</span>
+            <span class="tokenslist_bottom_right">{{ items.balance }}</span>
           </div>
         </div>
       </el-tab-pane>
@@ -247,7 +251,7 @@ export default {
   data() {
     return {
       addressInfo: "",
-      address: "",
+      address: JSON.parse(localStorage.getItem("currentAccont")).address,
       balanceMoney: 0,
       dialogVisible: false,
       ruleForm: {
@@ -592,15 +596,10 @@ export default {
       var clipboard = new Clipboard(".copycont");
       clipboard.on("success", (e) => {
         this.$message.success("复制成功！");
-        console.log(e);
-        //  释放内存
         clipboard.destroy();
       });
       clipboard.on("error", (e) => {
         this.$message.success("当前浏览器不支持复制！");
-        console.log(e);
-        // 不支持复制
-        // 释放内存
         clipboard.destroy();
       });
     },
@@ -1052,10 +1051,14 @@ export default {
 .tokenslist {
   display: flex;
   flex-direction: row;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #f4f4f4;
   height: 65px;
+  margin: 0 auto;
+}
+.tokenslistBottom {
+  justify-content: space-around;
 }
 .tokenslist span img {
   width: 30px;
@@ -1066,5 +1069,11 @@ export default {
 .tokenslist span:first-child {
   display: flex;
   align-items: center;
+}
+.tokenslist_firstspan {
+  margin-left: 50px;
+}
+.tokenslist_lastspan {
+  margin-right: 64px;
 }
 </style>

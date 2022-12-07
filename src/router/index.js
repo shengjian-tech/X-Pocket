@@ -65,6 +65,16 @@ const routes = [
     name: "NftDetail",
     component: () => import("../views/NftDetail.vue"),
   },
+  {
+    path: "/SetPassword",
+    name: "SetPassword",
+    component: () => import("../views/SetPassword.vue"),
+  },
+  {
+    path: "/pwdLogin",
+    name: "pwdLogin",
+    component: () => import("../views/pwdLogin.vue"),
+  },
 ];
 
 const router = new VueRouter({

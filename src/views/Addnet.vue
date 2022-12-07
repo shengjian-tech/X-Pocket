@@ -162,27 +162,28 @@ export default {
   text-align: right;
   flex: 1;
 }
-.form {
+.addnetForm {
   width: 70%;
   margin: 0 auto;
   margin-top: 40px;
 }
-.form .el-form-item__content {
+.addnetForm .el-form-item__content {
   margin-left: 0 !important;
+  text-align: left;
 }
-.form .el-input__inner {
+.addnetForm .el-input__inner {
   height: 36px;
   border-radius: 36px;
 }
-.form .inputlabel {
+.addnetForm .inputlabel {
   font-size: 18px;
   color: #000000;
 }
-.form .el-select {
+.addnetForm .el-select {
   display: block;
 }
-.addNetBtnFath {
-  text-align: center;
+.addNetBtnFath .el-form-item__content {
+  text-align: center !important;
 }
 .addnetForm .addNetBtn {
   width: 160px;

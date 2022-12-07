@@ -4,7 +4,7 @@
     <div class="headermap">
       <i class="el-icon-arrow-left" @click="goHome"></i>{{ setName }}
     </div>
-    <div class="form">
+    <div class="form plugForm">
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item
           v-for="(item, index) in formData"
@@ -158,7 +158,7 @@ export default {
             this.dialogVisible = true;
           } else if (addList.methodName == "transfer") {
             //地址转账
-            let privateKey = that.form.privateKey;
+            let privateKey = currentAccont.privateKey;
             let wallet = new ethers.Wallet(privateKey, provider);
             let gasPrice = await provider.getGasPrice();
             let tx = await wallet.sendTransaction({
@@ -346,24 +346,24 @@ export default {
   margin: 0 auto;
   margin-top: 40px;
 }
-.form .el-form-item__content {
+.plugForm .el-form-item__content {
   margin-left: 0 !important;
   text-align: center;
 }
-.form .el-input__inner {
+.plugForm .el-input__inner {
   height: 36px;
   border-radius: 36px;
 }
-.form .inputlabel {
+.plugForm .inputlabel {
   font-size: 18px;
   color: #000000;
   margin-bottom: 20px;
   display: inline-block;
 }
-.form .el-select {
+.plugForm .el-select {
   display: block;
 }
-.form .el-form-item__label {
+.plugForm .el-form-item__label {
   width: 200px !important;
   text-align: left;
 }

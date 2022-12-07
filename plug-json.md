@@ -96,4 +96,80 @@
     []
   ]
 }
+
+
+//  eth 网络插件  可以参考
+{
+    "addList":[
+        {
+            "name":"查询余额",
+            "icon":"el-icon-search",
+            "type":"transaction",
+            "formValue":[
+                {
+                    "label":"账户地址",
+                    "value":"address"
+                }
+            ],
+            "methodName":"getBlance",
+            "contractName":"ethblance"
+        },
+        {
+            "name":"地址解析",
+            "icon":"el-icon-sort",
+            "type":"query",
+            "formValue":[
+                {
+                    "label":"域名地址",
+                    "value":"url"
+                },
+                {
+                    "label":"注册表地址",
+                    "value":"ensRegistryAddr"
+                }
+            ],
+            "methodName":"addrContract",
+            "contractName":"eth"
+        },
+        {
+            "name":"地址转账",
+            "icon":"el-icon-sort",
+            "type":"query",
+            "formValue":[
+                {
+                    "label":"私钥",
+                    "value":"privateKey"
+                },
+                {
+                    "label":"转账地址",
+                    "value":"toaddress"
+                },
+                {
+                    "label":"转账金额",
+                    "value":"value"
+                }
+            ],
+            "methodName":"transfer",
+            "contractName":"eth"
+        }
+    ],
+    "type":"eth",
+    "tabCont":[
+        [
+
+        ],
+        [
+
+        ],
+        [
+
+        ],
+        [
+
+        ],
+        [
+
+        ]
+    ]
+}
 ```

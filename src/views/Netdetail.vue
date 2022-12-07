@@ -4,7 +4,7 @@
     <div class="headermap">
       <i class="el-icon-arrow-left" @click="goHome"></i>设置/查看网络
     </div>
-    <div class="form">
+    <div class="form netDetailForm">
       <el-form ref="form" :model="form" label-width="80px">
         <el-form-item>
           <span class="inputlabel">网络名称</span>
@@ -132,23 +132,24 @@ export default {
   text-align: right;
   flex: 1;
 }
-.form {
+.netDetailForm {
   width: 70%;
   margin: 0 auto;
   margin-top: 40px;
 }
-.form .el-form-item__content {
+.netDetailForm .el-form-item__content {
   margin-left: 0 !important;
+  text-align: left;
 }
-.form .el-input__inner {
+.netDetailForm .el-input__inner {
   height: 36px;
   border-radius: 36px;
 }
-.form .inputlabel {
+.netDetailForm .inputlabel {
   font-size: 18px;
   color: #000000;
 }
-.form .el-select {
+.netDetailForm .el-select {
   display: block;
 }
 </style>

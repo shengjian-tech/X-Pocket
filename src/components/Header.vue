@@ -66,11 +66,14 @@
                       class="topBoderStyle"
                       >新建地址</el-dropdown-item
                     >
-                    <el-dropdown-item icon="el-icon-sort" command="b"
+                    <!-- <el-dropdown-item icon="el-icon-sort" command="b"
                       >导入钱包</el-dropdown-item
-                    >
+                    > -->
                     <el-dropdown-item icon="el-icon-download" command="c"
                       >设置</el-dropdown-item
+                    >
+                    <el-dropdown-item icon="el-icon-circle-close" command="d"
+                      >注销</el-dropdown-item
                     >
                     <div class="showdropBtn">
                       <el-button
@@ -230,24 +233,30 @@ export default {
     let netList = JSON.parse(localStorage.getItem("netList"));
     this.options = JSON.parse(localStorage.getItem("netList"));
     let acc = JSON.parse(localStorage.getItem("currentAccont"));
+    let closeState = localStorage.getItem("closeState");
+    let closepwd = localStorage.getItem("closepwd");
     if (acc) {
-      this.value = acc.type == "xuper" ? "xuperchain" : "以太坊";
-      console.log(this.value);
-      if (localStorage.getItem("accountAllList")) {
-        this.accountAllList = JSON.parse(
-          localStorage.getItem("accountAllList")
+      if (closeState == true && closepwd) {
+        this.$router.push("/pwdLogin");
+      } else {
+        this.value = acc.type == "xuper" ? "xuperchain" : "以太坊";
+        console.log(this.value);
+        if (localStorage.getItem("accountAllList")) {
+          this.accountAllList = JSON.parse(
+            localStorage.getItem("accountAllList")
+          );
+        }
+        this.addressInfo = plusXing(
+          JSON.parse(localStorage.getItem("currentAccont")).address,
+          5,
+          5
         );
-      }
-      this.addressInfo = plusXing(
-        JSON.parse(localStorage.getItem("currentAccont")).address,
-        5,
-        5
-      );
 
-      if (acc.type == "xuper") {
-        localStorage.setItem("currentNet", JSON.stringify(netList[0]));
-      } else if (acc.type == "eth") {
-        localStorage.setItem("currentNet", JSON.stringify(netList[1]));
+        if (acc.type == "xuper") {
+          localStorage.setItem("currentNet", JSON.stringify(netList[0]));
+        } else if (acc.type == "eth") {
+          localStorage.setItem("currentNet", JSON.stringify(netList[1]));
+        }
       }
     } else {
       this.$router.push("/Login");
@@ -341,6 +350,16 @@ export default {
         this.$message.error("待开放");
       } else if (command == "c") {
         this.$router.push("/Set");
+      } else if (command == "d") {
+        //注销
+        let closepwd = localStorage.getItem("closepwd");
+        if (closepwd) {
+          localStorage.setItem("closeState", true);
+          this.$router.push("/pwdLogin");
+        } else {
+          this.$message("请先设置密码");
+          this.$router.push("/SetPassword");
+        }
       }
 
       console.log(command);

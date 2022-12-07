@@ -10,10 +10,10 @@
           class="el-icon-arrow-right"
         ></i>
       </div>
-      <!-- <div>
-        <i class="el-icon-lock"></i>更改密码<i class="el-icon-arrow-right"></i>
+      <div @click="setPwd">
+        <i class="el-icon-lock"></i>设置密码<i class="el-icon-arrow-right"></i>
       </div>
-      <div>
+      <!-- <div>
         <i class="el-icon-s-help"></i>语言<i class="el-icon-arrow-right"></i>
       </div>
       <div>
@@ -43,6 +43,9 @@ export default {
     },
     setNet() {
       this.$router.push("/Netlist");
+    },
+    setPwd() {
+      this.$router.push("/SetPassword");
     },
   },
 };
