@@ -78,7 +78,12 @@
               <span slot="label" class="el-dropdown-link">
                 <el-dropdown trigger="click" class="tabsDropdown">
                   <span class="el-dropdown-link"
-                    ><i class="el-icon-date"></i> NFTS
+                    ><img
+                      class="labelListImg"
+                      src="../assets/nftFont.png"
+                      alt=""
+                      srcset=""
+                    />NFTS
                   </span>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item
@@ -104,15 +109,39 @@
               </div>
             </el-tab-pane>
             <el-tab-pane name="2">
-              <span slot="label"><i class="el-icon-date"></i> 版权存证</span>
+              <span slot="label"
+                ><img
+                  class="labelListImg"
+                  src="../assets/copyfont.png"
+                  alt=""
+                  srcset=""
+                />
+                版权存证</span
+              >
               <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="3">
-              <span slot="label"><i class="el-icon-date"></i> 游戏道具</span>
+              <span slot="label"
+                ><img
+                  class="labelListImg"
+                  src="../assets/gameFont.png"
+                  alt=""
+                  srcset=""
+                />
+                游戏道具</span
+              >
               <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="4">
-              <span slot="label"><i class="el-icon-date"></i> 区块链域名</span>
+              <span slot="label"
+                ><img
+                  class="labelListImg"
+                  src="../assets/priFont.png"
+                  alt=""
+                  srcset=""
+                />
+                区块链域名</span
+              >
               <div>暂无更多数据</div>
             </el-tab-pane>
           </el-tabs>
@@ -147,10 +176,10 @@
             v-for="(item, index) in pluginsList"
             :key="index"
           >
-            <img src="../assets/logo.png" alt="" />
+            <img :src="item[3].logo" alt="" />
             <span>{{ item[1].name }}</span>
             <el-button
-              v-if="item[3].state && item[3].state == 1"
+              v-if="item[4].state && item[4].state == 1"
               class="addNetBtnHome drawerDisable"
               type="primary"
               round
@@ -246,6 +275,7 @@ import { plusXing } from "../assets/js/index";
 import Clipboard from "clipboard";
 import { ethers } from "ethers";
 import axios from "axios";
+const Base64 = require("js-base64").Base64;
 export default {
   name: "Home",
   data() {
@@ -393,7 +423,7 @@ export default {
           try {
             const args = {};
             const demo = await xsdk.invokeSolidityContarct(
-              "pluginQuery",
+              "QueryPlugin",
               "allIds",
               "evm",
               args,
@@ -412,7 +442,7 @@ export default {
                   pluginId: JSON.stringify(idItem),
                 };
                 const pluginById = await xsdk.invokeSolidityContarct(
-                  "pluginQuery",
+                  "QueryPlugin",
                   "getPluginById",
                   "evm",
                   argsById,
@@ -446,6 +476,7 @@ export default {
                   } else {
                     resultArray.push({ state: 0 });
                   }
+                  resultArray[3].logo = Base64.decode(resultArray[3].logo);
                   that.pluginsList.push(resultArray);
                 }
               });
@@ -1051,7 +1082,7 @@ export default {
 .tokenslist {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   border-bottom: 1px solid #f4f4f4;
   height: 65px;
@@ -1070,10 +1101,10 @@ export default {
   display: flex;
   align-items: center;
 }
-.tokenslist_firstspan {
-  margin-left: 50px;
-}
-.tokenslist_lastspan {
-  margin-right: 64px;
+
+.labelListImg {
+  width: 20px;
+  vertical-align: -3px;
+  margin-right: 3px;
 }
 </style>

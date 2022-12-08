@@ -375,10 +375,11 @@ export default {
   text-align: right;
   flex: 1;
 }
-.form {
+.formsearch {
   width: 70%;
   margin: 0 auto;
   margin-top: 40px;
+  margin-bottom: 20px;
 }
 .formsearch .el-form-item__content {
   margin-left: 0 !important;

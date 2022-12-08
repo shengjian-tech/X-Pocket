@@ -69,11 +69,8 @@
                     <!-- <el-dropdown-item icon="el-icon-sort" command="b"
                       >导入钱包</el-dropdown-item
                     > -->
-                    <el-dropdown-item icon="el-icon-download" command="c"
+                    <el-dropdown-item icon="el-icon-setting" command="c"
                       >设置</el-dropdown-item
-                    >
-                    <el-dropdown-item icon="el-icon-circle-close" command="d"
-                      >注销</el-dropdown-item
                     >
                     <div class="showdropBtn">
                       <el-button
@@ -81,16 +78,19 @@
                         round
                         type="primary"
                         class="dropReset"
-                        @click="goout()"
-                        >重置账户</el-button
+                        @click="goLock()"
+                        >锁定</el-button
                       >
-                      <el-button
-                        size="mini"
-                        type="info"
-                        class="dropOut"
-                        @click="goout()"
-                        >退出</el-button
+                      <el-popconfirm
+                        title="确定注销后将会清除本地所有账户信息!"
+                        @confirm="goout()"
                       >
+                        <template #reference>
+                          <el-button size="mini" type="info" class="dropOut"
+                            >注销</el-button
+                          >
+                        </template>
+                      </el-popconfirm>
                     </div>
                     <div class="dropFooter">当前版本为X Pocket v0.0.1</div>
                   </el-dropdown-menu>
@@ -343,6 +343,18 @@ export default {
       localStorage.setItem("currentNet", JSON.stringify(netList[value]));
     },
 
+    //锁定
+    goLock() {
+      let closepwd = localStorage.getItem("closepwd");
+      if (closepwd) {
+        localStorage.setItem("closeState", true);
+        this.$router.push("/pwdLogin");
+      } else {
+        this.$message("请先设置密码");
+        this.$router.push("/SetPassword");
+      }
+    },
+
     handleCommand(command) {
       if (command == "a") {
         this.$router.push({ path: "/login", query: { state: 1 } });
@@ -350,16 +362,6 @@ export default {
         this.$message.error("待开放");
       } else if (command == "c") {
         this.$router.push("/Set");
-      } else if (command == "d") {
-        //注销
-        let closepwd = localStorage.getItem("closepwd");
-        if (closepwd) {
-          localStorage.setItem("closeState", true);
-          this.$router.push("/pwdLogin");
-        } else {
-          this.$message("请先设置密码");
-          this.$router.push("/SetPassword");
-        }
       }
 
       console.log(command);
@@ -501,6 +503,18 @@ export default {
 }
 .showdropBtn {
   text-align: center;
+}
+
+.el-popconfirm .el-button--primary {
+  background-color: #9426fd;
+  border-color: #9426fd;
+}
+.el-popconfirm .el-button--primary:hover {
+  background-color: #9426fd;
+  border-color: #9426fd;
+}
+.el-popconfirm .el-button--text {
+  color: #999999 !important;
 }
 
 .dropReset,

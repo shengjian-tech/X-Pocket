@@ -70,7 +70,7 @@
         <el-input
           placeholder="安全码（可选，开放网络必填）"
           v-model="password"
-          type="text"
+          type="password"
           v-if="!other_state"
         >
         </el-input>
@@ -93,6 +93,12 @@
           placeholder="请输入您的私钥"
           v-model="privateKey"
         >
+          <i
+            slot="suffix"
+            class="el-input__icon el-icon-copy-document copycont"
+            :data-clipboard-text="privateKey"
+            @click="copypwd()"
+          ></i>
         </el-input>
         <el-input v-else placeholder="请输入您的助记词" v-model="privateKey">
         </el-input>
@@ -116,6 +122,7 @@
 <script>
 import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
 import Header from "../components/Header";
+import Clipboard from "clipboard";
 import { ethers } from "ethers";
 export default {
   name: "Login",
@@ -137,7 +144,7 @@ export default {
           label: "以太坊",
         },
       ],
-      value: "",
+      value: "xuper",
       netList: [
         {
           chain: "xuper",
@@ -172,13 +179,26 @@ export default {
     }
   },
   methods: {
+    //复制
+    copypwd() {
+      var clipboard = new Clipboard(".copycont");
+      clipboard.on("success", (e) => {
+        this.$message.success("复制成功！");
+        clipboard.destroy();
+      });
+      clipboard.on("error", (e) => {
+        this.$message.success("当前浏览器不支持复制！");
+        clipboard.destroy();
+      });
+    },
     createPkey() {
       const wallet = ethers.Wallet.createRandom().privateKey;
       console.log(wallet);
+      this.privateKey = wallet;
       this.$notify({
         title: "获取成功",
         dangerouslyUseHTMLString: true,
-        message: wallet,
+        message: "私钥十分重要,请注意及时保存",
         type: "success",
         duration: 0,
       });
@@ -374,7 +394,7 @@ export default {
 }
 .login {
   width: 460px;
-  height: 1012px;
+
   margin: auto;
   font-family: "AlibabaPuHuiTi-Regular";
 }
@@ -405,67 +425,73 @@ export default {
 .login .submit {
   width: 80%;
   margin: auto;
-  margin-top: 30px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 .headerDefoult {
-  margin-top: 70px;
+  margin-top: 30px;
 }
 .headerDefoult img {
-  width: 132px;
-  margin-bottom: 30px;
+  width: 60px;
+  margin-bottom: 16px;
 }
 .headerDefoult div {
   margin-bottom: 20px;
-  font-size: 24px;
+  font-size: 18px;
   color: #000000;
 }
 h2 {
   color: #000000;
   margin-bottom: 24px;
+  font-size: 20px;
 }
 .selectLoginType {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 .selectContent {
-  width: 370px;
-  height: 50px;
+  width: 280px;
+  height: 40px;
 }
 .selectContent .el-input__inner {
   border-radius: 50px !important;
   border-color: #9327fc !important;
-  width: 370px;
-  height: 50px;
-  padding: 0 40px;
+  width: 280px;
+  height: 40px;
+  padding: 0 20px;
+}
+.selectContent .el-input__inner {
+  padding-right: 35px;
 }
 .selectContent .el-input__suffix {
   margin-right: 20px;
 }
 .setLoginFrom {
-  width: 82%;
+  width: 65%;
   margin: 0 auto;
 }
 .setLoginFrom h3 {
   text-align: left;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  font-size: 18px;
 }
 .setLoginFrom .el-input__inner {
   border-color: #9327fc !important;
   border-radius: 50px !important;
-  width: 370px;
-  height: 50px;
-  padding: 0 40px;
+  width: 280px;
+  height: 40px;
+  padding: 0 20px;
 }
 .setLoginFrom .el-input__prefix {
   margin-left: 20px;
   margin-right: 10px;
 }
 .setLoginFrom .el-input__suffix {
-  margin-right: 20px;
+  margin-right: 5px;
+}
+.setLoginFrom .el-input__icon {
+  width: 40px;
 }
 .setLoginFrom .el-icon-folder-opened {
-  font-size: 30px;
-  margin-top: 5px;
+  font-size: 20px;
 }
 .submitBtn {
   width: 173px;
@@ -473,13 +499,13 @@ h2 {
   background-color: #9327fc !important;
   border: none !important;
   border-radius: 48px !important;
-  margin-top: 52px !important;
+  margin-top: 36px !important;
 }
 .alertP {
   color: #9327fc;
   font-size: 14px;
   text-align: left;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   margin-top: 18px;
   display: flex;
   flex-direction: row;
@@ -488,5 +514,8 @@ h2 {
 .alertP span {
   display: inline-block;
   cursor: pointer;
+}
+.copycont {
+  margin-left: 6px;
 }
 </style>

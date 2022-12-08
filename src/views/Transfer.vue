@@ -2,7 +2,7 @@
   <div class="setTrans setLeft" v-loading.fullscreen.lock="fullscreenLoading">
     <Header />
     <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>设置/转移
+      <i class="el-icon-arrow-left" @click="goHome"></i>首页/转移
     </div>
     <div class="form transferForm">
       <el-form ref="form" :model="form" label-width="80px">
