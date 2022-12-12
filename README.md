@@ -30,9 +30,9 @@
 ### 登录
 下载私钥到本地之后，打开浏览器钱包插件进入登录页，可以选择链类型：百度超级链、以太坊：  
 
-<img src ="./md/百链私钥.png" height="400" />  <img src ="./md/百链助记.png" height="400" /><img src ="./md/没有私钥.png" height="400" /> 
+<img src ="./md/百度私钥.png" height="400" />  <img src ="./md/百度助记.png" height="400" /> 
 
-<img src ="./md/以太私钥.png" height="400" /><img src ="./md/以太助记.png" height="400" /><img src ="./md/以太没有私钥.png" height="400" />
+<img src ="./md/以太私钥.png" height="400" /><img src ="./md/以太助记.png" height="400" />
 
 ### 首页
 
