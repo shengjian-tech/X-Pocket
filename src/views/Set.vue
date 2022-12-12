@@ -76,6 +76,7 @@ export default {
   border-bottom: 1px solid #f3f3f3;
   display: flex;
   align-items: center;
+  font-size: 16px;
 }
 .setList div i {
   margin-left: 20px;

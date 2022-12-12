@@ -16,8 +16,8 @@
         <el-form-item>
           <span class="inputlabel">网络类型</span>
           <el-select v-model="form.type" placeholder="请选择网络类型">
-            <el-option label="xuperchain" value="xuper"></el-option>
-            <el-option label="以太坊" value="eth"></el-option>
+            <el-option label="XuperOS" value="xuper"></el-option>
+            <el-option label="Ethereum" value="eth"></el-option>
           </el-select>
         </el-form-item>
 

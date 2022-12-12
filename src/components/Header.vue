@@ -219,12 +219,12 @@ export default {
       },
       options: [
         {
-          netName: "xuperchain",
+          netName: "XuperOS",
           node: "https://xuper.baidu.com/nodeapi",
           chain: "xuper",
         },
       ],
-      value: "xuperchain",
+      value: "XuperOS",
       accountAllList: [],
     };
   },
@@ -239,7 +239,7 @@ export default {
       if (closeState == true && closepwd) {
         this.$router.push("/pwdLogin");
       } else {
-        this.value = acc.type == "xuper" ? "xuperchain" : "以太坊";
+        this.value = acc.type == "xuper" ? "XuperOS" : "Ethereum";
         console.log(this.value);
         if (localStorage.getItem("accountAllList")) {
           this.accountAllList = JSON.parse(
@@ -321,7 +321,10 @@ export default {
       });
       if (!mapresult) {
         //不存在同网络类型账户,前去登录
-        this.$router.push({ path: "/login", query: { state: 1 } });
+        this.$router.push({
+          path: "/login",
+          query: { state: 1, stateName: type },
+        });
       } else {
         that.accountAllList = []; //符合当前网络类型的 账户列表
         accountList.map((item) => {

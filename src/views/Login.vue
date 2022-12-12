@@ -5,8 +5,8 @@
     </div>
     <div class="headerDefoult">
       <img src="../assets/testlogo.png" alt="" />
-      <div>Your Daily Space for Connecting</div>
-      <div>Daily Digital Asset</div>
+      <div v-if="!state == 1">Your Daily Space for Connecting</div>
+      <div v-if="!state == 1">Daily Digital Asset</div>
     </div>
 
     <h2>请先选择链类型</h2>
@@ -137,24 +137,26 @@ export default {
       options: [
         {
           value: "xuper",
-          label: "百度超级链",
+          label: "XuperOS",
         },
         {
           value: "eth",
-          label: "以太坊",
+          label: "Ethereum",
         },
       ],
-      value: "xuper",
+      value: this.$route.query.stateName
+        ? this.$route.query.stateName
+        : "xuper",
       netList: [
         {
           chain: "xuper",
-          netName: "xuperchain",
+          netName: "XuperOS",
           node: "https://xuper.baidu.com/nodeapi",
           type: "xuper",
         },
         {
           chain: "eth",
-          netName: "以太坊",
+          netName: "Ethereum",
           node: "https://rpc-mumbai.maticvigil.com",
           type: "eth",
         },
@@ -458,9 +460,7 @@ h2 {
   height: 40px;
   padding: 0 20px;
 }
-.selectContent .el-input__inner {
-  padding-right: 35px;
-}
+
 .selectContent .el-input__suffix {
   margin-right: 20px;
 }
@@ -478,7 +478,7 @@ h2 {
   border-radius: 50px !important;
   width: 280px;
   height: 40px;
-  padding: 0 20px;
+  padding-right: 40px !important;
 }
 .setLoginFrom .el-input__prefix {
   margin-left: 20px;
@@ -491,6 +491,9 @@ h2 {
   width: 40px;
 }
 .setLoginFrom .el-icon-folder-opened {
+  font-size: 20px;
+}
+.setLoginFrom .el-icon-copy-document {
   font-size: 20px;
 }
 .submitBtn {

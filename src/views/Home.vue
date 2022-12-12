@@ -57,6 +57,7 @@
         <div
           class="grid-content bg-purple tablistCont"
           style="cursor: pointer"
+          v-if="plugState"
           v-for="(item, index) in tabsSetList.addList"
           :key="index"
           @click="getDetails(index)"
@@ -75,25 +76,21 @@
             @tab-click="handleClick"
           >
             <el-tab-pane name="1">
-              <span slot="label" class="el-dropdown-link">
-                <el-dropdown trigger="click" class="tabsDropdown">
-                  <span class="el-dropdown-link"
-                    ><img
-                      class="labelListImg"
-                      src="../assets/nftFont.png"
-                      alt=""
-                      srcset=""
-                    />NFTS
-                  </span>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item
-                      v-for="(item, index) in pluginsTabList[0]"
-                      :key="index"
-                      @click.native="gettablist(item)"
-                      >{{ item.nftsname }}</el-dropdown-item
-                    >
-                  </el-dropdown-menu>
-                </el-dropdown>
+              <span slot="label"
+                ><img
+                  class="labelListImg"
+                  src="../assets/nfts.png"
+                  alt=""
+                  srcset=""
+                  v-if="tabslistTabName == '1'"
+                />
+                <img
+                  class="labelListImg"
+                  src="../assets/nftFont.png"
+                  alt=""
+                  srcset=""
+                  v-else
+                />NFTS
               </span>
               <div class="balancelist">
                 <div
@@ -109,36 +106,60 @@
               </div>
             </el-tab-pane>
             <el-tab-pane name="2">
-              <span slot="label"
-                ><img
+              <span slot="label">
+                <img
+                  class="labelListImg"
+                  src="../assets/copyfont-1.png"
+                  alt=""
+                  srcset=""
+                  v-if="tabslistTabName == '2'"
+                />
+                <img
                   class="labelListImg"
                   src="../assets/copyfont.png"
                   alt=""
                   srcset=""
+                  v-else
                 />
                 版权存证</span
               >
               <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="3">
-              <span slot="label"
-                ><img
+              <span slot="label">
+                <img
+                  class="labelListImg"
+                  src="../assets/gameFont-1.png"
+                  alt=""
+                  srcset=""
+                  v-if="tabslistTabName == '3'"
+                />
+                <img
                   class="labelListImg"
                   src="../assets/gameFont.png"
                   alt=""
                   srcset=""
+                  v-else
                 />
                 游戏道具</span
               >
               <div>暂无更多数据</div>
             </el-tab-pane>
             <el-tab-pane name="4">
-              <span slot="label"
-                ><img
+              <span slot="label">
+                <img
+                  class="labelListImg"
+                  src="../assets/priFont-1.png"
+                  alt=""
+                  srcset=""
+                  v-if="tabslistTabName == '4'"
+                />
+                <img
                   class="labelListImg"
                   src="../assets/priFont.png"
                   alt=""
                   srcset=""
+                  v-else
                 />
                 区块链域名</span
               >
@@ -206,7 +227,7 @@
             v-for="(item, index) in isplugList"
             :key="index"
           >
-            <img src="../assets/logo.png" alt="" />
+            <img :src="item.plugLogo" alt="" />
             <span>{{ item.plugName }}</span>
 
             <el-button
@@ -291,7 +312,7 @@ export default {
       },
       node: "",
       chain: "",
-      value: "xuperchain",
+      value: "XuperOS",
       rules: {
         netName: [
           { required: true, message: "网络名称不能为空", trigger: "blur" },
@@ -303,7 +324,7 @@ export default {
       },
       options: [
         {
-          netName: "xuperchain",
+          netName: "XuperOS",
           node: "https://xuper.baidu.com/nodeapi",
           chain: "xuper",
         },
@@ -322,6 +343,8 @@ export default {
       pluginsTabList: [],
       nfts: [], //当年账户的nfts
       tokens: [], //tokens列表
+      plugState: true, //插件显示状态。
+      tabslistTabName: 1,
     };
   },
   components: { Header },
@@ -348,14 +371,18 @@ export default {
     }
     //登录成功后 显示余额
     let currentNet = JSON.parse(localStorage.getItem("currentNet"));
-    if (currentNet.type == "xuper") {
+
+    if (currentNet && currentNet.type == "xuper") {
       //调用xuper网络
       this.balance();
-    } else if (currentNet.type == "eth") {
+    } else if (currentNet && currentNet.type == "eth") {
       this.ethBalance();
     }
     //tokens
     this.getTokensList();
+  },
+  mounted() {
+    this.gettablist();
   },
   methods: {
     noFun() {
@@ -592,6 +619,8 @@ export default {
         5,
         5
       );
+      let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+
       if (net) {
         localStorage.setItem("currentNet", JSON.stringify(net));
         if (net.type == "xuper") {
@@ -608,12 +637,19 @@ export default {
         }
       }
 
+      if (currentPlug && currentPlug.type == net.type) {
+        this.plugState = true;
+      } else {
+        this.plugState = false;
+      }
+
       this.getTokensList();
     },
 
     //切换选项卡
     handleClick(tab, event) {
-      console.log(tab, event);
+      console.log(tab.name);
+      this.tabslistTabName = tab.name;
     },
 
     //切换插件
@@ -642,6 +678,7 @@ export default {
       let installData = plug[index];
       let installId = installData[0].id;
       let installName = installData[1].name;
+      let installLogo = installData[3].logo;
       let installedPlugin = JSON.parse(localStorage.getItem("installed"));
       let some = [];
       console.log(installId);
@@ -657,7 +694,7 @@ export default {
               pluginId: installId,
             };
             const demo = await xsdk.invokeSolidityContarct(
-              "pluginQuery",
+              "QueryPlugin",
               "getPluginData",
               "evm",
               args,
@@ -673,6 +710,7 @@ export default {
               let indata = JSON.parse(JSON.parse(result)[0].data);
               indata.id = installId;
               indata.plugName = installName;
+              indata.plugLogo = installLogo;
               if (!installedPlugin) {
                 installedPlugin = [];
               }
@@ -691,6 +729,7 @@ export default {
               that.pluginsTabList = indata.tabCont;
               localStorage.setItem("currentPlug", JSON.stringify(indata));
               this.drawer = false;
+              this.gettablist();
             }
           } catch (err) {
             console.log(err);
@@ -729,24 +768,27 @@ export default {
     },
 
     //
-    gettablist(item) {
-      console.log(item);
+    gettablist() {
       let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
-      axios({
-        url: `${item.nftsurl}/${currentAccont.address}?contract_address=${item.contract_address}`,
-        method: "GET",
-        headers: {
-          "X-API-KEY": item.xapikey,
-        },
-        data: {},
-      }).then((res) => {
-        if (res.data.status == "success" && res.data.statusCode == "200") {
-          this.nfts = JSON.parse(res.data.result);
-          console.log(this.nfts);
-        } else {
-          message.error(res.data.message);
-        }
-      });
+      let currentPlug = JSON.parse(localStorage.getItem("currentPlug"));
+      if (currentPlug) {
+        let item = currentPlug.tabCont[0][0];
+        console.log(item);
+        axios({
+          url: `${item.nftsurl}/${currentAccont.address}?contract_address=${item.contract_address}`,
+          method: "GET",
+          headers: {
+            "X-API-KEY": item.xapikey,
+          },
+          data: {},
+        }).then((res) => {
+          if (res.data.status == "success" && res.data.statusCode == "200") {
+            this.nfts = JSON.parse(res.data.result);
+          } else {
+            message.error(res.data.message);
+          }
+        });
+      }
     },
 
     //获取当前网络tokens 列表
