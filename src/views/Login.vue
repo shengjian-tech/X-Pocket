@@ -156,9 +156,17 @@ export default {
         },
         {
           chain: "eth",
-          netName: "Ethereum",
+          netName: "Polygon-Testnet",
           node: "https://rpc-mumbai.maticvigil.com",
           type: "eth",
+          chainid: 80001,
+        },
+        {
+          chain: "eth",
+          netName: "Ethereum",
+          node: "https://mainnet.infura.io/v3/",
+          type: "eth",
+          chainid: 1,
         },
       ],
       other_state: false,

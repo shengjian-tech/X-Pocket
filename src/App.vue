@@ -66,4 +66,7 @@
 .tabslist .el-tabs__active-bar {
   display: none;
 }
+.el-scrollbar .el-scrollbar__wrap {
+  margin-bottom: -8px !important;
+}
 </style>
