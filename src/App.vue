@@ -3,7 +3,22 @@
     <router-view />
   </div>
 </template>
-
+<script>
+import { setOpen,createdMessage } from "@/utils/popup";
+export default {
+  created(){
+    console.log('插件打开')
+    createdMessage()
+    setOpen(true)
+    window.addEventListener("beforeunload",e=>{
+      setOpen(false)
+    })
+  },
+  beforeDestroy(){
+    setOpen(false)
+  }
+}
+</script>
 <style>
 #app {
   font-family: "AlibabaPuHuiTi-Regular";

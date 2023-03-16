@@ -1,11 +1,16 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Login from "../views/Login.vue";
-
+// import {
+//   ifChrome
+// } from "@/utils/setStorage";
+// import {
+//   getTab,
+//   haveRequest
+// } from "@/utils/popup";
 Vue.use(VueRouter);
 
-const routes = [
-  {
+const routes = [{
     path: "/",
     name: "Login",
     component: Login,
@@ -75,6 +80,16 @@ const routes = [
     name: "pwdLogin",
     component: () => import("../views/pwdLogin.vue"),
   },
+  {
+    path: "/connect",
+    name: "connect",
+    component: () => import("../views/connect.vue"),
+  },
+  {
+    path: "/connectList",
+    name: "connectList",
+    component: () => import("../views/connectList.vue"),
+  },
 ];
 
 const router = new VueRouter({
@@ -82,5 +97,34 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes,
 });
+// router.beforeEach((to, from, next) => {
+//   // return next()
+//   if (to.path === '/login' || to.path === '/connect') return next()
+//   let acc = JSON.parse(localStorage.getItem("currentAccont"));
+//   if (!ifChrome() || !acc) {
+//     next();
+//   } else {
+//     let connectList = JSON.parse(localStorage.getItem("connectList"))
+//     if (!connectList || connectList.length == 0) {
+//       next({
+//         name: 'connect',
+//       });
+//     } else {
+//       getTab().then(res => {
+//         let ifFast = connectList.find(item => {
+//           return item.url == res.url
+//         })
+//         if (ifFast) {
+//           next();
+//         } else {
+//           next({
+//             name: 'connect',
+//           });
+//         }
+//       })
+//     }
+//     next();
+//   }
+// })
 
 export default router;

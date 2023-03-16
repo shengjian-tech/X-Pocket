@@ -1,51 +1,157 @@
-chrome.runtime.onMessage.addListener((res) => {
-  console.log(res);
-  let data = JSON.parse(res);
-  if (
-    !localStorage.getItem("acc") &&
-    (data.message === "OpenNFT_transfer" || data.message === "OpenNFT_demand")
-  ) {
-    //判断是否登录
-    chrome.windows.create({
-      url: `../index.html#/Login?detail=${res}`,
-      type: "popup",
-      width: 460,
-      height: 700,
-    });
-  } else {
-    if (data.message == "OpenNFT_transfer") {
-      //转移资产页面
-      //打开其他页面配置
-      chrome.windows.create({
-        url: `../index.html#/Details?index=转移资产&&detail=${res}`,
-        type: "popup",
-        width: 460,
-        height: 700,
-        top: 80,
-      });
-    } else if (data.message == "OpenNFT_demand") {
-      //查询NFT余额
-      chrome.windows.create({
-        url: `../index.html#/Details?index=查询NFT余额&&detail=${res}`,
-        type: "popup",
-        width: 460,
-        height: 700,
-        top: 80,
-      });
-    }
-  }
+//create by yjs
+let popupOpen = false
+let _handlers = {}
+let _baiduHandlers = {}
+let allMessage = {}
+chrome.runtime.onConnect.addListener((port) => {
+
+    port.onMessage.addListener((message, port) => {
+        if (message.request.method == "eth_requestAccounts") {
+            handler(message, port);
+        }
+    })
 });
-// chrome.runtime.onMessageExternal.addListener(function (
-//   request,
-//   sender,
-//   sendResponse
-// ) {
-//   if (request) {
-//     if (request.message) {
-//       if (request.message == "is_install") {
-//         sendResponse({ is_install: true });
-//       }
-//     }
-//   }
-//   return true;
-// });
+
+function handler(MessageTypes, port, portId) {
+    const {
+        id,
+        message,
+        request,
+        type
+    } = MessageTypes;
+    const promise = this.handle(id, message, request, port, portId, type);
+    promise.then((response) => {
+        port.postMessage({
+            id,
+            response
+        });
+    })
+}
+async function handle(id, message, request, port, portId, type) {
+
+    switch (request.method) {
+        case "eth_requestAccounts":
+            allMessage.request = request
+            allMessage.type = type
+            return getAccounts(type)
+            break;
+
+        default:
+            break;
+    }
+}
+
+function openPopup() {
+    getLastFocusWindow().then(win => {
+        let top = win.top;
+        let left = win.left + (win.width - 460);
+        chrome.windows.create({
+            url: `index.html`,
+            type: "popup",
+            width: 460,
+            height: 700,
+            left: left,
+            top: top,
+        });
+    })
+}
+function closePopup(){
+    chrome.windows.getAll(all=>{
+        // console.log(all)
+        all.forEach(element => {
+            if(element.type=="popup"){
+                chrome.windows.remove(element.id)
+            }
+        });
+    })
+}
+
+function getAccounts(type) {
+    // if (popupOpen) {
+        // return new Promise((resolve, reject) => {
+        //     if (type == "baidu") {
+        //         chrome.storage.sync.get('baiduAddress', function (data) {
+        //             resolve(data['baiduAddress'])
+        //         });
+        //     } else {
+        //         chrome.storage.sync.get('address', function (data) {
+        //             resolve(data['address'])
+        //         });
+        //     }
+
+        // })
+        // return new Promise((resolve, reject) => {
+        //     if (type == "baidu") {
+        //         _baiduHandlers['eth_requestAccounts'] = {
+        //             reject,
+        //             resolve
+        //         };
+        //     } else {
+        //         _handlers['eth_requestAccounts'] = {
+        //             reject,
+        //             resolve
+        //         };
+        //     }
+
+        // })
+    // } else {
+        closePopup()
+        openPopup()
+        return new Promise((resolve, reject) => {
+            if (type == "baidu") {
+                _baiduHandlers['eth_requestAccounts'] = {
+                    reject,
+                    resolve
+                };
+            } else {
+                _handlers['eth_requestAccounts'] = {
+                    reject,
+                    resolve
+                };
+            }
+
+        })
+    // }
+}
+
+function getPopupData(method, data) {
+    if (_handlers[method]) {
+        const _handler = _handlers[method];
+        _handler.resolve(data);
+    }
+}
+
+function getPopupBaiduData(method, data) {
+    if (_handlers[method]) {
+        const _handler = _baiduHandlers[method];
+        _handler.resolve(data);
+    }
+}
+
+
+function changePopupOpen(val) {
+    popupOpen = val
+}
+
+function md5(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function getLastFocusWindow() {
+    return new Promise((resolve, reject) => {
+        chrome.windows.getLastFocused((windowObject) => {
+            resolve(windowObject);
+        });
+    })
+}
+
+function postPopup() {
+    chrome.extension.onConnect.addListener((messagePort) => {
+        if (messagePort.name === 'POCKET-popup-background') {
+            messagePort.postMessage(allMessage)
+            messagePort.onMessage.addListener((message) => {
+                console.log(message)
+            })
+        }
+    })
+}

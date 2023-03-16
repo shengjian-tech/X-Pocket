@@ -95,8 +95,34 @@ Tokens
 
 <img src ="./md/查看网络.png" height="400" /> 
 
-## 插件规范说明
+## 钱包授权说明
+### 钱包唤醒  
+#### 1.以太坊链  
+在网页试图连接以太坊链时，会直接唤醒钱包。  
 
+```js
+let accounts = await ethereum.request({method: "eth_requestAccounts"});
+```
+
+#### 2.XuperChain
+
+在网页试图连接XuperChain时，会直接唤醒钱包。  
+
+```js
+let accounts = await xuper.request({method: "eth_requestAccounts"});
+```
+
+### 钱包授权
+在网页首次链接钱包时，会进入钱包的授权页  
+<img src ="./md/请求授权连接.png" height="400" />    
+
+### 钱包授权详情
+在网页首次链接钱包时，会进入钱包的授权页  
+<img src ="./md/连接详情.png" height="400" />    
+<img src ="./md/授权详情页.png" height="400" />    
+
+
+## 插件规范说明
 ### 插件合约
 
 >#### 1.合约部署
@@ -286,9 +312,5 @@ Tokens
   ]
 }
 ```
-
-
-
-
 
 

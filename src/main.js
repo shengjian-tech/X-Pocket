@@ -22,7 +22,6 @@ Vue.prototype.$axios = axios;
 //     sendResponse(txID); // 这里将tab信息发送给发送者
 //   }
 // );
-
 new Vue({
   router,
   render: (h) => h(App),

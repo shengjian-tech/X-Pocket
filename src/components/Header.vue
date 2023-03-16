@@ -66,6 +66,12 @@
                       class="topBoderStyle"
                       >新建地址</el-dropdown-item
                     >
+                    <el-dropdown-item
+                      icon="el-icon-view"
+                      command="i"
+                      class="topBoderStyle"
+                      >连接详情</el-dropdown-item
+                    >
                     <!-- <el-dropdown-item icon="el-icon-sort" command="b"
                       >导入钱包</el-dropdown-item
                     > -->
@@ -192,6 +198,8 @@
 
 <script>
 import { plusXing } from "../assets/js/index";
+import { clearStorage } from "@/utils/setStorage";
+import { getLocalAccont } from "@/utils/popup";
 export default {
   data() {
     return {
@@ -229,6 +237,7 @@ export default {
     };
   },
   mounted() {
+    console.log("header------mounted")
     //设置默认网络
     let netList = JSON.parse(localStorage.getItem("netList"));
     this.options = JSON.parse(localStorage.getItem("netList"));
@@ -251,10 +260,12 @@ export default {
           5,
           5
         );
-
+        getLocalAccont()
         if (acc.type == "xuper") {
           localStorage.setItem("currentNet", JSON.stringify(netList[0]));
+          // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address,"baidu")
         } else if (acc.type == "eth") {
+          // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address)
           localStorage.setItem("currentNet", JSON.stringify(netList[1]));
         }
       }
@@ -365,6 +376,8 @@ export default {
         this.$message.error("待开放");
       } else if (command == "c") {
         this.$router.push("/Set");
+      } else if (command == "i") {
+        this.$router.push("/connectList");
       }
 
       console.log(command);
@@ -380,6 +393,7 @@ export default {
     goout() {
       //退出
       localStorage.clear();
+      clearStorage()
       this.$router.push("/login");
     },
   },

@@ -62,7 +62,7 @@
 
         <p class="alertP">
           <a href="https://xuper.baidu.com/n/console#/xuperos/info"
-            >*暂无私钥，点击立即下载(右键打开)</a
+            >*暂无私钥，右键打开新标签页下载</a
           >
           <span @click="otherLogin" v-if="other_state">私钥登录</span>
           <span @click="otherLogin" v-else>助记词登录</span>
@@ -124,6 +124,7 @@ import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
 import Header from "../components/Header";
 import Clipboard from "clipboard";
 import { ethers } from "ethers";
+import { routerPush } from "@/utils/popup";
 export default {
   name: "Login",
   data() {
@@ -295,6 +296,7 @@ export default {
           }
 
           localStorage.setItem("currentAccont", JSON.stringify(acc));
+          
           localStorage.setItem("acc", JSON.stringify(newAcc));
           //如果是调用插件进来，未登录情况下，登录后，需要跳转到对应页面。
           //begin
@@ -320,6 +322,7 @@ export default {
           } else {
             this.$router.push("/Home");
           }
+          routerPush()
           //end
         } else {
           this.$$message.warning("请检查私钥和安全码");
@@ -377,7 +380,9 @@ export default {
         }, []);
         localStorage.setItem("acc", JSON.stringify(newAcc));
         localStorage.setItem("currentAccont", JSON.stringify(accObject));
+        
         this.$router.push("/Home");
+        routerPush()
       }
     },
 

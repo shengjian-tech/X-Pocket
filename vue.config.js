@@ -1,6 +1,6 @@
 module.exports = {
   publicPath: './',//在打包时添加这段代码，处理静态资源找不到问题
-  outputDir: 'dist',
+  outputDir: 'X-Pocket',
   lintOnSave: false,
   runtimeCompiler: true, //关键点在这  原来的 Compiler 换成了 runtimeCompiler
   // 调整内部的 webpack 配置。
