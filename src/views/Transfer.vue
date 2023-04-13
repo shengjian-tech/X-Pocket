@@ -61,6 +61,10 @@
 <script>
 import Header from "../components/Header";
 import { ethers } from "ethers";
+import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
+import {
+  sendHash
+} from "@/utils/transaction";
 export default {
   name: "Transfer",
   data() {
@@ -79,6 +83,10 @@ export default {
   components: { Header },
   mounted() {
     this.ethBalance();
+    if(this.$route.query){
+      this.form.address=this.$route.query[0].to
+      this.form.value=this.$route.query[0].value
+    }
   },
   methods: {
     goHome() {
@@ -109,12 +117,50 @@ export default {
 
       let currentAccont = JSON.parse(localStorage.getItem("currentAccont"));
       let currentNet = JSON.parse(localStorage.getItem("currentNet"));
-      const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
+      
       if (currentNet.type == "xuper") {
-        this.$message.error("请切换网络使用");
-        return false;
+        const node = "https://xuper.baidu.com/nodeapi";
+        const chain = "xuper";
+        const params = {
+          server: "https://xuper.baidu.com/nodeapi", // ip, port
+          fee: "400", // fee
+          endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
+          endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
+        };
+        const xsdk = new XuperSDK({
+          node,
+          chain,
+          plugins: [
+            Endorsement({
+              transfer: params,
+              makeTransaction: params,
+            }),
+          ],
+        });
+        const xuperPassword=localStorage.getItem("xuperPassword")
+        const xuperKey=localStorage.getItem("xuperKey")
+        const acc = xsdk.import(xuperPassword, xuperKey, true);
+        // console.log(acc)
+        const tx = await xsdk.transfer({
+          to: this.form.address,
+          amount: this.form.value,
+          fee: '0.1'
+        });
+        // console.log(tx)
+        await xsdk.postTransaction(tx);
+        sendHash("eth_sendTransaction",tx.hash)
+        this.$notify({
+          title: "交易成功",
+          dangerouslyUseHTMLString: true,
+          message: `交易哈希: ${tx.hash}`,
+          type: "success",
+          duration: 0,
+        });
+        // this.$message.error("请切换网络使用");
+        // return false;
       } else if (currentAccont.type == "eth") {
         //地址转账
+        const provider = new ethers.providers.JsonRpcProvider(currentNet.node);
         that.fullscreenLoading = true;
         let privateKey = currentAccont.privateKey;
         let wallet = new ethers.Wallet(privateKey, provider);
@@ -142,6 +188,7 @@ export default {
       let privateKey = currentAccont.privateKey;
       let wallet = new ethers.Wallet(privateKey, provider);
       let gasPrice = await provider.getGasPrice();
+      // sendHash("eth_sendTransaction",'aaaaa')
       let tx = await wallet.sendTransaction({
         gasLimit: 21000,
         gasPrice: gasPrice,
@@ -149,6 +196,7 @@ export default {
         value: ethers.utils.parseUnits(that.form.value),
       });
       that.fullscreenLoading = false;
+      sendHash("eth_sendTransaction",tx.hash)
       this.$notify({
         title: "交易成功",
         dangerouslyUseHTMLString: true,

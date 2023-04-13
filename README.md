@@ -120,7 +120,38 @@ let accounts = await xuper.request({method: "eth_requestAccounts"});
 在网页首次链接钱包时，会进入钱包的授权页  
 <img src ="./md/连接详情.png" height="400" />    
 <img src ="./md/授权详情页.png" height="400" />    
-
+## 钱包交易说明
+#### 1.以太坊链  
+```js
+const txObject = {
+    to: "mbwfe*****hfwGaAQqqE", // 接收方地址
+    value: "1", // 转账金额
+};
+const txHash = await window.ethereum.request({
+    method: "eth_sendTransaction",
+    params: [{
+      ...txObject,
+      from: 'account'
+    }],
+});
+```
+#### 2.百度链  
+```js
+const txObject = {
+    to: "mbwfe*****hfwGaAQqqE", // 接收方地址
+    value: "1", // 转账金额
+};
+const txHash = await window.xuper.request({
+    method: "sendTransaction",
+    params: [{
+      ...txObject,
+      from: 'account'
+    }],
+});
+```
+在网页试图发起交易时，会直接唤醒钱包并跳转至转移页面。
+<img src ="./md/交易.png" height="400" />    
+点击确认按钮即可发起交易
 
 ## 插件规范说明
 ### 插件合约

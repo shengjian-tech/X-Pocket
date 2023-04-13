@@ -9,6 +9,16 @@ chrome.runtime.onConnect.addListener((port) => {
         if (message.request.method == "eth_requestAccounts") {
             handler(message, port);
         }
+        if (message.request.method == "requestAccounts") {
+            handler(message, port);
+        }
+        if (message.request.method == "eth_sendTransaction") {
+            handler(message, port);
+        }
+        if (message.request.method == "sendTransaction") {
+            handler(message, port);
+        }
+
     })
 });
 
@@ -35,10 +45,37 @@ async function handle(id, message, request, port, portId, type) {
             allMessage.type = type
             return getAccounts(type)
             break;
+        case "requestAccounts":
+            allMessage.request = request
+            allMessage.type = type
+            return getAccounts(type)
+            break;
+        case "eth_sendTransaction":
+            allMessage.request = request
+            allMessage.type = type
+            return sendTransaction(request)
+            break;
+        case "sendTransaction":
+            allMessage.request = request
+            allMessage.type = type
+            return sendTransaction(request)
+            break;
 
         default:
             break;
     }
+}
+
+function sendTransaction(request) {
+    closePopup()
+    openPopup()
+    return new Promise((resolve, reject) => {
+        _handlers['eth_sendTransaction'] = {
+            reject,
+            resolve
+        };
+
+    })
 }
 
 function openPopup() {
@@ -55,11 +92,12 @@ function openPopup() {
         });
     })
 }
-function closePopup(){
-    chrome.windows.getAll(all=>{
+
+function closePopup() {
+    chrome.windows.getAll(all => {
         // console.log(all)
         all.forEach(element => {
-            if(element.type=="popup"){
+            if (element.type == "popup") {
                 chrome.windows.remove(element.id)
             }
         });
@@ -68,49 +106,49 @@ function closePopup(){
 
 function getAccounts(type) {
     // if (popupOpen) {
-        // return new Promise((resolve, reject) => {
-        //     if (type == "baidu") {
-        //         chrome.storage.sync.get('baiduAddress', function (data) {
-        //             resolve(data['baiduAddress'])
-        //         });
-        //     } else {
-        //         chrome.storage.sync.get('address', function (data) {
-        //             resolve(data['address'])
-        //         });
-        //     }
+    // return new Promise((resolve, reject) => {
+    //     if (type == "baidu") {
+    //         chrome.storage.sync.get('baiduAddress', function (data) {
+    //             resolve(data['baiduAddress'])
+    //         });
+    //     } else {
+    //         chrome.storage.sync.get('address', function (data) {
+    //             resolve(data['address'])
+    //         });
+    //     }
 
-        // })
-        // return new Promise((resolve, reject) => {
-        //     if (type == "baidu") {
-        //         _baiduHandlers['eth_requestAccounts'] = {
-        //             reject,
-        //             resolve
-        //         };
-        //     } else {
-        //         _handlers['eth_requestAccounts'] = {
-        //             reject,
-        //             resolve
-        //         };
-        //     }
+    // })
+    // return new Promise((resolve, reject) => {
+    //     if (type == "baidu") {
+    //         _baiduHandlers['eth_requestAccounts'] = {
+    //             reject,
+    //             resolve
+    //         };
+    //     } else {
+    //         _handlers['eth_requestAccounts'] = {
+    //             reject,
+    //             resolve
+    //         };
+    //     }
 
-        // })
+    // })
     // } else {
-        closePopup()
-        openPopup()
-        return new Promise((resolve, reject) => {
-            if (type == "baidu") {
-                _baiduHandlers['eth_requestAccounts'] = {
-                    reject,
-                    resolve
-                };
-            } else {
-                _handlers['eth_requestAccounts'] = {
-                    reject,
-                    resolve
-                };
-            }
+    closePopup()
+    openPopup()
+    return new Promise((resolve, reject) => {
+        if (type == "baidu") {
+            _baiduHandlers['eth_requestAccounts'] = {
+                reject,
+                resolve
+            };
+        } else {
+            _handlers['eth_requestAccounts'] = {
+                reject,
+                resolve
+            };
+        }
 
-        })
+    })
     // }
 }
 
@@ -122,8 +160,15 @@ function getPopupData(method, data) {
 }
 
 function getPopupBaiduData(method, data) {
-    if (_handlers[method]) {
+    if (_baiduHandlers[method]) {
         const _handler = _baiduHandlers[method];
+        _handler.resolve(data);
+    }
+}
+
+function getPopupTransferHash(method, data) {
+    if (_handlers[method]) {
+        const _handler = _handlers[method];
         _handler.resolve(data);
     }
 }

@@ -1,6 +1,9 @@
 import {
     setStorage
 } from "@/utils/setStorage";
+import {
+    transaction
+} from "@/utils/transaction";
 import router from "@/router";
 const background = chrome.extension.getBackgroundPage();
 let PopupToBackgroundPort = chrome.extension.connect({
@@ -20,7 +23,7 @@ export function sendAccont(method, data, type) {
 
 export function getLocalAccont() {
     // let AccList = JSON.parse(localStorage.getItem("acc"))
-    let connectList = JSON.parse(localStorage.getItem("connectList"))
+    let connectList = JSON.parse(localStorage.getItem("connectList")) || []
     getTab().then(res => {
         let ifFast = connectList.find(item => {
             return item.url == res.url
@@ -31,6 +34,7 @@ export function getLocalAccont() {
                     switch (item.type) {
                         case 'xuper':
                             sendAccont('eth_requestAccounts', item.address, "baidu")
+                            sendAccont('requestAccounts', item.address, "baidu")
                             break;
                         case 'eth':
                             sendAccont('eth_requestAccounts', item.address)
@@ -77,6 +81,13 @@ export async function createdMessage() {
             routerPush()
             switch (message.request.method) {
                 case "eth_requestAccounts":
+                    postMessage(message.request.method)
+                    break;
+                case "requestAccounts":
+                    postMessage(message.request.method)
+                    break;
+                case "eth_sendTransaction":
+                    transaction(message)
                     postMessage(message.request.method)
                     break;
 

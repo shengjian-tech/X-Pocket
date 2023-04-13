@@ -252,8 +252,13 @@ export default {
         let acc = null;
         if (this.other_state == true) {
           acc = xsdk.retrieve(this.password, "SimplifiedChinese");
+          // 缓存助记词
+          localStorage.setItem("xuperSimplifiedChinese",this.password);
         } else {
           acc = xsdk.import(this.password, this.key);
+          //缓存密码和秘钥
+          localStorage.setItem("xuperPassword",this.password);
+          localStorage.setItem("xuperKey",this.key);
         }
 
         if (acc) {
