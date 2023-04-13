@@ -109,7 +109,7 @@ let accounts = await ethereum.request({method: "eth_requestAccounts"});
 在网页试图连接XuperChain时，会直接唤醒钱包。  
 
 ```js
-let accounts = await xuper.request({method: "eth_requestAccounts"});
+let accounts = await xuper.request({method: "requestAccounts"});
 ```
 
 ### 钱包授权
