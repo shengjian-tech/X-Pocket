@@ -135,7 +135,7 @@ const txHash = await window.ethereum.request({
     }],
 });
 ```
-#### 2.百度链  
+#### 2.XuperOS  
 ```js
 const txObject = {
     to: "mbwfe*****hfwGaAQqqE", // 接收方地址
