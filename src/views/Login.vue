@@ -345,6 +345,7 @@ export default {
           //助记词登录
           let mnemonic = this.privateKey;
           let hdnode = ethers.utils.HDNode.fromMnemonic(mnemonic);
+          console.log("hdnode");
           console.log(hdnode);
           accObject = {
             address: hdnode.address,
@@ -363,7 +364,7 @@ export default {
           accObject = {
             address: accountAddress,
             privateKey: this.privateKey,
-            publicKey: "",
+            publicKey: wallet.publicKey,
             type: "eth",
             chain: "eth",
           };

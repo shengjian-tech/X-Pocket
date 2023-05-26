@@ -520,6 +520,10 @@ export default {
       }
     },
 
+    getPlugMethodTest(){
+      this.$router.push({ path: "/test" });
+    },
+
     //判断数据
     getSelect(value) {
       this.options.forEach((item) => {

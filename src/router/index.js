@@ -10,7 +10,8 @@ import Login from "../views/Login.vue";
 // } from "@/utils/popup";
 Vue.use(VueRouter);
 
-const routes = [{
+const routes = [
+  {
     path: "/",
     name: "Login",
     component: Login,
@@ -89,6 +90,26 @@ const routes = [{
     path: "/connectList",
     name: "connectList",
     component: () => import("../views/connectList.vue"),
+  },
+  {
+    path: "/signconnect",
+    name: "signconnect",
+    component: () => import("../views/sign_connect.vue"),
+  },
+  {
+    path: "/encrypt",
+    name: "encrypt",
+    component: () => import("../views/encrypt_connect.vue"),
+  },
+  {
+    path: "/decrypt",
+    name: "decrypt",
+    component: () => import("../views/decrypt_connect.vue"),
+  },
+  {
+    path: "/social",
+    name: "social",
+    component: () => import("../views/social_connect.vue"),
   },
 ];
 

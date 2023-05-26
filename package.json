@@ -1,6 +1,6 @@
 {
   "name": "X-Pocket",
-  "version": "0.1.0",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve --open",
@@ -10,19 +10,26 @@
   "dependencies": {
     "@xuperchain/xuper-sdk": "^2.2.0",
     "axios": "^0.26.1",
+    "bn.js": "^5.2.1",
     "bs58": "^5.0.0",
     "clipboard": "^2.0.10",
     "core-js": "^3.6.5",
     "dns": "^0.2.2",
     "element-ui": "^2.15.6",
+    "elliptic": "^6.5.4",
+    "eth-crypto": "^2.6.0",
     "ethers": "^5.7.2",
     "http2": "^3.3.7",
     "js-base64": "^3.7.2",
     "js-sha256": "^0.9.0",
+    "jsrsasign": "^10.8.6",
+    "jsrsasign-util": "^1.0.5",
+    "moment": "^2.29.4",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0"
   },
   "devDependencies": {
+    "@types/jsrsasign": "^10.5.8",
     "@vue/cli-plugin-babel": "~4.5.8",
     "@vue/cli-plugin-eslint": "~4.5.8",
     "@vue/cli-plugin-router": "~4.5.8",

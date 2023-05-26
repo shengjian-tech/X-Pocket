@@ -32,8 +32,34 @@
    <button id="connectButtonB" onclick="connectBaiduDemo()">百度链交易</button>
    <div>交易哈希为</div>
    <div id="contenB"></div>
-</body>
 
+   <hr />
+   <button id="connectButtonB123" onclick="connectSign()">ETH钱包签名</button>
+   <input type="text" id="conteninput123">
+   <div>签名sign为:</div>
+   <div id="contenB123"></div>
+
+   <hr />
+   <button id="connectButtonA123" onclick="connectSignBaudu()">百度钱包签名</button>
+   <input type="text" id="conteninput456">
+   <div>签名sign为:</div>
+   <div id="contenA123"></div>
+
+
+   <hr />
+   <button id="connectButtonB456" onclick="encryptClick()">加密信息</button>
+   <input type="text" id="valueCrypt">
+   <div>加密后信息为:</div>
+   <div id="contenB456"></div>
+
+   <hr />
+   <button id="connectButtonB789" onclick="decryptClick()">解密信息</button>
+   <input type="text" id="valueCrypt789">
+   <div>解密后信息为:</div>
+   <div id="contenB789"></div>
+   <hr />
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="application/javascript">
    // const provider = new ethers.providers.Web3Provider(window.ethereum);
    // const accounts =  provider.send("eth_requestAccounts",[]);
@@ -149,6 +175,97 @@
       } else {
          document.getElementById("conten4").innerHTML =
             "没有百度钱包";
+      }
+   }
+
+   async function connectSign() {
+      if (typeof window.ethereum !== "undefined") {
+         try {
+            const txObject = {
+               message: document.getElementById("conteninput123").value
+            }
+            let a = await window.ethereum.request({
+               method: "personal_sign",
+               params: [
+                  {
+                     ...txObject
+                  }
+               ]
+            });
+            console.log(a)
+            document.getElementById("contenB123").innerHTML = a;
+         } catch (error) {
+            console.log(error);
+         }
+      }
+   }
+
+   async function connectSignBaudu() {
+      if (typeof window.xuper !== "undefined") {
+         try {
+            const txObject = {
+               message: document.getElementById("conteninput456").value
+            }
+            let a = await window.xuper.request({
+               method: "personal_sign",
+               params: [
+                  {
+                     ...txObject
+                  }
+               ]
+            }, 'baidu');
+            console.log(a)
+            document.getElementById("contenA123").innerHTML = a;
+         } catch (error) {
+            console.log(error);
+         }
+      }
+   }
+
+
+
+
+
+   async function encryptClick() {
+      if (typeof window.ethereum !== "undefined") {
+         try {
+            const txObject = {
+               message: document.getElementById("valueCrypt").value
+            };
+            let a = await window.ethereum.request({
+               method: "encryptCrypto_sign",
+               params: [
+                  {
+                     ...txObject
+                  }
+               ]
+            });
+            console.log(a)
+            document.getElementById("contenB456").innerHTML = a;
+         } catch (error) {
+            console.log(error);
+         }
+      }
+   }
+   async function decryptClick() {
+      if (typeof window.ethereum !== "undefined") {
+         try {
+            const txObject = {
+               message: document.getElementById("valueCrypt789").value
+            };
+            let a = await window.ethereum.request({
+               method: "decryptCrypto_sign",
+               params: [
+                  {
+                     ...txObject
+                  }
+               ]
+            });
+            console.log(a)
+            document.getElementById("contenB789").innerHTML = a;
+         } catch (error) {
+            console.log(error);
+         }
       }
    }
 </script>
