@@ -13,6 +13,15 @@
       <div @click="setPwd">
         <i class="el-icon-lock"></i>设置密码<i class="el-icon-arrow-right"></i>
       </div>
+      <div class="elright">
+        <div><i class="el-icon-view"></i>域名解析</div>
+        <el-switch
+          v-model="value"
+          @change="getChange"
+          active-color="#13ce66"
+          inactive-color="#DCDFE6">
+        </el-switch>
+      </div>
       <!-- <div>
         <i class="el-icon-s-help"></i>语言<i class="el-icon-arrow-right"></i>
       </div>
@@ -33,10 +42,18 @@ import Header from "../components/Header";
 export default {
   name: "Set",
   data() {
-    return {};
+    return {
+      value: false
+    };
   },
   components: { Header },
-  created() {},
+  created() {
+    let that=this;
+    chrome.storage.local.get(["key"], function(result) {
+      that.value = result.key;
+      console.log("Value retrieved:", that.value);
+    });
+  },
   methods: {
     goHome() {
       this.$router.push("/Home");
@@ -47,6 +64,12 @@ export default {
     setPwd() {
       this.$router.push("/SetPassword");
     },
+    getChange(v){
+      console.log(v)
+      chrome.storage.local.set({ key: v }, function() {
+        console.log("Data saved.");
+      });
+    }
   },
 };
 </script>
@@ -85,5 +108,9 @@ export default {
 .setList div i:last-child {
   text-align: right;
   flex: 1;
+}
+.elright{
+  display: flex;
+  justify-content: space-between;
 }
 </style>

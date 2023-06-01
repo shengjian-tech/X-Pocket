@@ -111,7 +111,6 @@ export default {
         const sign = privKey.sign(that.message);
         const derbuf = sign.toDER().map((v) => String.fromCharCode(v));
         const signtext = btoa(derbuf.join(""));
-        console.log(signtext);
         sendBaiduSignHash("xuper_sign",signtext,'baidu');
       }
     },

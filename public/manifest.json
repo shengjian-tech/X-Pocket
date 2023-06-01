@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "X-Pocket",
-    "version": "0.0.3",
+    "version": "1.0.2",
     "description": "Your Daily Space for Connecting Daily Digital Asset",
     "background": {
         "page": "background.html",
@@ -41,6 +41,9 @@
         ]
     },
     "permissions": [
+        "proxy",
+        "webRequest",
+        "webRequestBlocking",
         "storage",
         "contextMenus",
         "tabs",
@@ -48,6 +51,8 @@
         "*://*/*",
         "http://*/*",
         "https://*/*",
+        "*://*.hk/*",
+        "*://*.eth/*",
         "declarativeContent"
     ]
 }
