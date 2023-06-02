@@ -11,12 +11,10 @@ export function sendHash(method, data, type) {
 }
 /*********签名 **********/
 export function signTranstion(message) {
-  if (JSON.parse(localStorage.getItem("currentAccont"))) {
-    router.push({
-      path: "/signconnect",
-      query: message.request.params,
-    });
-  }
+  router.push({
+    path: "/signconnect",
+    query: message.request.params,
+  });
 }
 export function sendSignHash(method, data, type) {
   background.getPopupTransferHash(method, data);

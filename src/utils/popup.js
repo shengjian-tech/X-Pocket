@@ -32,7 +32,7 @@ export function getLocalAccont() {
               sendAccont("requestAccounts", item.address, "baidu");
               break;
             case "eth":
-              sendAccont("eth_requestAccounts", item.address);
+              sendAccont("eth_requestAccounts", [item.address]);
               sendAccont("personal_sign", item.address);
               break;
 

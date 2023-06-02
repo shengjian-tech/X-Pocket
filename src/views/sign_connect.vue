@@ -21,7 +21,7 @@
       <div class="conten accList">
         
         <div>消息：</div>
-        <div>{{message}}</div>
+        <div>{{message[0]}}</div>
       </div>
     </div>
     <div class="btnBox">
@@ -53,7 +53,7 @@ export default {
       color: ["#744f68", "#788890", "#ebd40a", "#1e832a", "#abb7bc"],
       connect: null,
       activeItem: [],
-      message:this.$route.query[0].message
+      message:this.$route.query,
     };
   },
   computed: {
@@ -65,6 +65,8 @@ export default {
     },
   },
   mounted() {
+    console.log("sign参数");
+    console.log(this.$route.query);
     this.getTap();
     // console.log(this.accountAllList);
   },
@@ -97,7 +99,7 @@ export default {
         const privateKey =account.privateKey; // 用你自己的私钥替换
         const wallet = new ethers.Wallet(privateKey);
         //const provider = new ethers.providers.JsonRpcProvider(net); // 使用你自己的 Infura 项目 ID 替换
-        const messageBytes = ethers.utils.toUtf8Bytes(that.message);
+        const messageBytes = ethers.utils.toUtf8Bytes(that.message[0]);
         const signature = await wallet.signMessage(messageBytes);
         sendSignHash("personal_sign",signature);
         this.$router.push("/Home");
