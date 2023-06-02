@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "X-Pocket",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Your Daily Space for Connecting Daily Digital Asset",
     "background": {
         "page": "background.html",

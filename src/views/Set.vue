@@ -22,10 +22,10 @@
           inactive-color="#DCDFE6">
         </el-switch>
       </div>
-      <!-- <div>
-        <i class="el-icon-s-help"></i>语言<i class="el-icon-arrow-right"></i>
+      <div @click="setRsa">
+        <i class="el-icon-s-help" ></i>RSA-SHA256证书设置<i class="el-icon-arrow-right"></i>
       </div>
-      <div>
+     <!--  <div>
         <i class="el-icon-view"></i>安全隐私<i class="el-icon-arrow-right"></i>
       </div>
       <div>
@@ -63,6 +63,9 @@ export default {
     },
     setPwd() {
       this.$router.push("/SetPassword");
+    },
+    setRsa(){
+      this.$router.push("/setrsa");
     },
     getChange(v){
       console.log(v)

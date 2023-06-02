@@ -2,7 +2,7 @@
 {
   "manifest_version": 3,
   "name": "MakerONE",
-  "version": "0.0.3",
+  "version": "1.0.3",
   "description": "MakerONE 创造我热爱的世界",
   "permissions": ["management", "<all_urls>"],
   "background": {

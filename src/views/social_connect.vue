@@ -83,12 +83,15 @@ export default {
       let account = JSON.parse(localStorage.getItem("currentAccont"));
       
       if(that.algorithm=='rsa-sha256'){
-        console.log(that.algorithm);
-        const privateKeyPem ="";
-        
-        const privateKey = KEYUTIL.getKey(privateKeyPem);
-        const signature_data = that.signWithPrivateKey(that.signatureString, privateKey);
-        sendSocialHash("social_sign",signature_data)
+        if(localStorage.getItem("privateKeyPem")){
+          const privateKeyPem =localStorage.getItem("privateKeyPem").replace(/\\n/g, "\n");
+          const privateKey = KEYUTIL.getKey(privateKeyPem);
+          const signature_data = that.signWithPrivateKey(that.signatureString, privateKey);
+          sendSocialHash("social_sign",signature_data)
+        }else{
+          this.$message.error("请设置RSA密钥后重试");
+          this.$router.push("/setrsa");
+        }
       }else if(that.algorithm=='secp256k1'){
         const privateKey =account.privateKey; // 用你自己的私钥替换
         const wallet = new ethers.Wallet(privateKey);

@@ -111,6 +111,11 @@ const routes = [
     name: "social",
     component: () => import("../views/social_connect.vue"),
   },
+  {
+    path: "/setrsa",
+    name: "setrsa",
+    component: () => import("../views/setRsa.vue"),
+  },
 ];
 
 const router = new VueRouter({
