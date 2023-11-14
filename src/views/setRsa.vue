@@ -1,126 +1,172 @@
 <template>
-  <div class="set">
-    <Header />
-    <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>设置RSA密钥
-    </div>
-    <div class="form setpwdForm">
-      <el-form ref="form" :model="form" label-width="80px">
-        <el-form-item>
-          <span class="inputlabel">设置RSA密钥</span>
-          <el-input type="textarea" :autosize="{ minRows: 5, maxRows:8}" v-model="form.password" placeholder="请设置RSA-SHA256私钥"></el-input>
-        </el-form-item>
+  <div>
+    <div class="container">
+      <img src="../assets/img-bg.png" class="bg-img2" />
+      <div class="header">
+        <img src="../assets/img-back.png" class="img-back" @click="toBack" />
+        <span class="nav-title">{{ $t('rsa.name') }}</span>
+      </div>
+      <div class="content">
+        <div class="pwd-set">
+          <div class="set-box">
+            <div class="pwd-top">
+              <span>{{ $t('rsa.name') }}</span>
+            </div>
+            <textarea
+              v-model="form.password"
+              :placeholder="$t('comm.placeholder')"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="btn-wrapper">
+        <div class="btn" @click="addNetList">{{ $t('comm.confirm') }}</div>
+      </div>
 
-        <el-form-item class="setPwdBtnFath">
-          <el-button
-            class="addNetBtn"
-            type="primary"
-            round
-            @click="addNetList()"
-            >设置</el-button
-          >
-        </el-form-item>
-      </el-form>
+      <prompt-popup ref="prompt"></prompt-popup>
+      <confirm-popup
+        ref="confirm"
+        :title="$t('comm.tips')"
+        @confirm="sure"
+        @cancel="sure"
+      >
+        {{ $t('toastMsg.msg17') }}
+      </confirm-popup>
+    </div>
+
+    <div class="set" style="display: none">
+      <Header />
+      <div class="headermap">
+        <i class="el-icon-arrow-left" @click="goHome"></i>设置RSA密钥
+      </div>
+      <div class="form setpwdForm">
+        <el-form ref="form" :model="form" label-width="80px">
+          <el-form-item>
+            <span class="inputlabel">设置RSA密钥</span>
+            <el-input
+              type="textarea"
+              :autosize="{ minRows: 5, maxRows: 8 }"
+              v-model="form.password"
+              placeholder="请设置RSA-SHA256私钥"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item class="setPwdBtnFath">
+            <el-button
+              class="addNetBtn"
+              type="primary"
+              round
+              @click="addNetList()"
+              >设置</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import Header from "../components/Header";
+import Header from '../components/Header'
+import PromptPopup from '@/components/PromptPopup.vue'
+import ConfirmPopup from '@/components/ConfirmPopup.vue'
 export default {
-  name: "setRsa",
+  name: 'setRsa',
   data() {
     return {
       form: {
-        password: "",
-        norpwd: "",
+        password: '',
+        norpwd: '',
       },
-      netList: JSON.parse(localStorage.getItem("netList")),
-    };
+      netList: JSON.parse(localStorage.getItem('netList')),
+    }
   },
-  components: { Header },
+  components: { Header, PromptPopup, ConfirmPopup },
   mounted() {},
   methods: {
+    toBack() {
+      this.$router.back()
+    },
     goHome() {
-      this.$router.push("/Home");
+      this.$router.push('/Home')
+    },
+    sure() {
+      localStorage.setItem(
+        'privateKeyPem',
+        this.form.password.replace(/\n/g, '\\n')
+      )
+      this.$router.push('/Set')
     },
     addNetList() {
-      console.log(this.form);
+      console.log(this.form)
       if (!this.form.password) {
-        this.$message.error("请完善信息");
-      }else {
-        //操作
-        localStorage.setItem("privateKeyPem",this.form.password.replace(/\n/g, "\\n"));
-        this.$router.push("/Set");
+        return this.$refs.prompt.showToast(
+          this.$t('toastMsg.msg14'),
+          'warning',
+          1500
+        )
       }
+      this.$refs.confirm.showConfirm()
     },
   },
-};
+}
 </script>
-<style>
-.set {
-  width: 460px;
-  /* height: 460px; */
-  margin: auto;
-  font-family: "AlibabaPuHuiTi-Regular";
-}
-.headermap {
-  height: 80px;
-  line-height: 80px;
-  background-color: #7657b1;
-  color: #ffffff;
-  font-size: 26px;
-}
-.headermap i {
-  font-size: 26px;
-  vertical-align: -1px;
-  margin-left: 20px;
-  margin-right: 20px;
-}
-.setList div {
-  height: 90px;
-  line-height: 90px;
-  border-bottom: 1px solid #f3f3f3;
-  display: flex;
-  align-items: center;
-}
-.setList div i {
-  margin-left: 20px;
-  margin-right: 10px;
-}
-.setList div i:last-child {
-  text-align: right;
-  flex: 1;
-}
-.setpwdForm {
-  width: 70%;
-  margin: 0 auto;
-  margin-top: 40px;
-}
-.setpwdForm .el-form-item__content {
-  margin-left: 0 !important;
+<style lang="less" scoped>
+.content {
+  padding: 23px 25px;
   text-align: left;
+  .pwd-set {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    padding: 0 15px;
+    .set-box {
+      padding-bottom: 15px;
+    }
+    .pwd-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 0;
+      span {
+        font-size: 12px;
+        font-family: Arial-Regular, Arial;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+    textarea {
+      font-size: 12px;
+      font-family: Arial-Regular, Arial;
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.5);
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      outline: none;
+      margin-top: 10px;
+    }
+  }
 }
-.setpwdForm .el-input__inner {
-  height: 36px;
-  border-radius: 36px;
-}
-.setpwdForm .inputlabel {
-  font-size: 18px;
-  color: #000000;
-}
-.setpwdForm .el-select {
-  display: block;
-}
-.setPwdBtnFath .el-form-item__content {
-  text-align: center !important;
-}
-.setpwdForm .addNetBtn {
-  width: 160px;
-  height: 40px;
-  border-radius: 40px !important;
-  background-color: #9327fc;
-  border: none !important;
-  margin-top: 50px;
+.btn-wrapper {
+  position: absolute;
+  left: 0;
+  bottom: 50px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0 13px;
+  .btn {
+    width: 225px;
+    height: 45px;
+    line-height: 45px;
+    font-size: 15px;
+    font-family: Arial-Bold, Arial;
+    font-weight: bold;
+    border-radius: 30px;
+  }
 }
 </style>

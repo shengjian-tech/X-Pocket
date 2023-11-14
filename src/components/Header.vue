@@ -98,7 +98,7 @@
                         </template>
                       </el-popconfirm>
                     </div>
-                    <div class="dropFooter">当前版本为X Pocket v1.0.3</div>
+                    <div class="dropFooter">当前版本为X-Pocket v1.0.3</div>
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>
@@ -197,92 +197,92 @@
 </template>
 
 <script>
-import { plusXing } from "../assets/js/index";
-import { clearStorage } from "@/utils/setStorage";
-import { getLocalAccont } from "@/utils/popup";
+import { plusXing } from '../assets/js/index'
+import { clearStorage } from '@/utils/setStorage'
+import { getLocalAccont } from '@/utils/popup'
 export default {
   data() {
     return {
-      addressInfo: "",
+      addressInfo: '',
       visible: false,
       addForm: {
-        name: "",
-        contractName: "",
-        methodName: "",
+        name: '',
+        contractName: '',
+        methodName: '',
         formValue: [],
       },
       rules1: {
         name: [
-          { required: true, message: "操作名称不能为空", trigger: "blur" },
+          { required: true, message: '操作名称不能为空', trigger: 'blur' },
         ],
         contractName: [
-          { required: true, message: "合约名不能为空", trigger: "blur" },
+          { required: true, message: '合约名不能为空', trigger: 'blur' },
         ],
         methodName: [
-          { required: true, message: "方法名不能为空", trigger: "blur" },
+          { required: true, message: '方法名不能为空', trigger: 'blur' },
         ],
         type: [
-          { required: true, message: "选择您的操作类型", trigger: "change" },
+          { required: true, message: '选择您的操作类型', trigger: 'change' },
         ],
       },
       options: [
         {
-          netName: "XuperOS",
-          node: "https://xuper.baidu.com/nodeapi",
-          chain: "xuper",
+          netName: 'XuperOS',
+          node: 'https://xuper.baidu.com/nodeapi',
+          chain: 'xuper',
         },
       ],
-      value: "XuperOS",
+      value: 'XuperOS',
       accountAllList: [],
-    };
+    }
   },
   mounted() {
-    console.log("header------mounted")
+    console.log('header------mounted')
     //设置默认网络
-    let netList = JSON.parse(localStorage.getItem("netList"));
-    this.options = JSON.parse(localStorage.getItem("netList"));
-    let acc = JSON.parse(localStorage.getItem("currentAccont"));
-    let closeState = localStorage.getItem("closeState");
-    let closepwd = localStorage.getItem("closepwd");
+    let netList = JSON.parse(localStorage.getItem('netList'))
+    this.options = JSON.parse(localStorage.getItem('netList'))
+    let acc = JSON.parse(localStorage.getItem('currentAccont'))
+    let closeState = localStorage.getItem('closeState')
+    let closepwd = localStorage.getItem('closepwd')
     if (acc) {
       if (closeState == true && closepwd) {
-        this.$router.push("/pwdLogin");
+        this.$router.push('/pwdLogin')
       } else {
-        this.value = acc.type == "xuper" ? "XuperOS" : "Ethereum";
-        console.log(this.value);
-        if (localStorage.getItem("accountAllList")) {
+        this.value = acc.type == 'xuper' ? 'XuperOS' : 'Ethereum'
+        console.log(this.value)
+        if (localStorage.getItem('accountAllList')) {
           this.accountAllList = JSON.parse(
-            localStorage.getItem("accountAllList")
-          );
+            localStorage.getItem('accountAllList')
+          )
         }
         this.addressInfo = plusXing(
-          JSON.parse(localStorage.getItem("currentAccont")).address,
+          JSON.parse(localStorage.getItem('currentAccont')).address,
           5,
           5
-        );
+        )
         getLocalAccont()
-        if (acc.type == "xuper") {
-          localStorage.setItem("currentNet", JSON.stringify(netList[0]));
+        if (acc.type == 'xuper') {
+          localStorage.setItem('currentNet', JSON.stringify(netList[0]))
           // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address,"baidu")
-        } else if (acc.type == "eth") {
+        } else if (acc.type == 'eth') {
           // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address)
-          localStorage.setItem("currentNet", JSON.stringify(netList[1]));
+          localStorage.setItem('currentNet', JSON.stringify(netList[1]))
         }
       }
     } else {
-      this.$router.push("/Login");
+      this.$router.push('/Login')
     }
   },
   methods: {
     //添加参数
     addParams() {
-      this.addForm.formValue.push({ value: "", label: "" });
+      this.addForm.formValue.push({ value: '', label: '' })
     },
     getSetting() {
-      this.$router.push("/Home");
+      this.$router.push('/Home')
     },
     goAddNet() {
-      this.$router.push("/Addnet");
+      this.$router.push('/Addnet')
     },
     //新增操作
     submit(formName) {
@@ -290,120 +290,120 @@ export default {
         if (valid) {
           var localArr = {
             addList: [],
-          };
-          if (localStorage.getItem("addForm")) {
-            localArr.addList = JSON.parse(
-              localStorage.getItem("addForm")
-            ).addList;
-            localArr.addList.push(this.addForm);
-            localStorage.setItem("addForm", JSON.stringify(localArr));
-          } else {
-            localArr.addList.push(this.addForm);
-            localStorage.setItem("addForm", JSON.stringify(localArr));
           }
-          this.visible = false;
-          window.location.reload();
+          if (localStorage.getItem('addForm')) {
+            localArr.addList = JSON.parse(
+              localStorage.getItem('addForm')
+            ).addList
+            localArr.addList.push(this.addForm)
+            localStorage.setItem('addForm', JSON.stringify(localArr))
+          } else {
+            localArr.addList.push(this.addForm)
+            localStorage.setItem('addForm', JSON.stringify(localArr))
+          }
+          this.visible = false
+          window.location.reload()
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     //退出
     getOut() {
-      localStorage.clear();
-      this.$router.replace("/Login");
+      localStorage.clear()
+      this.$router.replace('/Login')
     },
     goMakerOne() {
       window.location.href =
-        "https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home";
+        'https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home'
     },
 
     //判断数据
     getSelect(value) {
       //切换网络，先看看 是否存在同类型网络账户，如果没有，前去登录。
-      let that = this;
-      let accountList = JSON.parse(localStorage.getItem("acc"));
-      let netList = JSON.parse(localStorage.getItem("netList"));
-      let type = netList[value].type;
-      console.log(value);
+      let that = this
+      let accountList = JSON.parse(localStorage.getItem('acc'))
+      let netList = JSON.parse(localStorage.getItem('netList'))
+      let type = netList[value].type
+      console.log(value)
 
       let mapresult = accountList.some(function (item) {
-        return item.type == type;
-      });
+        return item.type == type
+      })
       if (!mapresult) {
         //不存在同网络类型账户,前去登录
         this.$router.push({
-          path: "/login",
+          path: '/login',
           query: { state: 1, stateName: type },
-        });
+        })
       } else {
-        that.accountAllList = []; //符合当前网络类型的 账户列表
+        that.accountAllList = [] //符合当前网络类型的 账户列表
         accountList.map((item) => {
           if (item.type == type) {
-            that.accountAllList.push(item);
+            that.accountAllList.push(item)
           }
-        });
+        })
         localStorage.setItem(
-          "accountAllList",
+          'accountAllList',
           JSON.stringify(that.accountAllList)
-        );
+        )
         this.$emit(
-          "transfer",
-          JSON.parse(localStorage.getItem("accountAllList"))[0],
+          'transfer',
+          JSON.parse(localStorage.getItem('accountAllList'))[0],
           netList[value]
-        );
+        )
       }
       //存一下正在使用的网络
-      localStorage.setItem("currentNet", JSON.stringify(netList[value]));
+      localStorage.setItem('currentNet', JSON.stringify(netList[value]))
     },
 
     //锁定
     goLock() {
-      let closepwd = localStorage.getItem("closepwd");
+      let closepwd = localStorage.getItem('closepwd')
       if (closepwd) {
-        localStorage.setItem("closeState", true);
-        this.$router.push("/pwdLogin");
+        localStorage.setItem('closeState', true)
+        this.$router.push('/pwdLogin')
       } else {
-        this.$message("请先设置密码");
-        this.$router.push("/SetPassword");
+        this.$message('请先设置密码')
+        this.$router.push('/SetPassword')
       }
     },
 
     handleCommand(command) {
-      if (command == "a") {
-        this.$router.push({ path: "/login", query: { state: 1 } });
-      } else if (command == "b") {
-        this.$message.error("待开放");
-      } else if (command == "c") {
-        this.$router.push("/Set");
-      } else if (command == "i") {
-        this.$router.push("/connectList");
+      if (command == 'a') {
+        this.$router.push({ path: '/login', query: { state: 1 } })
+      } else if (command == 'b') {
+        this.$message.error('待开放')
+      } else if (command == 'c') {
+        this.$router.push('/Set')
+      } else if (command == 'i') {
+        this.$router.push('/connectList')
       }
 
-      console.log(command);
+      console.log(command)
     },
 
     //给父组件传递消息
     changeAccount(item, net) {
-      this.$emit("transfer", item, net);
+      this.$emit('transfer', item, net)
       // window.location.reload();
     },
 
     //goout
     goout() {
       //退出
-      localStorage.clear();
+      localStorage.clear()
       clearStorage()
-      this.$router.push("/login");
+      this.$router.push('/login')
     },
   },
-};
+}
 </script>
 
 <style>
 .header {
-  height: 84px;
-  background-color: #f2f2f2;
+  /* height: 84px;
+  background-color: #f2f2f2; */
 }
 
 .header .return {

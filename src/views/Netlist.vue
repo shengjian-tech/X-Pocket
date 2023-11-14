@@ -1,96 +1,134 @@
 <template>
-  <div class="set">
-    <Header />
-    <div class="headermap">
-      <i class="el-icon-arrow-left" @click="goHome"></i>设置/管理网络
-    </div>
-    <div class="setList">
-      <div
-        v-for="(item, index) in netList"
-        :key="index"
-        @click="setNetWork(index)"
-      >
-        <i class="el-icon-position"></i>{{ item.netName
-        }}<i class="el-icon-arrow-right"></i>
+  <div>
+    <div class="container">
+      <img src="../assets/img-bg.png" class="bg-img2" />
+      <div class="header">
+        <img src="../assets/img-back.png" class="img-back" @click="goHome" />
+        <span class="nav-title">{{ $t('set.mNet') }}</span>
+      </div>
+      <div class="content">
+        <ul>
+          <li
+            v-for="(item, index) in netList"
+            :key="index"
+            @click="setNetWork(index)"
+          >
+            <div class="circle">
+              <img :src="netObj[item.sign]" />
+            </div>
+            <div class="flex1">{{ item.netName }}</div>
+            <img src="../assets/img-right.png" class="img-right" />
+          </li>
+        </ul>
+        <div class="btn" @click="goAdd()">{{ $t('home.addNet') }}</div>
       </div>
     </div>
-    <div class="setbtn setNetlistBtn">
-      <el-button class="addNetBtn" type="primary" round @click="goAdd()"
-        >添加网络</el-button
-      >
+
+    <div class="set" style="display: none">
+      <Header />
+      <div class="headermap">
+        <i class="el-icon-arrow-left" @click="goHome"></i>设置/管理网络
+      </div>
+      <div class="setList">
+        <div
+          v-for="(item, index) in netList"
+          :key="index"
+          @click="setNetWork(index)"
+        >
+          <i class="el-icon-position"></i>{{ item.netName
+          }}<i class="el-icon-arrow-right"></i>
+        </div>
+      </div>
+      <div class="setbtn setNetlistBtn">
+        <el-button class="addNetBtn" type="primary" round @click="goAdd()"
+          >添加网络</el-button
+        >
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import Header from "../components/Header";
+import Header from '../components/Header'
 export default {
-  name: "Netlist",
+  name: 'Netlist',
   data() {
     return {
-      netList: JSON.parse(localStorage.getItem("netList")),
-    };
+      netList: JSON.parse(localStorage.getItem('netList')),
+      netObj: {
+        xuper: require('../assets/img-x.png'),
+        eth: require('../assets/img-eth.png'),
+        polygon: require('../assets/img-polygon.png'),
+      },
+    }
   },
   components: { Header },
   created() {},
   methods: {
     goHome() {
-      this.$router.push("/Set");
+      this.$router.push('/Set')
     },
     goAdd() {
-      this.$router.push("/Addnet");
+      this.$router.push('/Addnet')
     },
     setNetWork(index) {
-      console.log(index);
-      this.$router.push(`/Netdetail?index=${index}`);
+      console.log(index)
+      this.$router.push(`/Netdetail?index=${index}`)
     },
   },
-};
+}
 </script>
-<style>
-.set {
-  width: 460px;
-  height: 1012px;
-  margin: auto;
-  font-family: "AlibabaPuHuiTi-Regular";
-}
-.headermap {
-  height: 80px;
-  line-height: 80px;
-  background-color: #7657b1;
-  color: #ffffff;
-  font-size: 26px;
-}
-.headermap i {
-  font-size: 26px;
-  vertical-align: -1px;
-  margin-left: 20px;
-  margin-right: 20px;
-}
-.setList div {
-  height: 90px;
-  line-height: 90px;
-  border-bottom: 1px solid #f3f3f3;
-  display: flex;
-  align-items: center;
-}
-.setList div i {
-  margin-left: 20px;
-  margin-right: 10px;
-}
-.setList div i:last-child {
-  text-align: right;
-  flex: 1;
-}
-.setbtn {
-  text-align: center;
-}
-.setNetlistBtn .addNetBtn {
-  width: 173px;
-  height: 48px;
-  border-radius: 48px !important;
-  margin-top: 100px;
-  background-color: #9327fc;
-  border: none !important;
+<style lang="less" scoped>
+.content {
+  padding: 22px 25px;
+  text-align: left;
+  ul {
+    li {
+      display: flex;
+      align-items: center;
+      height: 47px;
+      background: rgba(255, 255, 255, 0.1);
+      margin-bottom: 8px;
+      padding: 0 15px 0 8px;
+      overflow: hidden;
+      border-radius: 8px;
+      cursor: pointer;
+      .circle {
+        width: 32px;
+        height: 32px;
+        background: #262636;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        img {
+          width: 18px;
+          height: 18px;
+        }
+      }
+      .flex1 {
+        flex: 1;
+        padding-left: 8px;
+        font-size: 12px;
+        font-family: Arial-Bold, Arial;
+        font-weight: bold;
+        color: #ffffff;
+      }
+      .img-right {
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+  .btn {
+    width: 225px;
+    height: 45px;
+    line-height: 45px;
+    font-size: 15px;
+    font-family: Arial-Bold, Arial;
+    font-weight: bold;
+    border-radius: 30px;
+    margin: 30px auto;
+  }
 }
 </style>

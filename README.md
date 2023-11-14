@@ -9,7 +9,9 @@
 
 ### 充值
 
-`Tip:用户地址下需要有百度开放网络余额才能使用转移资产，查询余额等功能。建议在百度开放网络充值0.1元。充值链接：`https://xuper.baidu.com/n/console#/finance/wallet/recharge  
+`Tip:用户地址下需要有百度开放网络余额才能使用转移资产，查询余额等功能。建议在百度开放网络充值0.1元。`
+
+`充值链接：`https://xuper.baidu.com/n/console#/finance/wallet/recharge  
 <img src ="./md/充值.png" height="400" />
 
 ## 安装
@@ -30,7 +32,7 @@
 ### 登录
 下载私钥到本地之后，打开浏览器钱包插件进入登录页，可以选择链类型：XuperOS、Ethereum：  
 
-<img src ="./md/百度私钥.png" height="400" />  <img src ="./md/百度助记.png" height="400" /> 
+<img src ="./md/百度私钥.png" height="400" /><img src ="./md/百度助记.png" height="400" /> 
 
 <img src ="./md/以太私钥.png" height="400" /><img src ="./md/以太助记.png" height="400" />
 
@@ -120,6 +122,7 @@ let accounts = await xuper.request({method: "requestAccounts"});
 在网页首次链接钱包时，会进入钱包的授权页  
 <img src ="./md/连接详情.png" height="400" />    
 <img src ="./md/授权详情页.png" height="400" />    
+
 ## 钱包交易说明
 #### 1.以太坊链  
 ```js

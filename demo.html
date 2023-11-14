@@ -58,6 +58,10 @@
    <div>解密后信息为:</div>
    <div id="contenB789"></div>
    <hr />
+
+   <button id="getAccounts" onclick="getAccInfo()">
+      获取账户信息
+   </button>
 </body>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="application/javascript">
@@ -256,6 +260,27 @@
             };
             let a = await window.ethereum.request({
                method: "decryptCrypto_sign",
+               params: [
+                  {
+                     ...txObject
+                  }
+               ]
+            });
+            console.log(a)
+            document.getElementById("contenB789").innerHTML = a;
+         } catch (error) {
+            console.log(error);
+         }
+      }
+   }
+   async function getAccInfo(){
+      if (typeof window.ethereum !== "undefined") {
+         try {
+            const txObject = {
+               message: document.getElementById("valueCrypt789").value
+            };
+            let a = await window.ethereum.request({
+               method: "getAccounts_info",
                params: [
                   {
                      ...txObject

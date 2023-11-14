@@ -4,84 +4,136 @@
   </div>
 </template>
 <script>
-import { setOpen,createdMessage } from "@/utils/popup";
+import { setOpen, createdMessage } from '@/utils/popup'
 export default {
-  created(){
+  created() {
     console.log('插件打开')
     createdMessage()
     setOpen(true)
-    window.addEventListener("beforeunload",e=>{
+    window.addEventListener('beforeunload', (e) => {
       setOpen(false)
     })
   },
-  beforeDestroy(){
+  beforeDestroy() {
     setOpen(false)
-  }
+  },
 }
 </script>
-<style>
+<style lang="less">
+body,
+html {
+  margin: 0;
+  padding: 0;
+  background: #242429;
+  height: 100%;
+}
 #app {
-  font-family: "AlibabaPuHuiTi-Regular";
+  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  height: 600px;
+  // height: 600px;
+  height: 100%;
+  box-sizing: border-box;
+  min-width: 300px;
+  background: url('./assets/img-bg.png');
+  background-size: 100% 100%;
 }
-* {
-  margin: 0;
+#app * {
+  box-sizing: border-box;
+}
+a {
+  text-decoration: none;
+}
+input {
+  border: none;
+  background: transparent;
+  outline-color: transparent;
+  outline: none;
+}
+input::-webkit-input-placeholder {
+  color: white;
+}
+ul {
+  list-style: none;
   padding: 0;
+  margin: 0;
 }
-.el-button--text {
-  color: #5295fe !important;
+p {
+  margin: 0;
 }
-.el-dropdown {
-  color: #ffffff !important;
-}
-.firstTabs .el-tabs__item {
-  width: 50%;
-  border-radius: 50px 50px 0 0;
-  height: 55px;
-  border: none !important;
-  line-height: 58px !important;
-  font-size: 24px !important;
-}
-.firstTabs .el-tabs__header:nth-child(1) {
-  border-radius: 50px 50px 0 0;
-  background: #5832a0;
-  margin-top: -50px;
+.text-line1 {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.firstTabs .is-top {
-  background-color: #ffffff;
+.container {
+  height: 600px;
+  overflow-y: auto;
+  position: relative;
+  box-sizing: border-box;
+  width: 300px;
+  margin: auto;
 }
-.firstTabs .el-tabs__nav-wrap {
-  border-radius: 50px 50px 0 0;
+.btn {
+  background: linear-gradient(90deg, #00e5c4 0%, #0078e5 100%);
+  text-align: center;
+  color: white;
+  cursor: pointer;
 }
+.btn:active {
+  opacity: 0.8;
+}
+.bg-img2 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  left: 0;
+  top: 0;
+}
+.header {
+  width: 100%;
+  position: relative;
+  text-align: center;
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  line-height: 0;
+  .img-back {
+    position: absolute;
+    top: 0;
+    left: 25px;
+    width: 38px;
+    height: 38px;
+    z-index: 2;
+    cursor: pointer;
+  }
+  .nav-title {
+    font-size: 18px;
+    font-family: Arial-Bold, Arial;
+    font-weight: bold;
+    color: #ffffff;
+  }
+}
+/*滚动条样式*/
 
-.tabslist .el-tabs__header:nth-child(1) {
-  border-radius: none;
-  background: none;
-  margin-top: 0px;
-}
-
-.firstTabs .el-tabs__item.is-active {
-  color: #9327fc !important;
-  border-bottom: 4px solid #9327fc !important;
-}
-
-.tabslist .el-tabs__item {
-  width: auto !important;
-  font-size: 16px !important;
-}
-.tabslist .el-tabs__item.is-active {
-  color: #9327fc !important;
-  border-bottom: none !important;
-}
-.tabslist .el-tabs__active-bar {
+*::-webkit-scrollbar {
   display: none;
 }
-.el-scrollbar .el-scrollbar__wrap {
-  margin-bottom: -8px !important;
+.comm-request {
+  text-align: center;
+  margin-top: 10px;
+  img {
+    width: 32px;
+  }
+  p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    word-break: break-all;
+  }
 }
 </style>
