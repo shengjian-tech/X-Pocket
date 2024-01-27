@@ -98,7 +98,7 @@
                         </template>
                       </el-popconfirm>
                     </div>
-                    <div class="dropFooter">当前版本为X-Pocket v1.0.3</div>
+                    <div class="dropFooter">当前版本为X-Pocket v2.0.0</div>
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>

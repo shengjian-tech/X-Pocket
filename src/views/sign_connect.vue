@@ -88,6 +88,7 @@ import { getPrivateKey } from '@/utils/decryptKey'
 import { sendSignHash, sendBaiduSignHash, sendExit } from '@/utils/transaction'
 import { ec as EC } from 'elliptic'
 import ConfirmPopup from '@/components/ConfirmPopup.vue'
+import BN from 'bn.js'
 
 const { ethers } = require('ethers')
 export default {
@@ -160,12 +161,15 @@ export default {
         window.close()
       } else {
         let privateKey1 = await getPrivateKey()
-        console.log('当前账号是 xuper')
+        console.log('当前账号是 xuper--page')
         // console.log(privateKey1, '当前私钥')
         let privateKey = JSON.parse(privateKey1)
         const ec = new EC('p256')
-        const privKey = ec.keyFromPrivate(privateKey.D, 'hex')
-        const utf8Data = Buffer.from(that.message[0], 'utf-8')
+        // const privKey = ec.keyFromPrivate(privateKey.D, 'hex')  //原来写法不对
+        // https://github.com/xuperchain/xuper-sdk-js/blob/master/src/transaction.ts#L309   签名信息
+        const bnD = new BN(privateKey.D)
+        const privKey = ec.keyFromPrivate(bnD.toArray())
+        const utf8Data = Buffer.from(that.message[0].message, 'utf-8')
         const sign = privKey.sign(utf8Data)
         const r = Buffer.from(sign.r.toArray('be', 32))
         const s = Buffer.from(sign.s.toArray('be', 32))
@@ -173,12 +177,12 @@ export default {
         const y = Buffer.from(privKey.getPublic().getY().toArray('be', 32))
         const signatureStr = Buffer.concat([r, s, x, y, utf8Data])
         const signtext = signatureStr.toString('hex') // 签名字符串
-        // sendBaiduSignHash('xuper_sign', signtext, 'baidu')
-        sendBaiduSignHash('personal_sign', signtext, 'baidu')
+        // console.log(signtext, '---signtext---')
+        sendBaiduSignHash('xuper_sign', signtext, 'baidu')
       }
     },
 
-    // sure() {
+    // sure() {publicKey
     //   localStorage.setItem('isTrust', 1)
     // },
     // handleCancel() {

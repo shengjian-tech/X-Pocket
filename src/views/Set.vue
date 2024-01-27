@@ -61,7 +61,7 @@
           </li>
         </ul>
       </div>
-      <div class="versions">{{ $t('set.version') }} X-Pocket v2.0.0</div>
+      <div class="versions">{{ $t('set.version') }} X-Pocket v2.0.1</div>
     </div>
 
     <div class="set" style="display: none">

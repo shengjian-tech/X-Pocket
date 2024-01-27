@@ -26,7 +26,7 @@ export function sendSignHash(method, data, type) {
 }
 
 export function sendBaiduSignHash(method, data, type) {
-  background.getPopupBaiduData(method, data)
+  background.getPopupBaiduData(method, data, type)
   background.getPopupExit()
 }
 

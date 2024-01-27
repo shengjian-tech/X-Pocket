@@ -19,7 +19,7 @@ let _handlers = {}
 export function sendAccont(method, data, type) {
   console.log(method, data, type, '******method, data, type******')
   if (type == 'xuper') {
-    background.getPopupBaiduData(method, data)
+    background.getPopupBaiduData(method, data, type)
     setStorage('baiduAddress', data)
   } else {
     background.getPopupData(method, data)
@@ -39,8 +39,8 @@ export function getLocalAccont() {
         ifFast.accountList.forEach((item) => {
           switch (item.type) {
             case 'xuper':
-              sendAccont('eth_requestAccounts', [item.address], 'xuper')
-              sendAccont('requestAccounts', item.address, 'xuper')
+              sendAccont('eth_requestAccounts', [item.address], 'baidu')
+              sendAccont('requestAccounts', item.address, 'baidu')
               break
             case 'eth':
               sendAccont('eth_requestAccounts', [item.address])
@@ -218,6 +218,6 @@ async function signConnect(msg) {
     const signtext = signatureStr.toString('hex') // 签名字符串
     // sendBaiduSignHash('xuper_sign', signtext, 'baidu')
     console.log(signtext, '**************signtext*************')
-    background.getPopupBaiduData('personal_sign', signtext)
+    background.getPopupBaiduData('xuper_sign', signtext, 'baidu')
   }
 }

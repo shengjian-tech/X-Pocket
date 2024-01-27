@@ -309,17 +309,17 @@ function getAccounts(type) {
       reject,
       resolve,
     }
-    // if (type == 'baidu') {
-    //   _baiduHandlers['eth_requestAccounts'] = {
-    //     reject,
-    //     resolve,
-    //   }
-    // } else {
-    //   _handlers['eth_requestAccounts'] = {
-    //     reject,
-    //     resolve,
-    //   }
-    // }
+    if (type == 'baidu') {
+      _baiduHandlers['eth_requestAccounts'] = {
+        reject,
+        resolve,
+      }
+    } else {
+      _handlers['eth_requestAccounts'] = {
+        reject,
+        resolve,
+      }
+    }
   })
 }
 
@@ -331,14 +331,10 @@ function getPopupData(method, data) {
 }
 
 function getPopupBaiduData(method, data) {
-  if (_handlers[method]) {
-    const _handler = _handlers[method]
+  if (_baiduHandlers[method]) {
+    const _handler = _baiduHandlers[method]
     _handler.resolve(data)
   }
-  // if (_baiduHandlers[method]) {
-  //   const _handler = _baiduHandlers[method]
-  //   _handler.resolve(data)
-  // }
 }
 
 function getPopupTransferHash(method, data) {
