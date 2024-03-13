@@ -43,6 +43,7 @@ module.exports = {
     msg28: 'Please fill in the password completely!',
     msg29: 'Please set password',
     msg30: 'Set successfully, please exit the page login, login again!',
+    msg31: 'Execution success!',
   },
   welcome: {
     title: 'Your Daily Space for Connecting Daily Digital Asset',
@@ -137,6 +138,7 @@ module.exports = {
     delBtn: 'Delete network',
   },
   handle: {
+    title: 'Operation',
     name: 'Operation name',
     type: 'Type of operation',
     deal: 'Trading',
@@ -163,6 +165,11 @@ module.exports = {
       'You can only sign this message if you fully understand the content and trust the requesting website. You are signing:',
     trustinfo:
       'Do you trust the signature of this requested website? The signature confirmation box will no longer be prompted after trust!',
+    invokeTitle: 'Contract request',
+    invokeIntro:
+      'You can only sign this message if you fully understand the content and trust the requesting website. You are signing:',
+    type: 'Type',
+    amount: 'Amount',
   },
   publish: {
     title: 'Publish a message',

@@ -102,6 +102,11 @@ const routes = [
     component: () => import('../views/sign_connect.vue'),
   },
   {
+    path: '/invokecontract',
+    name: 'invokecontract',
+    component: () => import('../views/invoke_contract.vue'),
+  },
+  {
     path: '/encrypt',
     name: 'encrypt',
     component: () => import('../views/encrypt_connect.vue'),

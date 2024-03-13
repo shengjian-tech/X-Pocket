@@ -44,6 +44,7 @@ module.exports = {
     msg28: '请完整填写密码！',
     msg29: '请设置密码',
     msg30: '设置成功,请退出页面登录,重新登录!',
+    msg31: '执行成功!',
   },
   welcome: {
     title: '连接日常数字资产的日常空间',
@@ -138,10 +139,11 @@ module.exports = {
     delBtn: '删除网络',
   },
   handle: {
+    title: '操作',
     name: '操作名称',
     type: '操作类型',
     deal: '交易',
-    query: '操作',
+    query: '查询',
     name2: '合约名',
     name3: '方法名',
     name4: '添加操作参数',
@@ -163,6 +165,11 @@ module.exports = {
     intro:
       '只有在您完全理解内容并信任请求网站的情况下，才能签署此消息。您正在签名:',
     trustinfo: '是否信任此请求网站的签名?信任后将不再提示签名确认框!',
+    invokeTitle: '合约请求',
+    invokeIntro:
+      '只有在您完全理解内容并信任请求网站的情况下，才能签署此消息。您正在签署:',
+    type: '类型',
+    amount: '数量',
   },
   publish: {
     title: '发布消息',

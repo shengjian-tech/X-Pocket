@@ -33,6 +33,12 @@ chrome.runtime.onConnect.addListener((port) => {
     if (message.request.method == 'eth_requestAccounts_publicKey') {
       handler(message, port)
     }
+    if (message.request.method == 'invoke_contract') {
+      handler(message, port)
+    }
+    if (message.request.method == 'personal_info') {
+      handler(message, port)
+    }
   })
 })
 
@@ -166,6 +172,15 @@ async function handle(id, message, request, port, portId, type) {
       allMessage.request = request
       allMessage.type = type
       return getAccountsInfo(request, type)
+      break
+    case 'invoke_contract':
+      allMessage.request = request
+      allMessage.type = type
+      return sendInvokeContract(request, type)
+    case 'personal_info':
+      allMessage.request = request
+      allMessage.type = type
+      return getPersonInfo(type)
     default:
       break
   }
@@ -193,6 +208,7 @@ function sendTransaction(request) {
   })
 }
 
+// 发送签名方法(这个方法判断了是否每次都要弹窗签名弹窗，可以设置白名单，弹一次就不再弹了，直接签名)
 function sendPersonalSign(request, type, message) {
   let whiteUrl = localStorage.getItem('whiteList') || 'https://assemblylabx.com'
   // alert('whiteUrl' + whiteUrl)
@@ -226,6 +242,21 @@ function sendPersonalSign(request, type, message) {
       }
     } else {
       _handlers['personal_sign'] = {
+        reject,
+        resolve,
+      }
+    }
+  })
+}
+
+// 发送请求合约方法返回给页面获取合约返回的值（目前是只支持xuper）
+function sendInvokeContract(request, type, message) {
+  closePopup()
+  openPopup()
+
+  return new Promise((resolve, reject) => {
+    if (type == 'baidu') {
+      _baiduHandlers['xuper_invokeContarct'] = {
         reject,
         resolve,
       }
@@ -316,6 +347,28 @@ function getAccounts(type) {
       }
     } else {
       _handlers['eth_requestAccounts'] = {
+        reject,
+        resolve,
+      }
+    }
+  })
+}
+// 获取用户信息
+function getPersonInfo(type) {
+  closePopup()
+  openPopup()
+  return new Promise((resolve, reject) => {
+    _handlers['personal_info'] = {
+      reject,
+      resolve,
+    }
+    if (type == 'baidu') {
+      _baiduHandlers['personal_info'] = {
+        reject,
+        resolve,
+      }
+    } else {
+      _handlers['personal_info'] = {
         reject,
         resolve,
       }

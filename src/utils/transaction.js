@@ -30,6 +30,11 @@ export function sendBaiduSignHash(method, data, type) {
   background.getPopupExit()
 }
 
+export function sendBaiduInvokeContract(method, data, type) {
+  background.getPopupBaiduData(method, data, type)
+  background.getPopupExit()
+}
+
 export function sendExit() {
   background.getPopupExit()
   router.push({
@@ -87,3 +92,11 @@ export function sendSocialHash(method, data, type) {
   background.getPopupExit()
 }
 /******end *****/
+
+// 请求合约
+export function invokeContract(message) {
+  router.push({
+    path: '/invokecontract',
+    query: message.request.params,
+  })
+}

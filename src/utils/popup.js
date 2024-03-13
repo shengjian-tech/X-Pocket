@@ -5,6 +5,7 @@ import {
   encryptCrypto,
   decryptCrypto,
   social,
+  invokeContract,
 } from '@/utils/transaction'
 import router from '@/router'
 import { getPrivateKey } from './decryptKey'
@@ -30,6 +31,12 @@ export function sendAccont(method, data, type) {
 export function getLocalAccont() {
   // let AccList = JSON.parse(localStorage.getItem("acc"))
   let connectList = JSON.parse(localStorage.getItem('connectList')) || []
+  let banlance = localStorage.getItem('banlance') // 余额
+  let version = '20002' // 钱包版本号
+  let infoObj = {
+    version,
+    banlance,
+  }
   getTab().then((res) => {
     let ifFast = connectList.find((item) => {
       return item.url == res.url
@@ -41,11 +48,13 @@ export function getLocalAccont() {
             case 'xuper':
               sendAccont('eth_requestAccounts', [item.address], 'baidu')
               sendAccont('requestAccounts', item.address, 'baidu')
+              sendInfo('personal_info', infoObj, 'baidu')
               break
             case 'eth':
               sendAccont('eth_requestAccounts', [item.address])
               sendAccont('eth_requestAccounts_publicKey', [item.publicKey])
               sendAccont('personal_sign', item.address)
+              sendInfo('personal_info', infoObj)
               break
 
             default:
@@ -129,6 +138,13 @@ export async function createdMessage() {
           social(message)
           postMessage(message.request.method)
           break
+        case 'invoke_contract':
+          invokeContract(message)
+          postMessage(message.request.method)
+          break
+        case 'personal_info':
+          postMessage(message.request.method)
+          break
 
         default:
           break
@@ -153,6 +169,8 @@ export async function routerPush() {
         router.push('/decrypt')
       } else if (_handlers?.request?.method == 'social_sign') {
         router.push('/social')
+      } else if (_handlers?.request?.method == 'invoke_contract') {
+        router.push('/invokecontract')
       } else {
         if (!connectList || connectList.length == 0) {
           router.push('/connect')
@@ -220,4 +238,9 @@ async function signConnect(msg) {
     console.log(signtext, '**************signtext*************')
     background.getPopupBaiduData('xuper_sign', signtext, 'baidu')
   }
+}
+
+// 发送个人信息
+async function sendInfo(method, data, type) {
+  background.getPopupBaiduData(method, data, type)
 }

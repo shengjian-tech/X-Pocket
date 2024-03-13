@@ -61,7 +61,9 @@
           </li>
         </ul>
       </div>
-      <div class="versions">{{ $t('set.version') }} X-Pocket v2.0.1</div>
+      <div class="versions">
+        {{ $t('set.version') }} X-Pocket v{{ version }}
+      </div>
     </div>
 
     <div class="set" style="display: none">
@@ -116,6 +118,7 @@ export default {
     return {
       value: false,
       currentStatus: 'off',
+      version: process.env.VUE_APP_POCKET_VERSION,
     }
   },
   components: { Header },

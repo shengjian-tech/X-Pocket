@@ -792,6 +792,7 @@ export default {
         try {
           const result = await xsdk.getBalance(address)
           this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3)
+          localStorage.setItem('banlance', this.balanceMoney)
           console.log(this.balanceMoney)
         } catch (err) {
           throw err

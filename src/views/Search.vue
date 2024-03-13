@@ -3,7 +3,7 @@
     <div class="container">
       <div class="header">
         <img src="../assets/img-back.png" class="img-back" @click="goHome" />
-        <span class="nav-title">{{ $t('handle.query') }}</span>
+        <span class="nav-title">{{ $t('handle.title') }}</span>
       </div>
       <div class="content">
         <div class="pwd-set">
@@ -93,9 +93,17 @@
         <div class="btn" @click="submit('addForm')">
           {{ $t('comm.confirm') }}
         </div>
-        <div class="btn">{{ $t('comm.cancel') }}</div>
+        <div class="btn" @click="cancelHandle">{{ $t('comm.cancel') }}</div>
       </div>
       <prompt-popup ref="prompt"></prompt-popup>
+      <confirm-popup ref="confirm" :title="$t('comm.tips')" @confirm="sure">
+        <ul class="handle-ul">
+          <li>
+            <span>Hash:</span>
+            <div class="flex1">{{ doalogContent.txid || '' }}</div>
+          </li>
+        </ul>
+      </confirm-popup>
     </div>
 
     <div class="setSearch" style="display: none">
@@ -196,6 +204,7 @@
 
 <script>
 import PromptPopup from '@/components/PromptPopup.vue'
+import ConfirmPopup from '@/components/ConfirmPopup.vue'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
 import { XchainAddrToEvm, EvmToXchainAddr } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
@@ -226,9 +235,12 @@ export default {
       chosedVal: 0,
     }
   },
-  components: { PromptPopup },
+  components: { PromptPopup, ConfirmPopup },
   mounted() {},
   methods: {
+    cancelHandle() {
+      this.$router.go(-1)
+    },
     choseType(i) {
       this.chosedVal = i
       if (this.chosedVal == 0) {
@@ -297,7 +309,8 @@ export default {
       const node = currentNet.node
       const chain = currentNet.chain
       const acc = currentAccont
-      acc.privateKey = await getPrivateKey()
+      acc.privateKey = JSON.parse(await getPrivateKey())
+      delete acc.rString
 
       const params = {
         server: node, // ip, port
@@ -339,8 +352,12 @@ export default {
             const demo = await xsdk.queryTransaction(
               Buffer.from(args.txId, 'hex').toString('base64')
             )
-            this.doalogContent = demo
-            this.dialogVisible = true
+            let txid = xsdk.transactionIdToHex(demo.transaction.txid)
+            let obj = {
+              txid,
+            }
+            this.doalogContent = obj
+            this.$refs.confirm.showConfirm()
           } else {
             const demo = await xsdk.invokeSolidityContarct(
               contractName,
@@ -350,8 +367,12 @@ export default {
               '0',
               acc
             )
-            this.doalogContent = demo
-            this.dialogVisible = true
+            let txid = xsdk.transactionIdToHex(demo.transaction.txid)
+            let obj = {
+              txid,
+            }
+            this.doalogContent = obj
+            this.$refs.confirm.showConfirm()
           }
         } catch (err) {
           if (err) {
@@ -363,7 +384,7 @@ export default {
             )
           } else {
             this.$refs.prompt.showToast(
-              this.$t('toastMsg.msg21'),
+              this.$t('toastMsg.msg31'),
               'success',
               2500
             )
@@ -633,6 +654,21 @@ export default {
   li:nth-child(2) {
     font-family: Arial-Bold, Arial;
     font-weight: bold;
+  }
+}
+.handle-ul {
+  li {
+    display: flex;
+    align-items: flex-start;
+    span {
+      font-weight: bold;
+    }
+    .flex1 {
+      flex: 1;
+      padding-left: 5px;
+      word-break: break-all;
+      text-align: left;
+    }
   }
 }
 </style>
