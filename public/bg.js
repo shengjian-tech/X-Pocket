@@ -42,7 +42,7 @@ chrome.runtime.onConnect.addListener((port) => {
   })
 })
 
-chrome.webRequest.onBeforeRequest.addListener(
+/*chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     chrome.storage.local.get(['key'], function (result) {
       console.log(result.key)
@@ -113,7 +113,7 @@ chrome.webRequest.onBeforeRequest.addListener(
   },
   { urls: ['*://*.eth/*', '*://*.hk/*'] }, // 替换为你需要监听的 URL
   ['blocking'] //参数告诉 Chrome 扩展引擎在监听器函数中执行的过程中，要等待监听器函数的结果，然后再决定是否继续处理原始请求
-)
+)*/
 
 function handler(MessageTypes, port, portId) {
   const { id, message, request, type } = MessageTypes
@@ -357,6 +357,7 @@ function getAccounts(type) {
 function getPersonInfo(type) {
   closePopup()
   openPopup()
+
   return new Promise((resolve, reject) => {
     _handlers['personal_info'] = {
       reject,

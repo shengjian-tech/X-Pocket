@@ -15,7 +15,7 @@
             <div class="flex1">{{ $t('set.setPwd') }}</div>
             <img src="../assets/img-right.png" class="img-right" />
           </li>
-          <li>
+          <!-- <li>
             <div class="circle">
               <img src="../assets/img-http.png" />
             </div>
@@ -30,7 +30,7 @@
               v-else
               @click="switchHandle('on')"
             />
-          </li>
+          </li> -->
           <li @click="setRsa">
             <div class="circle">
               <img src="../assets/img-rsa.png" />
@@ -155,20 +155,20 @@ export default {
         console.log('Data saved.')
       })
     },
-    switchHandle(i) {
-      console.log(i, '***i****')
-      this.currentStatus = i
-      let v = false
-      if (this.currentStatus == 'on') {
-        v = true
-      } else {
-        v = false
-      }
-      console.log(v, '***v***')
-      chrome.storage.local.set({ key: v }, function () {
-        console.log('Data saved.')
-      })
-    },
+    // switchHandle(i) {
+    //   console.log(i, '***i****')
+    //   this.currentStatus = i
+    //   let v = false
+    //   if (this.currentStatus == 'on') {
+    //     v = true
+    //   } else {
+    //     v = false
+    //   }
+    //   console.log(v, '***v***')
+    //   chrome.storage.local.set({ key: v }, function () {
+    //     console.log('Data saved.')
+    //   })
+    // },
   },
 }
 </script>

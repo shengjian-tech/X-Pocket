@@ -32,7 +32,7 @@ export function getLocalAccont() {
   // let AccList = JSON.parse(localStorage.getItem("acc"))
   let connectList = JSON.parse(localStorage.getItem('connectList')) || []
   let banlance = localStorage.getItem('banlance') // 余额
-  let version = '20002' // 钱包版本号
+  let version = '20003' // 钱包版本号
   let infoObj = {
     version,
     banlance,
