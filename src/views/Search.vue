@@ -9,12 +9,35 @@
         <div class="pwd-set">
           <div class="set-box">
             <div class="pwd-top">
+              <span>{{ $t('handle.currentNet') }}</span>
+            </div>
+            <div class="current-net">
+              <img :src="netObj[currentNet.type]" class="logo-img" />
+              <div class="flex1">{{ currentNet.netName }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="pwd-set">
+          <div class="set-box">
+            <div class="pwd-top">
               <span>{{ $t('handle.name') }}</span>
             </div>
-            <textarea
+            <!-- <textarea
               v-model="addForm.name"
               :placeholder="$t('comm.placeholder')"
-            ></textarea>
+            ></textarea> -->
+            <div class="radio-box">
+              <div class="comm-radio" @click="choseContractType(0)">
+                <img src="../assets/img-checked.png" v-if="chosedConVal == 0" />
+                <img src="../assets/img-check.png" v-else />
+                evm
+              </div>
+              <div class="comm-radio" @click="choseContractType(1)">
+                <img src="../assets/img-checked.png" v-if="chosedConVal == 1" />
+                <img src="../assets/img-check.png" v-else />
+                wasm
+              </div>
+            </div>
           </div>
         </div>
         <div class="pwd-set">
@@ -91,7 +114,7 @@
       </div>
       <div class="btn-wrapper">
         <div class="btn" @click="submit('addForm')">
-          {{ $t('comm.confirm') }}
+          {{ $t('comm.execute') }}
         </div>
         <div class="btn" @click="cancelHandle">{{ $t('comm.cancel') }}</div>
       </div>
@@ -231,15 +254,35 @@ export default {
         methodName: '',
         formValue: [],
       },
+      netObj: {
+        xuper: require('../assets/img-x.png'),
+        eth: require('../assets/img-eth.png'),
+        polygon: require('../assets/img-polygon.png'),
+      },
       netList: JSON.parse(localStorage.getItem('netList')),
       chosedVal: 0,
+      chosedConVal: 0,
+      contractType: 'evm',
+      currentNet: null,
     }
   },
   components: { PromptPopup, ConfirmPopup },
-  mounted() {},
+  mounted() {
+    this.currentNet = localStorage.getItem('currentNet')
+      ? JSON.parse(localStorage.getItem('currentNet'))
+      : null
+  },
   methods: {
     cancelHandle() {
       this.$router.go(-1)
+    },
+    choseContractType(i) {
+      this.chosedConVal = i
+      if (this.chosedConVal == 0) {
+        this.contractType = 'evm'
+      } else {
+        this.contractType = 'wasm'
+      }
     },
     choseType(i) {
       this.chosedVal = i
@@ -252,13 +295,7 @@ export default {
     //新增操作
     submit(formName) {
       let netWork = JSON.parse(localStorage.getItem('currentNet')) //判断当前网络类型
-      if (!this.addForm.name) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg18'),
-          'error',
-          2500
-        )
-      }
+
       if (!this.addForm.contractName) {
         return this.$refs.prompt.showToast(
           this.$t('toastMsg.msg19'),
@@ -359,10 +396,11 @@ export default {
             this.doalogContent = obj
             this.$refs.confirm.showConfirm()
           } else {
+            console.log(this.contractType, '----contractType----')
             const demo = await xsdk.invokeSolidityContarct(
               contractName,
               methodName,
-              'evm',
+              this.contractType,
               args,
               '0',
               acc
@@ -507,6 +545,20 @@ export default {
     padding: 0 15px;
     .set-box {
       padding-bottom: 10px;
+      .current-net {
+        display: flex;
+        align-items: center;
+        .logo-img {
+          width: 26px;
+          height: 26px;
+        }
+        .flex1 {
+          flex: 1;
+          font-size: 12px;
+          color: white;
+          padding-left: 10px;
+        }
+      }
     }
     .pwd-top {
       display: flex;

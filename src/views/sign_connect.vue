@@ -141,27 +141,23 @@ export default {
 
     async addUrl() {
       let that = this
-      console.log(JSON.parse(localStorage.getItem('currentAccont')))
       let account = JSON.parse(localStorage.getItem('currentAccont'))
-      //let net  = JSON.parse(localStorage.getItem("currentNet"));
-      console.log(account)
-      // const privateKey = await getPrivateKey()
       if (account.type == 'eth') {
         let privateKey = await getPrivateKey()
-        console.log('当前账号是 eth')
+        console.log('当前账号是 eth--page')
+        console.log(that.message, '---that.message----')
         // const privateKey = account.privateKey // 用你自己的私钥替换
-        // console.log(privateKey, '当前私钥')
         const wallet = new ethers.Wallet(privateKey)
-        console.log(wallet, 'wallet')
         //const provider = new ethers.providers.JsonRpcProvider(net); // 使用你自己的 Infura 项目 ID 替换
         const messageBytes = ethers.utils.toUtf8Bytes(that.message[0])
         const signature = await wallet.signMessage(messageBytes)
         sendSignHash('personal_sign', signature)
-        this.$router.push('/Home')
-        window.close()
+        // this.$router.push('/Home')
+        // window.close()
       } else {
         let privateKey1 = await getPrivateKey()
         console.log('当前账号是 xuper--page')
+        console.log(that.message, '---that.message----')
         // console.log(privateKey1, '当前私钥')
         let privateKey = JSON.parse(privateKey1)
         const ec = new EC('p256')
@@ -169,7 +165,7 @@ export default {
         // https://github.com/xuperchain/xuper-sdk-js/blob/master/src/transaction.ts#L309   签名信息
         const bnD = new BN(privateKey.D)
         const privKey = ec.keyFromPrivate(bnD.toArray())
-        const utf8Data = Buffer.from(that.message[0].message, 'utf-8')
+        const utf8Data = Buffer.from(that.message[0], 'utf-8')
         const sign = privKey.sign(utf8Data)
         const r = Buffer.from(sign.r.toArray('be', 32))
         const s = Buffer.from(sign.s.toArray('be', 32))
@@ -177,8 +173,10 @@ export default {
         const y = Buffer.from(privKey.getPublic().getY().toArray('be', 32))
         const signatureStr = Buffer.concat([r, s, x, y, utf8Data])
         const signtext = signatureStr.toString('hex') // 签名字符串
-        // console.log(signtext, '---signtext---')
-        sendBaiduSignHash('xuper_sign', signtext, 'baidu')
+        console.log(signtext, '---signtext---')
+        // 为了使签名都统一写法
+        sendSignHash('personal_sign', signtext)
+        // sendBaiduSignHash('xuper_sign', signtext, 'baidu') // 这个是原来写法
       }
     },
 

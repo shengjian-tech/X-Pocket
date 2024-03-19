@@ -350,48 +350,48 @@
 
 <script>
 // import { xsdk } from "../utils/index";
-import XuperSDK, { Endorsement } from "@xuperchain/xuper-sdk";
-import { XchainAddrToEvm, EvmToXchainAddr } from "../assets/js/index";
-import { ethers } from "ethers";
-import Clipboard from "clipboard";
-import Header from "../components/Header";
+import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
+import { XchainAddrToEvm, EvmToXchainAddr } from '../assets/js/index'
+import { ethers } from 'ethers'
+import Clipboard from 'clipboard'
+import Header from '../components/Header'
 
 export default {
-  name: "Details",
+  name: 'Details',
   data() {
     return {
       fullscreenLoading: false,
-      txId: "",
-      txDetail: "",
-      nftDetail: "",
+      txId: '',
+      txDetail: '',
+      nftDetail: '',
       srcList: [],
       dialogVisible: false,
       visible: false,
       ordersVisible: false,
-      contractName: "",
-      methodName: "",
-      type: "",
+      contractName: '',
+      methodName: '',
+      type: '',
       formData: [],
       addForm: {
-        name: "",
-        contractName: "",
-        methodName: "",
+        name: '',
+        contractName: '',
+        methodName: '',
         formValue: [],
       },
       ruleForm: {},
       value: this.$route.query.index,
       rules1: {
         name: [
-          { required: true, message: "操作名称不能为空", trigger: "blur" },
+          { required: true, message: '操作名称不能为空', trigger: 'blur' },
         ],
         contractName: [
-          { required: true, message: "合约名不能为空", trigger: "blur" },
+          { required: true, message: '合约名不能为空', trigger: 'blur' },
         ],
         methodName: [
-          { required: true, message: "方法名不能为空", trigger: "blur" },
+          { required: true, message: '方法名不能为空', trigger: 'blur' },
         ],
         type: [
-          { required: true, message: "选择您的操作类型", trigger: "change" },
+          { required: true, message: '选择您的操作类型', trigger: 'change' },
         ],
       },
       options: [
@@ -436,79 +436,79 @@ export default {
         // },
       ],
       detailData: this.$route.query.detail,
-    };
+    }
   },
   filters: {
     formatDate: function (value) {
-      let date = new Date(value);
-      let y = date.getFullYear();
-      let MM = date.getMonth() + 1;
-      MM = MM < 10 ? "0" + MM : MM;
-      let d = date.getDate();
-      d = d < 10 ? "0" + d : d;
-      let h = date.getHours();
-      h = h < 10 ? "0" + h : h;
-      let m = date.getMinutes();
-      m = m < 10 ? "0" + m : m;
-      let s = date.getSeconds();
-      s = s < 10 ? "0" + s : s;
-      return y + "-" + MM + "-" + d + " " + h + ":" + m + ":" + s;
+      let date = new Date(value)
+      let y = date.getFullYear()
+      let MM = date.getMonth() + 1
+      MM = MM < 10 ? '0' + MM : MM
+      let d = date.getDate()
+      d = d < 10 ? '0' + d : d
+      let h = date.getHours()
+      h = h < 10 ? '0' + h : h
+      let m = date.getMinutes()
+      m = m < 10 ? '0' + m : m
+      let s = date.getSeconds()
+      s = s < 10 ? '0' + s : s
+      return y + '-' + MM + '-' + d + ' ' + h + ':' + m + ':' + s
     },
   },
   components: { Header },
   created() {
-    if (localStorage.getItem("addForm")) {
-      var arr = JSON.parse(localStorage.getItem("addForm")).addList;
-      this.params = this.params.concat(arr);
+    if (localStorage.getItem('addForm')) {
+      var arr = JSON.parse(localStorage.getItem('addForm')).addList
+      this.params = this.params.concat(arr)
       arr.forEach((element) => {
-        this.options.push({ label: element.name, value: element.name });
-      });
+        this.options.push({ label: element.name, value: element.name })
+      })
       this.params.forEach((item) => {
         if (this.value == item.name) {
-          this.formData = item.formValue;
-          this.contractName = item.contractName;
-          this.methodName = item.methodName;
-          this.type = item.type;
+          this.formData = item.formValue
+          this.contractName = item.contractName
+          this.methodName = item.methodName
+          this.type = item.type
         }
-      });
+      })
     } else {
       this.params.forEach((item) => {
         if (this.value == item.name) {
-          this.formData = item.formValue;
-          this.contractName = item.contractName;
-          this.methodName = item.methodName;
-          this.type = item.type;
+          this.formData = item.formValue
+          this.contractName = item.contractName
+          this.methodName = item.methodName
+          this.type = item.type
         }
-      });
+      })
     }
     if (this.detailData) {
-      this.ruleForm = JSON.parse(this.detailData);
+      this.ruleForm = JSON.parse(this.detailData)
     }
   },
   methods: {
     //添加参数
     addParams() {
-      this.addForm.formValue.push({ value: "", label: "" });
+      this.addForm.formValue.push({ value: '', label: '' })
     },
     //删除新增参数
     removeDomain(item) {
-      var index = this.addForm.formValue.indexOf(item);
+      var index = this.addForm.formValue.indexOf(item)
       if (index !== -1) {
-        this.addForm.formValue.splice(index, 1);
+        this.addForm.formValue.splice(index, 1)
       }
     },
     //判断数据
     getSelect(value) {
       this.params.forEach((item) => {
         if (value == item.name) {
-          this.formData = item.formValue;
-          this.contractName = item.contractName;
-          this.methodName = item.methodName;
+          this.formData = item.formValue
+          this.contractName = item.contractName
+          this.methodName = item.methodName
         }
-      });
+      })
     },
     getSetting() {
-      this.$router.push("/Home");
+      this.$router.push('/Home')
     },
     //新增操作
     submit(formName) {
@@ -516,37 +516,37 @@ export default {
         if (valid) {
           var localArr = {
             addList: [],
-          };
-          if (localStorage.getItem("addForm")) {
-            localArr.addList = JSON.parse(
-              localStorage.getItem("addForm")
-            ).addList;
-            localArr.addList.push(this.addForm);
-            localStorage.setItem("addForm", JSON.stringify(localArr));
-          } else {
-            localArr.addList.push(this.addForm);
-            localStorage.setItem("addForm", JSON.stringify(localArr));
           }
-          this.visible = false;
-          window.location.reload();
+          if (localStorage.getItem('addForm')) {
+            localArr.addList = JSON.parse(
+              localStorage.getItem('addForm')
+            ).addList
+            localArr.addList.push(this.addForm)
+            localStorage.setItem('addForm', JSON.stringify(localArr))
+          } else {
+            localArr.addList.push(this.addForm)
+            localStorage.setItem('addForm', JSON.stringify(localArr))
+          }
+          this.visible = false
+          window.location.reload()
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     // 转移NFT
     TransferNFTEvm(formName) {
-      this.fullscreenLoading = true;
+      this.fullscreenLoading = true
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const node = localStorage.getItem("nodeApi");
-          const chain = localStorage.getItem("chain");
+          const node = localStorage.getItem('nodeApi')
+          const chain = localStorage.getItem('chain')
           const params = {
             server: node, // ip, port
-            fee: "400", // fee
-            endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
-            endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
-          };
+            fee: '400', // fee
+            endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
+            endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+          }
           const xsdk = new XuperSDK({
             node,
             chain,
@@ -556,77 +556,77 @@ export default {
                 makeTransaction: params,
               }),
             ],
-          });
+          })
           const moveAssets = async (toAddr, TokenID, Amount) => {
             try {
-              const contractName = this.contractName;
-              const methodName = this.methodName;
+              const contractName = this.contractName
+              const methodName = this.methodName
               const from = XchainAddrToEvm(
-                JSON.parse(localStorage.getItem("acc")).address
-              );
-              const acc = JSON.parse(localStorage.getItem("acc"));
+                JSON.parse(localStorage.getItem('acc')).address
+              )
+              const acc = JSON.parse(localStorage.getItem('acc'))
               const demo = await xsdk.invokeSolidityContarct(
                 contractName,
                 methodName,
-                "evm",
+                'evm',
                 {
                   from: from,
                   to: toAddr,
                   id: TokenID,
                   amount: Amount,
-                  data: "",
+                  data: '',
                 },
-                "0",
+                '0',
                 acc
-              );
+              )
               // 352cd3f829dded7ad1da7ab3a0c3a8776cd3ec545c617ad499abb2d29459c6ee  // 交易ID 返回给用户
-              if (xsdk.transactionIdToHex(demo.transaction.txid)) {
-                this.txId = xsdk.transactionIdToHex(demo.transaction.txid);
-                this.dialogVisible = true;
-                this.$axios({
-                  method: "get",
-                  url: `https://makerone.shengjian.net/nft/api/nft/userassets/synchronizedTransaction?txId=${xsdk.transactionIdToHex(
-                    demo.transaction.txid
-                  )}`,
-                }).then((response) => {
-                  console.log(response); //请求成功返回的数据
-                });
-              }
-              const result = xsdk.postTransaction(demo.transaction, acc);
-              console.log(result);
+              // if (xsdk.transactionIdToHex(demo.transaction.txid)) {
+              //   this.txId = xsdk.transactionIdToHex(demo.transaction.txid);
+              //   this.dialogVisible = true;
+              //   this.$axios({
+              //     method: "get",
+              //     url: `https://makerone.shengjian.net/nft/api/nft/userassets/synchronizedTransaction?txId=${xsdk.transactionIdToHex(
+              //       demo.transaction.txid
+              //     )}`,
+              //   }).then((response) => {
+              //     console.log(response); //请求成功返回的数据
+              //   });
+              // }
+              const result = xsdk.postTransaction(demo.transaction, acc)
+              console.log(result)
             } catch (err) {
               // err 是空 证明转移成功，不是 就是执行失败。
               if (err) {
-                this.$message.error("转移失败");
+                this.$message.error('转移失败')
               } else {
-                this.$message.success("转移成功");
-                this.fullscreenLoading = false;
+                this.$message.success('转移成功')
+                this.fullscreenLoading = false
               }
             }
-          };
+          }
           moveAssets(
             XchainAddrToEvm(this.ruleForm.address),
             this.ruleForm.token_id,
             this.ruleForm.num
-          );
+          )
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     //查询NFT余额
     findAssets(formName) {
-      this.fullscreenLoading = true;
+      this.fullscreenLoading = true
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const node = localStorage.getItem("nodeApi");
-          const chain = localStorage.getItem("chain");
+          const node = localStorage.getItem('nodeApi')
+          const chain = localStorage.getItem('chain')
           const params = {
             server: node, // ip, port
-            fee: "400", // fee
-            endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
-            endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
-          };
+            fee: '400', // fee
+            endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
+            endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+          }
           const xsdk = new XuperSDK({
             node,
             chain,
@@ -636,72 +636,71 @@ export default {
                 makeTransaction: params,
               }),
             ],
-          });
-          const acc = JSON.parse(localStorage.getItem("acc"));
+          })
+          const acc = JSON.parse(localStorage.getItem('acc'))
           const queryNFTBalance = async (tokenID) => {
             try {
-              const contractName = this.contractName;
-              const methodName = this.methodName;
+              const contractName = this.contractName
+              const methodName = this.methodName
               const args = {
                 account: XchainAddrToEvm(acc.address),
                 id: tokenID,
-              };
+              }
               const demo = await xsdk.invokeSolidityContarct(
                 contractName,
                 methodName,
-                "evm",
+                'evm',
                 args,
-                "0",
+                '0',
                 acc
-              );
+              )
               // 判断  demo.preExecutionTransaction.response.responses的长度是否大于0， 大于0 取demo.preExecutionTransaction.response.responses[length - 1]
-              const len =
-                demo.preExecutionTransaction.response.responses.length;
+              const len = demo.preExecutionTransaction.response.responses.length
               if (len > 0) {
                 const str =
-                  demo.preExecutionTransaction.response.responses[len - 1].body;
-                const result = Buffer.from(str, "base64").toString("ascii");
+                  demo.preExecutionTransaction.response.responses[len - 1].body
+                const result = Buffer.from(str, 'base64').toString('ascii')
                 const tokenExpireTime = await this.inquireExpireTime(
                   contractName,
                   this.ruleForm.token_id
-                );
-                this.fullscreenLoading = false;
+                )
+                this.fullscreenLoading = false
                 // [{\"0\":\"10\"}]  result 即为 [{\"0\":\"10\"}]  10即为想要的结果，即对应nft 的余额
                 this.$notify({
-                  title: "查询成功",
+                  title: '查询成功',
                   dangerouslyUseHTMLString: true,
                   message: `当前您的资产数量为<b style='padding-left:5px'>${
-                    JSON.parse(result)[0]["0"]
+                    JSON.parse(result)[0]['0']
                   }</b>
                   <br/>`,
-                  type: "success",
+                  type: 'success',
                   duration: 0,
-                });
+                })
                 // 冷却期剩余<b style='padding-left:5px'>${tokenExpireTime}</b>
               }
             } catch (err) {
-              console.log(err);
+              console.log(err)
             }
-          };
-          queryNFTBalance(this.ruleForm.token_id);
+          }
+          queryNFTBalance(this.ruleForm.token_id)
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     //查询交易
     findOrder(formName) {
-      this.fullscreenLoading = true;
+      this.fullscreenLoading = true
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          const node = localStorage.getItem("nodeApi");
-          const chain = localStorage.getItem("chain");
+          const node = localStorage.getItem('nodeApi')
+          const chain = localStorage.getItem('chain')
           const params = {
             server: node, // ip, port
-            fee: "400", // fee
-            endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
-            endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
-          };
+            fee: '400', // fee
+            endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
+            endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+          }
           const xsdk = new XuperSDK({
             node,
             chain,
@@ -711,71 +710,71 @@ export default {
                 makeTransaction: params,
               }),
             ],
-          });
-          const acc = JSON.parse(localStorage.getItem("acc"));
+          })
+          const acc = JSON.parse(localStorage.getItem('acc'))
           const GetTxDetail = async (txId) => {
             try {
               const demo = await xsdk.queryTransaction(
-                Buffer.from(txId, "hex").toString("base64")
-              );
+                Buffer.from(txId, 'hex').toString('base64')
+              )
               if (demo.tx == undefined) {
                 // 证明此交易链上没有 直接报错
-                throw new Error("this tx undefined");
+                throw new Error('this tx undefined')
               }
               // 交易ID
-              var txID = Buffer.from(demo.tx.txid, "base64").toString("hex");
+              var txID = Buffer.from(demo.tx.txid, 'base64').toString('hex')
               var txReqJson = JSON.parse(
                 Buffer.from(
                   demo.tx.contract_requests[1].args.input,
-                  "base64"
+                  'base64'
                 ).toString()
-              );
+              )
 
-              var from = "";
-              var to = "";
-              var tokenID = "";
-              var amount = "";
+              var from = ''
+              var to = ''
+              var tokenID = ''
+              var amount = ''
               if (
-                demo.tx.contract_requests[1].method_name == "safeTransferFrom"
+                demo.tx.contract_requests[1].method_name == 'safeTransferFrom'
               ) {
-                from = EvmToXchainAddr(txReqJson.from);
-                to = EvmToXchainAddr(txReqJson.to);
-                tokenID = txReqJson.id;
-                amount = txReqJson.amount;
+                from = EvmToXchainAddr(txReqJson.from)
+                to = EvmToXchainAddr(txReqJson.to)
+                tokenID = txReqJson.id
+                amount = txReqJson.amount
               } else {
-                from = demo.tx.initiator;
-                tokenID = txReqJson._id;
-                amount = txReqJson._initialSupply;
+                from = demo.tx.initiator
+                tokenID = txReqJson._id
+                amount = txReqJson._initialSupply
               }
 
               // 根据 tokenID 查询token id的图片路径 供浏览器跳转
-              const contractName = this.contractName;
-              const methodName = this.methodName;
+              const contractName = this.contractName
+              const methodName = this.methodName
               const args = {
                 //上线替换为上方tokenID
                 _id: tokenID,
-              };
+              }
               const res = await xsdk.invokeSolidityContarct(
                 contractName,
                 methodName,
-                "evm",
+                'evm',
                 args,
-                "0",
+                '0',
                 acc
-              );
-              const len = res.preExecutionTransaction.response.responses.length;
+              )
+              const len = res.preExecutionTransaction.response.responses.length
               if (len > 0) {
                 var result =
-                  res.preExecutionTransaction.response.responses[len - 1].body;
+                  res.preExecutionTransaction.response.responses[len - 1].body
                 var response = JSON.parse(
-                  Buffer.from(result, "base64").toString()
-                );
-                var base64Addr = response[0]._response;
-                var data = Buffer.from(base64Addr, "base64").toString();
-                var dataJson = JSON.parse(data);
+                  Buffer.from(result, 'base64').toString()
+                )
+                var base64Addr = response[0]._response
+                var data = Buffer.from(base64Addr, 'base64').toString()
+                var dataJson = JSON.parse(data)
               }
-              var timestamp = parseInt(demo.tx.timestamp / 1000);
-              this.fullscreenLoading = false;
+              var timestamp = parseInt(demo.tx.timestamp / 1000)
+              this.fullscreenLoading = false
               // 用户查看交易详情，前端显示下述txDetail信息。
               var txDetail = {
                 txID: txID,
@@ -784,46 +783,46 @@ export default {
                 id: tokenID,
                 amount: amount,
                 timestamp: timestamp,
-              };
+              }
               var nftDetail = {
                 link: dataJson.link,
                 name: dataJson.name,
                 hash: dataJson.hash,
-              };
+              }
               // 前端展示数据
               if (txDetail && nftDetail) {
-                this.txDetail = txDetail;
-                this.srcList = [];
-                this.nftDetail = nftDetail;
-                this.srcList.push(nftDetail.link);
-                this.ordersVisible = true;
+                this.txDetail = txDetail
+                this.srcList = []
+                this.nftDetail = nftDetail
+                this.srcList.push(nftDetail.link)
+                this.ordersVisible = true
               }
-              return txDetail, nftDetail;
+              return txDetail, nftDetail
             } catch (err) {
-              console.log(err);
+              console.log(err)
             }
-          };
-          GetTxDetail(this.ruleForm.txId);
+          }
+          GetTxDetail(this.ruleForm.txId)
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     copy() {
-      var clipboard = new Clipboard(".tag-read");
-      clipboard.on("success", (e) => {
-        this.$message.success("复制成功！");
-        console.log(e);
+      var clipboard = new Clipboard('.tag-read')
+      clipboard.on('success', (e) => {
+        this.$message.success('复制成功！')
+        console.log(e)
         //  释放内存
-        clipboard.destroy();
-      });
-      clipboard.on("error", (e) => {
-        this.$message.success("当前浏览器不支持复制！");
-        console.log(e);
+        clipboard.destroy()
+      })
+      clipboard.on('error', (e) => {
+        this.$message.success('当前浏览器不支持复制！')
+        console.log(e)
         // 不支持复制
         // 释放内存
-        clipboard.destroy();
-      });
+        clipboard.destroy()
+      })
     },
     //通用方法
     publicMethod(formName) {
@@ -831,56 +830,56 @@ export default {
         if (valid) {
           const commonFunc = async (type, contractName, methodName, args) => {
             try {
-              const acc = JSON.parse(localStorage.getItem("acc"));
+              const acc = JSON.parse(localStorage.getItem('acc'))
               const demo = await xsdk.invokeSolidityContarct(
                 contractName,
                 methodName,
-                "evm",
+                'evm',
                 args,
-                "0",
+                '0',
                 acc
-              );
-              if (type == "query") {
+              )
+              if (type == 'query') {
                 this.$notify({
-                  title: "查询成功",
+                  title: '查询成功',
                   dangerouslyUseHTMLString: true,
                   message: `<p style='word-wrap:break-word;word-break:break-all'>${JSON.stringify(
                     demo.preExecutionTransaction.response.responses
                   )}</p>`,
-                  type: "success",
-                });
+                  type: 'success',
+                })
               } else {
                 this.$notify({
-                  title: "查询成功",
+                  title: '查询成功',
                   dangerouslyUseHTMLString: true,
                   message: `<p style='word-wrap:break-word'>${JSON.stringify(
                     xsdk.postTransaction(demo.transaction, acc)
                   )}</p>`,
-                  type: "success",
+                  type: 'success',
                   duration: 0,
-                });
+                })
               }
             } catch (err) {
               if (err) {
-                this.$message.error("执行失败");
+                this.$message.error('执行失败')
               } else {
-                this.$message.success("执行成功");
+                this.$message.success('执行成功')
               }
             }
-          };
-          if (JSON.stringify(this.ruleForm) == "{}") {
-            this.ruleForm = { "": "1" };
+          }
+          if (JSON.stringify(this.ruleForm) == '{}') {
+            this.ruleForm = { '': '1' }
           }
           commonFunc(
             this.type,
             this.contractName,
             this.methodName,
             this.ruleForm
-          );
+          )
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     //查询藏品冷却期
     /*
@@ -891,14 +890,14 @@ export default {
      */
     async inquireExpireTime(contractName, tokenID) {
       try {
-        const node = localStorage.getItem("nodeApi");
-        const chain = localStorage.getItem("chain");
+        const node = localStorage.getItem('nodeApi')
+        const chain = localStorage.getItem('chain')
         const params = {
           server: node, // ip, port
-          fee: "400", // fee
-          endorseServiceCheckAddr: "jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n", // sign address
-          endorseServiceFeeAddr: "aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT", // fee address
-        };
+          fee: '400', // fee
+          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
+          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+        }
         const xsdk = new XuperSDK({
           node,
           chain,
@@ -908,23 +907,23 @@ export default {
               makeTransaction: params,
             }),
           ],
-        });
-        const acc = JSON.parse(localStorage.getItem("acc"));
-        const args = { _id: tokenID };
+        })
+        const acc = JSON.parse(localStorage.getItem('acc'))
+        const args = { _id: tokenID }
         const res = await xsdk.invokeSolidityContarct(
           contractName,
-          "getExpireTime",
-          "evm",
+          'getExpireTime',
+          'evm',
           args,
-          "0",
+          '0',
           acc
-        );
-        const len = res.preExecutionTransaction.response.responses.length;
+        )
+        const len = res.preExecutionTransaction.response.responses.length
         if (len > 0) {
           var result =
-            res.preExecutionTransaction.response.responses[len - 1].body;
-          var response = JSON.parse(Buffer.from(result, "base64").toString());
-          var tokenExpireTiem = response[0]["0"];
+            res.preExecutionTransaction.response.responses[len - 1].body
+          var response = JSON.parse(Buffer.from(result, 'base64').toString())
+          var tokenExpireTiem = response[0]['0']
           // console.log(response);
           // let tokenOwnerExpireTiem =
           //   response[0]["0"] -
@@ -934,170 +933,170 @@ export default {
         }
         const res1 = await xsdk.invokeSolidityContarct(
           contractName,
-          "getTokenExpireTime",
-          "evm",
+          'getTokenExpireTime',
+          'evm',
           args,
-          "0",
+          '0',
           acc
-        );
-        const len1 = res1.preExecutionTransaction.response.responses.length;
+        )
+        const len1 = res1.preExecutionTransaction.response.responses.length
         if (len1 > 0) {
           var result1 =
-            res1.preExecutionTransaction.response.responses[len1 - 1].body;
-          var response1 = JSON.parse(Buffer.from(result1, "base64").toString());
+            res1.preExecutionTransaction.response.responses[len1 - 1].body
+          var response1 = JSON.parse(Buffer.from(result1, 'base64').toString())
           // 该ID资产的交易保护时间
-          var tokenOwnerExpireTiem = response1[0]["0"];
+          var tokenOwnerExpireTiem = response1[0]['0']
         }
         var time =
           tokenExpireTiem -
-          (Date.parse(new Date()) / 1000 - tokenOwnerExpireTiem);
+          (Date.parse(new Date()) / 1000 - tokenOwnerExpireTiem)
         var finelTime =
           Math.ceil(time / 3600 / 24) <= 0
-            ? "可转移"
-            : `${Math.ceil(time / 3600 / 24)}天`;
-        return finelTime;
+            ? '可转移'
+            : `${Math.ceil(time / 3600 / 24)}天`
+        return finelTime
       } catch (err) {
-        console.log(err);
+        console.log(err)
       }
     },
 
     //eth 地址解析
     ethUrlextend(formName) {
-      this.fullscreenLoading = true;
-      const { ens_abi } = require("../utils/ENSRegistry.json");
+      this.fullscreenLoading = true
+      const { ens_abi } = require('../utils/ENSRegistry.json')
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          let Url = this.ruleForm;
-          const ensRegistryAddr = Url.ensRegistryAddr; // "0x7aaBFF488e35810E8D931C96561F341d91eE0641";
+          let Url = this.ruleForm
+          const ensRegistryAddr = Url.ensRegistryAddr // "0x7aaBFF488e35810E8D931C96561F341d91eE0641";
           const provider = new ethers.providers.JsonRpcProvider(
-            localStorage.getItem("nodeApi")
-          );
-          let privateKey = Url.privateKey; //  "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
-          let wallet = new ethers.Wallet(privateKey, provider);
+            localStorage.getItem('nodeApi')
+          )
+          let privateKey = Url.privateKey //  "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
+          let wallet = new ethers.Wallet(privateKey, provider)
           const ensRegistry = new ethers.Contract(
             ensRegistryAddr,
             ens_abi,
             wallet
-          );
-          const nodeHash = ethers.utils.namehash(Url.url);
-          const resolverAddr = await ensRegistry.resolver(nodeHash);
-          console.log("test2.one 的域名解析地址", resolverAddr);
-          this.fullscreenLoading = false;
+          )
+          const nodeHash = ethers.utils.namehash(Url.url)
+          const resolverAddr = await ensRegistry.resolver(nodeHash)
+          console.log('test2.one 的域名解析地址', resolverAddr)
+          this.fullscreenLoading = false
           this.$notify({
-            title: "查询成功",
+            title: '查询成功',
             dangerouslyUseHTMLString: true,
             message: resolverAddr,
-            type: "success",
+            type: 'success',
             duration: 0,
-          });
+          })
         } else {
-          return false;
+          return false
         }
-      });
+      })
     },
     //eth 域名注册查询
     ethRegistrarContriller(formName) {
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          let Url = this.ruleForm;
+          let Url = this.ruleForm
           const {
             ens_controller_abi,
-          } = require("../utils/ETHRegistrarController.json");
+          } = require('../utils/ETHRegistrarController.json')
           const provider = new ethers.providers.JsonRpcProvider(
-            localStorage.getItem("nodeApi")
-          );
+            localStorage.getItem('nodeApi')
+          )
           // let privateKey =
           //   "7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
           // let wallet = new ethers.Wallet(privateKey, provider);
-          const ENSControllerAddr = Url.ENSControllerAddr; // "0xF8391eC06Ce377F1affc318b9E6d351eF26248A2"
+          const ENSControllerAddr = Url.ENSControllerAddr // "0xF8391eC06Ce377F1affc318b9E6d351eF26248A2"
           const ensController = new ethers.Contract(
             ENSControllerAddr,
             ens_controller_abi,
             // wallet,//只是查询无需私钥，可以直接用 provider
             provider
-          );
+          )
           console.log(
-            await ensController.functions["available(string)"](Url.addrurl)
-          );
+            await ensController.functions['available(string)'](Url.addrurl)
+          )
           if (
-            await ensController.functions["available(string)"](Url.addrurl)[0]
+            await ensController.functions['available(string)'](Url.addrurl)[0]
           ) {
             this.$notify({
-              title: "查询成功",
+              title: '查询成功',
               dangerouslyUseHTMLString: true,
-              message: "不存在该域名",
-              type: "success",
+              message: '不存在该域名',
+              type: 'success',
               duration: 0,
-            });
+            })
           } else {
             this.$notify({
-              title: "查询成功",
+              title: '查询成功',
               dangerouslyUseHTMLString: true,
-              message: "域名已经存在",
-              type: "success",
+              message: '域名已经存在',
+              type: 'success',
               duration: 0,
-            });
+            })
           }
         }
-      });
+      })
     },
 
     //eth 转账
     ethChangeContral(formName) {
-      this.fullscreenLoading = true;
+      this.fullscreenLoading = true
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          let ruleForm = this.ruleForm;
+          let ruleForm = this.ruleForm
           const provider = new ethers.providers.JsonRpcProvider(
-            localStorage.getItem("nodeApi")
-          );
-          let privateKey = ruleForm.privateKey; //"7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
-          let wallet = new ethers.Wallet(privateKey, provider);
-          let gasPrice = await provider.getGasPrice();
-          console.log(gasPrice);
+            localStorage.getItem('nodeApi')
+          )
+          let privateKey = ruleForm.privateKey //"7978bfe0ffb86eaf14ac1d0d13f5850b3c2a587406b561197cd1df9501a0ac70"; //私钥
+          let wallet = new ethers.Wallet(privateKey, provider)
+          let gasPrice = await provider.getGasPrice()
+          console.log(gasPrice)
           let tx = await wallet.sendTransaction({
             gasLimit: 21000,
             gasPrice: gasPrice,
             to: ruleForm.toaddress,
             value: ethers.utils.parseUnits(ruleForm.value),
-          });
-          this.fullscreenLoading = false;
-          console.log("Sent in Transaction: " + tx.hash);
+          })
+          this.fullscreenLoading = false
+          console.log('Sent in Transaction: ' + tx.hash)
         }
-      });
+      })
     },
 
     //eth 查询余额
 
     ethGetBlance(formName) {
-      this.fullscreenLoading = true;
+      this.fullscreenLoading = true
       this.$refs[formName].validate(async (valid) => {
         if (valid) {
-          let ruleForm = this.ruleForm;
+          let ruleForm = this.ruleForm
           const provider = new ethers.providers.JsonRpcProvider(
-            localStorage.getItem("nodeApi")
-          );
-          let heightBlock = await provider.getBlockNumber();
-          console.log(heightBlock);
-          let address = ruleForm.address;
+            localStorage.getItem('nodeApi')
+          )
+          let heightBlock = await provider.getBlockNumber()
+          console.log(heightBlock)
+          let address = ruleForm.address
           provider.getBalance(address).then((balance) => {
             // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-            let etherString = ethers.utils.formatEther(balance);
-            console.log("Balance: " + etherString);
-            this.fullscreenLoading = false;
+            let etherString = ethers.utils.formatEther(balance)
+            console.log('Balance: ' + etherString)
+            this.fullscreenLoading = false
             this.$notify({
-              title: "查询成功",
+              title: '查询成功',
               dangerouslyUseHTMLString: true,
               message: `余额为${etherString}`,
-              type: "success",
+              type: 'success',
               duration: 0,
-            });
-          });
+            })
+          })
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 <style scoped>
 .details {

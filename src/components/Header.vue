@@ -313,10 +313,6 @@ export default {
       localStorage.clear()
       this.$router.replace('/Login')
     },
-    goMakerOne() {
-      window.location.href =
-        'https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home'
-    },
 
     //判断数据
     getSelect(value) {

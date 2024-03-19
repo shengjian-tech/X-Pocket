@@ -124,7 +124,6 @@ export default {
   },
   mounted() {
     this.getTap()
-    // console.log(this.accountAllList);
   },
   methods: {
     getTap() {
@@ -187,6 +186,13 @@ export default {
         return this.url == item.url
       })
       this.activeItem = nowConnect?.accountList || []
+
+      // 如果只有一个账户的话就默认选中
+      let acc = JSON.parse(localStorage.getItem('acc'))
+      if (acc && acc.length == 1) {
+        this.activeItem = acc
+        this.currentS.push(acc[0].address)
+      }
     },
   },
 }

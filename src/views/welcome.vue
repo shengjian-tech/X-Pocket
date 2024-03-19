@@ -35,18 +35,6 @@
         @selectedChain="selectedChain"
       ></net-select>
     </div>
-    <!-- <div class="indicator">
-      <div
-        class="indicator-circle"
-        :class="currentPage == 1 ? 'active' : ''"
-        @click="pageSwitch(1)"
-      ></div>
-      <div
-        class="indicator-circle"
-        :class="currentPage == 2 ? 'active' : ''"
-        @click="pageSwitch(2)"
-      ></div>
-    </div> -->
     <div class="btn-wrapper">
       <div class="btn" @click="currentPage = 2" v-if="currentPage == 1">
         {{ $t('welcome.nextBtn') }}
@@ -122,6 +110,9 @@ export default {
     ) {
       this.$router.push('/Home')
     }
+    if (this.$route.query && this.$route.query.state == 1) {
+      this.currentPage = 2
+    }
 
     let netList = localStorage.getItem('netList')
     if (netList && netList != 'undefined') {
@@ -132,14 +123,6 @@ export default {
     console.log(localStorage.getItem('netList'), '8888')
   },
   methods: {
-    pageSwitch(i) {
-      this.currentPage = i - 0
-      if (i == 2) {
-        this.now1 = true
-      } else {
-        this.now1 = false
-      }
-    },
     selectedChain(e) {
       this.currentchain = e
     },
@@ -147,6 +130,7 @@ export default {
       this.$router.push({
         path: '/Login',
         query: {
+          state: 1,
           stateName: this.currentchain.value,
         },
       })

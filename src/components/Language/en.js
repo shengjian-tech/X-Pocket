@@ -11,6 +11,7 @@ module.exports = {
     msg: 'message',
     tips: 'Tips',
     noData: 'No data available',
+    execute: 'Execute',
   },
   toastMsg: {
     msg1: 'Private key is very important, please pay attention to save in time!',
@@ -71,7 +72,7 @@ module.exports = {
   },
   home: {
     title: 'Blockchain address',
-    menu1: 'Controls',
+    menu1: 'Call contract',
     menu2: 'Transfer',
     menu3: 'Plug-in market',
     menu4: 'Transfer assets',
@@ -138,10 +139,11 @@ module.exports = {
     delBtn: 'Delete network',
   },
   handle: {
-    title: 'Operation',
-    name: 'Operation name',
-    type: 'Type of operation',
-    deal: 'Trading',
+    title: 'Call contract',
+    currentNet: 'Current network',
+    name: 'Contract type',
+    type: 'Transaction type',
+    deal: 'Write in',
     query: 'Controls',
     name2: 'Contract name',
     name3: 'Method name',

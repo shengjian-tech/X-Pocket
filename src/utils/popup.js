@@ -32,7 +32,7 @@ export function getLocalAccont() {
   // let AccList = JSON.parse(localStorage.getItem("acc"))
   let connectList = JSON.parse(localStorage.getItem('connectList')) || []
   let banlance = localStorage.getItem('banlance') // 余额
-  let version = '20003' // 钱包版本号
+  let version = process.env.VUE_APP_POCKET_INT_VERSION // 钱包版本号
   let infoObj = {
     version,
     banlance,
@@ -225,8 +225,11 @@ async function signConnect(msg) {
     // console.log(privateKey1, '当前私钥')
     let privateKey = JSON.parse(privateKey1)
     const ec = new EC('p256')
-    const privKey = ec.keyFromPrivate(privateKey.D, 'hex')
-    const utf8Data = Buffer.from(msg[0], 'utf-8')
+    // const privKey = ec.keyFromPrivate(privateKey.D, 'hex')  //原来写法不对
+    // https://github.com/xuperchain/xuper-sdk-js/blob/master/src/transaction.ts#L309   签名信息
+    const bnD = new BN(privateKey.D)
+    const privKey = ec.keyFromPrivate(bnD.toArray())
+    const utf8Data = Buffer.from(that.message[0], 'utf-8')
     const sign = privKey.sign(utf8Data)
     const r = Buffer.from(sign.r.toArray('be', 32))
     const s = Buffer.from(sign.s.toArray('be', 32))
@@ -236,7 +239,8 @@ async function signConnect(msg) {
     const signtext = signatureStr.toString('hex') // 签名字符串
     // sendBaiduSignHash('xuper_sign', signtext, 'baidu')
     console.log(signtext, '**************signtext*************')
-    background.getPopupBaiduData('xuper_sign', signtext, 'baidu')
+    // background.getPopupBaiduData('xuper_sign', signtext, 'baidu') // 这个是原来写法
+    background.getPopupTransferHash('personal_sign', signtext) //这个是和签名弹窗里面的发送签名写法统一（新的）
   }
 }
 

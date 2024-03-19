@@ -144,8 +144,8 @@ export default {
   mounted() {
     this.ethBalance()
     if (this.$route.query) {
-      this.form.address = this.$route.query[0].to || ''
-      this.form.value = this.$route.query[0].value || ''
+      this.form.address = this.$route.query[0]?.to || ''
+      this.form.value = this.$route.query[0]?.value || ''
     }
   },
   methods: {
@@ -222,9 +222,9 @@ export default {
             }),
           ],
         })
-        const xuperPassword = localStorage.getItem('xuperPassword')
-        const xuperKey = localStorage.getItem('xuperKey')
-        const acc = xsdk.import(xuperPassword, xuperKey, true)
+        // const xuperPassword = localStorage.getItem('xuperPassword')
+        // const xuperKey = localStorage.getItem('xuperKey')
+        // const acc = xsdk.import(xuperPassword, xuperKey, true)
         // console.log(acc)
         const tx = await xsdk.transfer({
           to: this.form.address,

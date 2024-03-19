@@ -162,17 +162,23 @@ function sendPersonalSign(request, type, message) {
   )
 
   return new Promise((resolve, reject) => {
-    if (type == 'baidu') {
-      _baiduHandlers['xuper_sign'] = {
-        reject,
-        resolve,
-      }
-    } else {
-      _handlers['personal_sign'] = {
-        reject,
-        resolve,
-      }
+    // 为了使签名都统一写法
+    _handlers['personal_sign'] = {
+      reject,
+      resolve,
     }
+    // 这个是原来分开的写法
+    // if (type == 'baidu') {
+    //   _baiduHandlers['xuper_sign'] = {
+    //     reject,
+    //     resolve,
+    //   }
+    // } else {
+    //   _handlers['personal_sign'] = {
+    //     reject,
+    //     resolve,
+    //   }
+    // }
   })
 }
 

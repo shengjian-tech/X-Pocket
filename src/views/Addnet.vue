@@ -247,8 +247,8 @@ export default {
         let netList = this.netList
         netList.push(this.form)
         localStorage.setItem('netList', JSON.stringify(netList))
-        this.$router.push('/Netlist')
-        window.location.reload()
+        this.$router.go('-1')
+        // window.location.reload()
       }
     },
   },

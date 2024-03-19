@@ -31,25 +31,6 @@
             </div>
             <div class="tab-name">{{ $t('home.menu2') }}</div>
           </div>
-          <div class="tab-list" @click="getPlugMethod()">
-            <div class="list-circle">
-              <img src="../assets/img-cjsc.png" />
-            </div>
-            <div class="tab-name">{{ $t('home.menu3') }}</div>
-          </div>
-        </div>
-        <div class="tab-box" v-if="plugState">
-          <div
-            class="tab-list"
-            v-for="(item, index) in tabsSetList.addList"
-            :key="index"
-            @click="getDetails(index)"
-          >
-            <div class="list-circle">
-              <i :class="item.icon"></i>
-            </div>
-            <div class="tab-name">{{ item.name }}</div>
-          </div>
         </div>
         <div class="switch-tab">
           <div
@@ -175,6 +156,9 @@
             </li>
           </ul>
         </div>
+      </div>
+      <div class="version-num">
+        {{ $t('set.version') }} X-Pocket v{{ version }}
       </div>
     </div>
 
@@ -522,6 +506,7 @@ export default {
       tokens: [], //tokens列表
       plugState: true, //插件显示状态。
       tabslistTabName: 1,
+      version: process.env.VUE_APP_POCKET_VERSION,
     }
   },
   components: { HomeHeader, PromptPopup },
@@ -531,21 +516,21 @@ export default {
       5,
       5
     )
-    let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-    let installed = JSON.parse(localStorage.getItem('installed'))
-    if (currentPlug) {
-      this.plugname = currentPlug.plugName
-      this.tabsSetList = currentPlug
-      console.log(this.tabsSetList)
-      this.pluginsTabList = currentPlug.tabCont
-    } else {
-      if (installed) {
-        let currentPlug = installed[installed.length - 1]
-        this.plugname = currentPlug.plugName
-        this.tabsSetList = currentPlug
-        localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
-      }
-    }
+    // let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+    // let installed = JSON.parse(localStorage.getItem('installed'))
+    // if (currentPlug) {
+    //   this.plugname = currentPlug.plugName
+    //   this.tabsSetList = currentPlug
+    //   console.log(this.tabsSetList)
+    //   this.pluginsTabList = currentPlug.tabCont
+    // } else {
+    //   if (installed) {
+    //     let currentPlug = installed[installed.length - 1]
+    //     this.plugname = currentPlug.plugName
+    //     this.tabsSetList = currentPlug
+    //     localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
+    //   }
+    // }
     //登录成功后 显示余额
     let currentNet = JSON.parse(localStorage.getItem('currentNet'))
 
@@ -580,133 +565,6 @@ export default {
     },
     goTransFun() {
       this.$router.push({ path: '/Transfer' })
-    },
-    handleCommand() {
-      axios({
-        url: `https://testmakerone.shengjian.net/qianbao/api/qianbao/qbplugins/list`,
-        method: 'POST',
-        headers: {},
-        data: {},
-      }).then((res) => {
-        if (res.data.status == 'success' && res.data.statusCode == '200') {
-          this.componentsList = res.data.result
-          console.log(this.componentsList)
-          if (localStorage.getItem('array_id')) {
-            this.componentsList.map((resmap) => {
-              if (
-                JSON.parse(localStorage.getItem('array_id')).array_id.includes(
-                  resmap.id
-                )
-              ) {
-                resmap.type = 1
-              } else {
-                resmap.type = 0
-              }
-            })
-          }
-          this.drawer = true
-        } else {
-          message.error(res.data.message)
-        }
-      })
-    },
-    //打开插件页面
-    getPluglist() {
-      this.$router.push({ path: '/Pluglist' })
-    },
-    //通过合约获取已经安装的插件
-    async getPlugMethod() {
-      let that = this
-      that.pluginsList = []
-      let netWork = JSON.parse(localStorage.getItem('currentNet'))
-      const acc = JSON.parse(localStorage.getItem('currentAccont'))
-      acc.privateKey = await getPrivateKey()
-
-      if (netWork.type == 'xuper') {
-        const node = netWork.node
-        const chain = netWork.chain
-        const xsdk = new XuperSDK({
-          node,
-          chain,
-          env: {
-            node: {
-              disableGRPC: true,
-            },
-          },
-        })
-
-        const queryNFTBalance = async () => {
-          try {
-            const args = {}
-            const demo = await xsdk.invokeSolidityContarct(
-              'QueryPlugin',
-              'allIds',
-              'evm',
-              args,
-              '0',
-              acc
-            )
-            const len = demo.preExecutionTransaction.response.responses.length
-            if (len > 0) {
-              const str =
-                demo.preExecutionTransaction.response.responses[len - 1].body
-              const result = Buffer.from(str, 'base64').toString('ascii')
-              let idsArray = JSON.parse(JSON.parse(result)[0]['0'])
-              console.log(idsArray)
-              idsArray.map(async (idItem) => {
-                const argsById = {
-                  pluginId: JSON.stringify(idItem),
-                }
-                const pluginById = await xsdk.invokeSolidityContarct(
-                  'QueryPlugin',
-                  'getPluginById',
-                  'evm',
-                  argsById,
-                  '0',
-                  acc
-                )
-                const pluginByIdlen =
-                  pluginById.preExecutionTransaction.response.responses.length
-                if (pluginByIdlen > 0) {
-                  const pluginstr =
-                    pluginById.preExecutionTransaction.response.responses[
-                      pluginByIdlen - 1
-                    ].body
-                  const result = Buffer.from(pluginstr, 'base64').toString(
-                    'ascii'
-                  )
-                  //增加已安装的状态。
-                  let resultArray = JSON.parse(result)
-                  let aninsplug = localStorage.getItem('installed')
-                  if (aninsplug) {
-                    let newArray = []
-                    JSON.parse(aninsplug).map((item) => {
-                      newArray.push(item.id)
-                    })
-                    console.log(newArray.includes(resultArray[0].id))
-                    if (newArray.includes(resultArray[0].id)) {
-                      resultArray.push({ state: 1 })
-                    } else {
-                      resultArray.push({ state: 0 })
-                    }
-                  } else {
-                    resultArray.push({ state: 0 })
-                  }
-                  resultArray[3].logo = Base64.decode(resultArray[3].logo)
-                  that.pluginsList.push(resultArray)
-                }
-              })
-            }
-            console.log(that.pluginsList)
-            this.drawer = true
-          } catch (err) {
-            console.log(err)
-          }
-        }
-        queryNFTBalance()
-      } else {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg8'), 'error', 2500)
-      }
     },
 
     getPlugMethodTest() {
@@ -805,13 +663,14 @@ export default {
 
     getAccound(msg, net) {
       console.log(msg, '*****msg****')
+      console.log(net, '*****net****')
       localStorage.setItem('currentAccont', JSON.stringify(msg))
       this.addressInfo = plusXing(
         JSON.parse(localStorage.getItem('currentAccont')).address,
         5,
         5
       )
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      // let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
       // console.log(currentPlug.type, '****currentPlug***')
 
       if (net) {
@@ -830,11 +689,11 @@ export default {
         }
       }
 
-      if (currentPlug && net && currentPlug.type == net.type) {
-        this.plugState = true
-      } else {
-        this.plugState = false
-      }
+      // if (currentPlug && net && currentPlug.type == net.type) {
+      //   this.plugState = true
+      // } else {
+      //   this.plugState = false
+      // }
 
       this.getTokensList()
     },
@@ -846,11 +705,11 @@ export default {
     },
 
     //切换插件
-
     changePlug() {
       this.isplugList = JSON.parse(localStorage.getItem('installed'))
       this.isdrawer = true
     },
+
     //复制
     copy() {
       console.log(this.address, '****address*****')
@@ -868,90 +727,19 @@ export default {
       })
     },
 
-    //安装
-    async installFile(index) {
-      let that = this
-      let plug = that.pluginsList
-      let installData = plug[index]
-      let installId = installData[0].id
-      let installName = installData[1].name
-      let installLogo = installData[3].logo
-      let installedPlugin = JSON.parse(localStorage.getItem('installed'))
-      let some = []
-      console.log(installId)
-      let netWork = JSON.parse(localStorage.getItem('currentNet'))
-      if (netWork.type == 'xuper') {
-        const node = netWork.node
-        const chain = netWork.chain
-        const xsdk = new XuperSDK({ node, chain })
-        const acc = JSON.parse(localStorage.getItem('currentAccont'))
-        acc.privateKey = await getPrivateKey()
-
-        const queryNFTBalance = async () => {
-          try {
-            const args = {
-              pluginId: installId,
-            }
-            const demo = await xsdk.invokeSolidityContarct(
-              'QueryPlugin',
-              'getPluginData',
-              'evm',
-              args,
-              '0',
-              acc
-            )
-            const len = demo.preExecutionTransaction.response.responses.length
-            if (len > 0) {
-              const str =
-                demo.preExecutionTransaction.response.responses[len - 1].body
-              const result = Buffer.from(str, 'base64').toString('utf-8')
-              console.log(JSON.parse(JSON.parse(result)[0].data))
-              let indata = JSON.parse(JSON.parse(result)[0].data)
-              indata.id = installId
-              indata.plugName = installName
-              indata.plugLogo = installLogo
-              if (!installedPlugin) {
-                installedPlugin = []
-              }
-              installedPlugin.push(indata)
-              //去重
-              installedPlugin.forEach((el) => {
-                if (!some.some((e) => e.id == el.id)) {
-                  some.push(el)
-                }
-              })
-              localStorage.setItem('installed', JSON.stringify(some))
-              that.plugname = installName
-              console.log('--------')
-              console.log(indata)
-              that.tabsSetList = indata
-              that.pluginsTabList = indata.tabCont
-              localStorage.setItem('currentPlug', JSON.stringify(indata))
-              this.drawer = false
-              this.gettablist()
-            }
-          } catch (err) {
-            console.log(err)
-          }
-        }
-        queryNFTBalance()
-      } else {
-      }
-    },
-
-    selectChangePlug(index) {
-      let that = this
-      let installed = JSON.parse(localStorage.getItem('installed'))
-      let currentPlug = installed[index]
-      that.plugname = installed[index].plugName
-      that.tabsSetList = currentPlug
-      localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
-      that.isdrawer = false
-    },
+    // selectChangePlug(index) {
+    //   let that = this
+    //   let installed = JSON.parse(localStorage.getItem('installed'))
+    //   let currentPlug = installed[index]
+    //   that.plugname = installed[index].plugName
+    //   that.tabsSetList = currentPlug
+    //   localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
+    //   that.isdrawer = false
+    // },
 
     //eth查询余额
     async ethBalance() {
-      console.log()
+      console.log('---eth查询余额---')
       let currentNet = JSON.parse(localStorage.getItem('currentNet'))
       let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
       const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
@@ -965,7 +753,6 @@ export default {
         this.balanceMoney = etherString
       })
     },
-
     //
     gettablist() {
       let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
@@ -1020,12 +807,13 @@ export default {
           const getBalance = async (address) => {
             try {
               const result = await xsdk.getBalance(address)
-              this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3)
+              // this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3)
+              let xuperBalance = (result.bcs[0].balance / 100000).toFixed(3)
               tokenslist.push({
                 name: item.chain,
-                balance: (result.bcs[0].balance / 100000).toFixed(3),
+                balance: xuperBalance,
               })
-              console.log(tokenslist)
+              console.log(tokenslist, '----xuper-tokenList-----')
             } catch (err) {
               throw err
             }
@@ -1043,7 +831,7 @@ export default {
               netName: item.netName,
             })
 
-            console.log(tokenslist, '*****-----****')
+            console.log(tokenslist, '----eth-tokenList-----')
           })
         }
       })
@@ -1055,7 +843,7 @@ export default {
 </script>
 <style lang="less" scoped>
 .content {
-  padding: 0 24px;
+  padding: 0 24px 40px 24px;
   text-align: left;
 
   .balance-box {
@@ -1096,7 +884,7 @@ export default {
 .tab-box {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-around;
   margin-top: 30px;
   .tab-list {
     text-align: center;
@@ -1367,5 +1155,15 @@ export default {
       }
     }
   }
+}
+.version-num {
+  position: fixed;
+  width: 100%;
+  padding: 10px 0;
+  font-size: 12px;
+  color: white;
+  left: 0;
+  bottom: 0;
+  text-align: center;
 }
 </style>

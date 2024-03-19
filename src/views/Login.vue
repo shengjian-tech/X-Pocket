@@ -381,8 +381,8 @@ export default {
         } else {
           acc = xsdk.import(this.password, this.key)
           //缓存密码和秘钥
-          localStorage.setItem('xuperPassword', this.password)
-          localStorage.setItem('xuperKey', this.key)
+          // localStorage.setItem('xuperPassword', this.password)
+          // localStorage.setItem('xuperKey', this.key)
         }
 
         if (acc) {

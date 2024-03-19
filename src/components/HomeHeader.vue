@@ -121,6 +121,9 @@ export default {
     console.log('header------mounted')
     //设置默认网络
     let netList = JSON.parse(localStorage.getItem('netList'))
+    let currentNet = localStorage.getItem('currentNet')
+      ? JSON.parse(localStorage.getItem('currentNet'))
+      : null
     this.options = JSON.parse(localStorage.getItem('netList'))
     let acc = JSON.parse(localStorage.getItem('currentAccont'))
     let closeState = localStorage.getItem('closeState')
@@ -128,12 +131,19 @@ export default {
     console.log(closeState, '**closeState**')
     console.log(closepwd, '**closepwd**')
     console.log(acc, '**acc**')
+    console.log(currentNet, '**currentNet**')
     if (acc) {
       if (closeState == true && closepwd) {
         this.$router.push('/pwdLogin')
       } else {
-        this.value = acc.type == 'xuper' ? 'XuperOS' : 'Ethereum'
-        this.sign = acc.type == 'xuper' ? 'xuper' : 'eth'
+        if (currentNet) {
+          this.value = currentNet.netName
+          this.sign = currentNet.type == 'xuper' ? 'xuper' : 'eth'
+        } else {
+          this.value = acc.type == 'xuper' ? 'XuperOS' : 'Ethereum'
+          this.sign = acc.type == 'xuper' ? 'xuper' : 'eth'
+        }
+
         this.choseNet = this.value
         console.log(this.value)
         if (localStorage.getItem('accountAllList')) {
@@ -147,12 +157,14 @@ export default {
           5
         )
         getLocalAccont()
-        if (acc.type == 'xuper') {
-          localStorage.setItem('currentNet', JSON.stringify(netList[0]))
-          // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address,"baidu")
-        } else if (acc.type == 'eth') {
-          // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address)
-          localStorage.setItem('currentNet', JSON.stringify(netList[1]))
+        if (!currentNet) {
+          if (acc.type == 'xuper') {
+            localStorage.setItem('currentNet', JSON.stringify(netList[0]))
+            // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address,"baidu")
+          } else if (acc.type == 'eth') {
+            // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address)
+            localStorage.setItem('currentNet', JSON.stringify(netList[1]))
+          }
         }
       }
     } else {
@@ -211,10 +223,10 @@ export default {
       localStorage.clear()
       this.$router.replace('/Login')
     },
-    goMakerOne() {
-      window.location.href =
-        'https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home'
-    },
+    // goMakerOne() {
+    //   window.location.href =
+    //     'https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home'
+    // },
 
     //判断数据
     getSelect(value, item) {

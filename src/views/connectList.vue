@@ -131,7 +131,7 @@ export default {
     },
     getTap() {
       getTab().then((res) => {
-        console.log(res)
+        console.log(res, '---gettab---')
         this.connect = res
         this.favIconUrl = res.favIconUrl
         this.url = res.url
