@@ -23,7 +23,7 @@
           </div>
         </div>
         <div class="btn-wrapper">
-          <div class="btn" @click="goAdd()">{{ $t('comm.confirm') }}</div>
+          <div class="btn" @click="goAdd">{{ $t('comm.confirm') }}</div>
         </div>
       </div>
       <prompt-popup ref="prompt"></prompt-popup>
@@ -33,279 +33,176 @@
         </div>
       </confirm-popup>
     </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>{{ setName }}
-      </div>
-      <div class="form plugForm">
-        <el-form ref="form" :model="form" label-width="80px">
-          <el-form-item
-            v-for="(item, index) in formData"
-            :label="item.label"
-            :key="index"
-          >
-            <el-input
-              v-model="form[item.value]"
-              :placeholder="$t('plug.name1') + item.label"
-            ></el-input>
-          </el-form-item>
-          <el-form-item>
-            <el-button
-              class="addNetBtnlist"
-              type="primary"
-              round
-              @click="goAdd()"
-              >确认</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
-
-      <el-dialog title="详细" :visible.sync="dialogVisible" width="30%">
-        <pre class="preStyle">{{ doalogContent }}</pre>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogVisible = false"
-            >确 定</el-button
-          >
-        </span>
-      </el-dialog>
-    </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
-import ConfirmPopup from '@/components/ConfirmPopup.vue'
-import PromptPopup from '@/components/PromptPopup.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
-import { XchainAddrToEvm, EvmToXchainAddr } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
 import { ethers } from 'ethers'
-import { async } from 'q'
+import ConfirmPopup from '@/components/ConfirmPopup.vue'
+import PromptPopup from '@/components/PromptPopup.vue'
+
 export default {
-  name: 'Netlist',
-  data() {
-    return {
-      form: {},
-      netList: JSON.parse(localStorage.getItem('netList')),
-      netType: '',
-      pluginsList: [],
-      tabsSetList: [],
-      index: this.$route.query.index,
-      setName: '',
-      formData: [],
-      currentMethod: '', //当前操作的方法集合
-      dialogVisible: false,
-      doalogContent: '',
-    }
-  },
-  components: { Header, ConfirmPopup, PromptPopup },
-  mounted() {
-    console.log(this.index)
-    this.getFromData()
-  },
-  methods: {
-    //取值
-    findKey(data, field) {
+  components: { ConfirmPopup, PromptPopup },
+  setup() {
+    const router = useRouter()
+    const form = ref({})
+    const netList = ref(JSON.parse(localStorage.getItem('netList')))
+    const netType = ref('')
+    const pluginsList = ref([])
+    const tabsSetList = ref([])
+    const index = ref(router.currentRoute.value.query.index)
+    const setName = ref('')
+    const formData = ref([])
+    const doalogContent = ref('')
+    const prompt = ref(null)
+    const confirm = ref(null)
+
+    const findKey = (data, field) => {
       let finding = ''
-      let that = this
       for (const key in data) {
         if (key === field) {
           finding = data[key]
         }
-        // if (typeof data[key] === "object") {
-        //   finding = that.findKey(data[key], field);
-        // }else{
-
-        // }
         if (finding) {
           return finding
         }
       }
       return null
-    },
-    goHome() {
-      this.$router.push('/Home')
-    },
-    onSubmit() {
-      console.log('submit!')
-    },
-    getFromData() {
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      let that = this
-      console.log(currentPlug)
-      let addList = currentPlug.addList
-      addList[this.index]
-      this.setName = addList[this.index].name
-      this.formData = addList[this.index].formValue
-      // console.log(that.formData, '***formData***')
+    }
+
+    const goHome = () => {
+      router.push('/Home')
+    }
+
+    const getFromData = () => {
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      const addList = currentPlug.addList[index.value]
+      setName.value = addList.name
+      formData.value = addList.formValue
 
       const obj = Object.fromEntries(
-        addList[this.index].formValue.map((item) => [item.value, ''])
+        addList.formValue.map((item) => [item.value, ''])
       )
-      that.form = obj
-      // console.log(that.form, '***form***')
-    },
-    goAdd() {
-      console.log(this.form)
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      if (currentNet.type == 'xuper' && currentPlug.type == 'xuper') {
-        //开放网络
-        this.publicMethod('form')
-      } else if (currentNet.type == 'eth' && currentPlug.type == 'eth') {
-        //以太通用方法
-        this.publicETHers('form')
+      form.value = obj
+    }
+
+    const goAdd = () => {
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+
+      if (currentNet.type === 'xuper' && currentPlug.type === 'xuper') {
+        publicMethod('form')
+      } else if (currentNet.type === 'eth' && currentPlug.type === 'eth') {
+        publicETHers('form')
       } else {
-        this.$refs.prompt.showToast('请切换到对应网络', 'warning', 2500)
+        prompt.value.showToast('请切换到对应网络', 'warning', 2500)
       }
-    },
-    //以太坊通用方法
-    async publicETHers(formName) {
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      let addList = currentPlug.addList[this.index]
-      let that = this
-      let valid2 = true
-      for (let key in this.form) {
-        if (key != 'from' || key != 'to') {
-          if (!this.form[key]) {
-            valid2 = false
-          }
-        }
-      }
+    }
+
+    const publicETHers = async (formName) => {
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const addList = currentPlug.addList[index.value]
+      const valid2 = Object.keys(form.value).every(
+        (key) => key === 'from' || key === 'to' || form.value[key]
+      )
 
       if (valid2) {
-        // console.log(addList, '*addList*')
         const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
-        if (addList.methodName == 'getBlance') {
-          let address = that.form.address
+
+        if (addList.methodName === 'getBlance') {
+          const address = form.value.address
           provider.getBalance(address).then((balance) => {
-            // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-            let etherString = ethers.utils.formatEther(balance)
-            console.log('Balance: ' + etherString)
-            this.doalogContent = `Balance: ${etherString}`
-            // this.dialogVisible = true
-            this.$refs.confirm.showConfirm()
+            const etherString = ethers.utils.formatEther(balance)
+            doalogContent.value = `Balance: ${etherString}`
+            confirm.value.showConfirm()
           })
-        } else if (addList.methodName == 'addrContract') {
-          //地址解析
+        } else if (addList.methodName === 'addrContract') {
           const { ens_abi } = require('../utils/ENSRegistry.json')
-          const ensRegistryAddr = that.form.ensRegistryAddr
+          const ensRegistryAddr = form.value.ensRegistryAddr
           const ensRegistry = new ethers.Contract(
             ensRegistryAddr,
             ens_abi,
             provider
           )
-          const nodeHash = ethers.utils.namehash(that.form.url)
+          const nodeHash = ethers.utils.namehash(form.value.url)
           const resolverAddr = await ensRegistry.resolver(nodeHash)
-          this.doalogContent = `域名解析地址: ${resolverAddr}`
-          // this.dialogVisible = true
-          this.$refs.confirm.showConfirm()
-        } else if (addList.methodName == 'transfer') {
-          //地址转账
-          let privateKey = await getPrivateKey()
-          // let privateKey = currentAccont.privateKey
-          let wallet = new ethers.Wallet(privateKey, provider)
-          let gasPrice = await provider.getGasPrice()
-          let tx = await wallet.sendTransaction({
+          doalogContent.value = `域名解析地址: ${resolverAddr}`
+          confirm.value.showConfirm()
+        } else if (addList.methodName === 'transfer') {
+          const privateKey = await getPrivateKey()
+          const wallet = new ethers.Wallet(privateKey, provider)
+          const gasPrice = await provider.getGasPrice()
+          const tx = await wallet.sendTransaction({
             gasLimit: 21000,
             gasPrice: gasPrice,
-            to: that.form.toaddress,
-            value: ethers.utils.parseUnits(that.form.value),
+            to: form.value.toaddress,
+            value: ethers.utils.parseUnits(form.value.value),
           })
-          this.doalogContent = `交易哈希: ${tx.hash}`
-          // this.dialogVisible = true
-          this.$refs.confirm.showConfirm()
+          doalogContent.value = `交易哈希: ${tx.hash}`
+          confirm.value.showConfirm()
         }
       } else {
-        this.$refs.prompt.showToast('请填写完整相关信息', 'warning', 2500)
+        prompt.value.showToast('请填写完整相关信息', 'warning', 2500)
       }
+    }
 
-      // this.$refs[formName].validate(async (valid) => {
-      //   console.log(valid, '****valid****')
+    const publicMethod = async (formName) => {
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+      const addList = currentPlug.addList[index.value]
+      const valid2 = Object.keys(form.value).every(
+        (key) => key === 'from' || key === 'to' || form.value[key]
+      )
 
-      // })
-    },
-
-    //通用方法
-    async publicMethod(formName) {
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      let addList = currentPlug.addList[this.index]
-      let valid2 = true
-
-      for (let key in this.form) {
-        if (key != 'from' || key != 'to') {
-          if (!this.form[key]) {
-            valid2 = false
-          }
-        }
-      }
-      // console.log(valid2, '**valid2**')
       if (valid2) {
         const node = currentNet.node
         const chain = currentNet.chain
-        const acc = currentAccont
+        const acc = { ...currentAccont }
         acc.privateKey = await getPrivateKey()
 
         const params = {
-          server: node, // ip, port
-          fee: '400', // fee
-          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+          server: node,
+          fee: '400',
+          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
+          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
         }
+
         let xsdk
-        if (addList.type == 'query') {
-          //查询操作
+        if (addList.type === 'query') {
           xsdk = new XuperSDK({ node, chain })
         } else {
           xsdk = new XuperSDK({
             node,
             chain,
-            plugins: [
-              Endorsement({
-                transfer: params,
-                makeTransaction: params,
-              }),
-            ],
+            plugins: [Endorsement(params)],
           })
         }
+
         const commonFunc = async (type, contractName, methodName, args) => {
           try {
-            if (addList.txType == 0) {
-              //api方法，无需调用合约
-              if (addList.txName && addList.txName == 'queryTransaction') {
-                //查询交易
+            if (addList.txType === 0) {
+              if (addList.txName === 'queryTransaction') {
                 const demo = await xsdk.queryTransaction(
-                  Buffer.from(
-                    this.form[this.formData[0].value],
-                    'hex'
-                  ).toString('base64')
+                  Buffer.from(args[formData.value[0].value], 'hex').toString(
+                    'base64'
+                  )
                 )
-                var txReqJson = JSON.parse(
+                const txReqJson = JSON.parse(
                   Buffer.from(
                     demo.tx.contract_requests[1].args.input,
                     'base64'
                   ).toString()
                 )
-                console.log(addList.search)
-                console.log(this.findKey(demo, addList.search))
-                this.doalogContent = this.findKey(demo, addList.search)
-                // this.dialogVisible = true
-                this.$refs.confirm.showConfirm()
-                // this.$alert(txReqJson, "详细内容", {
-                //   confirmButtonText: "确定",
-                // });
+                doalogContent.value = findKey(demo, addList.search)
+                confirm.value.showConfirm()
               }
-            } else if (addList.txType == 1) {
-              //需要调用到合约
-              console.log(args)
+            } else if (addList.txType === 1) {
               if (args.from) {
                 args.from = XchainAddrToEvm(args.from)
               }
@@ -320,38 +217,44 @@ export default {
                 '0',
                 acc
               )
-              this.doalogContent = demo
-              // this.dialogVisible = true
-              this.$refs.confirm.showConfirm()
+              doalogContent.value = demo
+              confirm.value.showConfirm()
             }
           } catch (err) {
-            if (err) {
-              console.log(err)
-              this.$refs.prompt.showToast('执行失败', 'error', 2500)
-            } else {
-              this.$refs.prompt.showToast('执行成功', 'success', 2500)
-            }
+            console.error(err)
+            prompt.value.showToast('执行失败', 'error', 2500)
           }
         }
-        if (JSON.stringify(this.ruleForm) == '{}') {
-          this.ruleForm = { '': '1' }
-        }
-        commonFunc(
-          addList.type,
-          addList.contractName,
-          addList.methodName,
-          this.form
-        )
+
+        commonFunc(addList.type, addList.contractName, addList.methodName, form.value)
       } else {
-        this.$refs.prompt.showToast('请填写完整相关信息', 'warning', 2500)
-        return false
+        prompt.value.showToast('请填写完整相关信息', 'warning', 2500)
       }
+    }
 
-      // this.$refs[formName].validate((valid) => {
-      //   console.log(valid, '****valid****')
+    onMounted(() => {
+      getFromData()
+    })
 
-      // })
-    },
+    return {
+      form,
+      netList,
+      netType,
+      pluginsList,
+      tabsSetList,
+      index,
+      setName,
+      formData,
+      doalogContent,
+      prompt,
+      confirm,
+      findKey,
+      goHome,
+      getFromData,
+      goAdd,
+      publicETHers,
+      publicMethod,
+    }
   },
 }
 </script>

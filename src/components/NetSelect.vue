@@ -18,27 +18,23 @@
           <img :src="netObj[item.sign]" />
         </div>
         <div class="flex1">{{ item.name }}</div>
-        <img src="../assets/img-checked.png" v-if="currentId == item.id" />
+        <img src="../assets/img-checked.png" v-if="currentId === item.id" />
         <img src="../assets/img-check.png" v-else />
       </div>
     </div>
   </div>
 </template>
+
 <script>
+import { ref } from 'vue'
+
 export default {
-  data() {
-    return {
-      isShow: false,
-      currentId: this.currentchain.id,
-      netObj: {
-        xuper: require('../assets/img-x.png'),
-        eth: require('../assets/img-eth.png'),
-        polygon: require('../assets/img-polygon.png'),
-      },
-    }
-  },
+  name: 'ChainSelect',
   props: {
-    disabled: Boolean,
+    disabled: {
+      type: Boolean,
+      default: false,
+    },
     chainList: {
       type: Array,
       default: () => [],
@@ -53,20 +49,46 @@ export default {
       }),
     },
   },
-  methods: {
-    showchain() {
-      if (!this.disabled) {
-        this.isShow = !this.isShow
+  setup(props, { emit }) {
+    // 响应式数据
+    const isShow = ref(false)
+    const currentId = ref(props.currentchain.id)
+    const netObj = ref({
+      xuper: require('../assets/img-x.png'),
+      eth: require('../assets/img-eth.png'),
+      polygon: require('../assets/img-polygon.png'),
+      solana: require('../assets/img-solana.png'),
+    })
+
+    // 显示/隐藏链列表
+    const showchain = () => {
+      if (!props.disabled) {
+        isShow.value = !isShow.value
       }
-    },
-    chosechain(item) {
-      this.isShow = false
-      this.currentId = item.id
-      this.$emit('selectedChain', item)
-    },
+    }
+
+    // 选择链
+    const chosechain = (item) => {
+      isShow.value = false
+      currentId.value = item.id
+      emit('selectedChain', item)
+    }
+
+    return {
+      isShow,
+      currentId,
+      netObj,
+      showchain,
+      chosechain,
+    }
   },
 }
 </script>
+
+<style scoped>
+/* 样式保持不变 */
+</style>
+
 <style lang="less" scoped>
 .select-cont {
   position: relative;

@@ -14,7 +14,7 @@
           <img
             src="../assets/img-checked.png"
             class="img-check"
-            v-if="current == 0"
+            v-if="current === 0"
           />
           <img src="../assets/img-check.png" class="img-check" v-else />
         </li>
@@ -26,7 +26,7 @@
           <img
             src="../assets/img-checked.png"
             class="img-check"
-            v-if="current == 1"
+            v-if="current === 1"
           />
           <img src="../assets/img-check.png" class="img-check" v-else />
         </li>
@@ -34,34 +34,38 @@
     </div>
   </div>
 </template>
+
 <script>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+
 export default {
-  data() {
+  setup() {
+    const router = useRouter()
+    const { locale } = useI18n()
+    const current = ref(0)
+
+    onMounted(() => {
+      const curr = localStorage.getItem('languageSet')
+      current.value = curr === 'en' ? 0 : 1
+    })
+
+    const choseLanguage = (i) => {
+      current.value = i
+      locale.value = i === 0 ? 'en' : 'zh'
+      localStorage.setItem('languageSet', locale.value)
+    }
+
+    const goHome = () => {
+      router.push('/Set')
+    }
+
     return {
-      current: 0,
+      current,
+      choseLanguage,
+      goHome,
     }
-  },
-  mounted() {
-    let curr = localStorage.getItem('languageSet')
-    if (curr == 'en') {
-      this.current = 0
-    } else {
-      this.current = 1
-    }
-  },
-  methods: {
-    choseLanguage(i) {
-      this.current = i - 0
-      if (this.current == 0) {
-        this.$i18n.locale = 'en'
-      } else {
-        this.$i18n.locale = 'zh'
-      }
-      localStorage.setItem('languageSet', this.$i18n.locale)
-    },
-    goHome() {
-      this.$router.push('/Set')
-    },
   },
 }
 </script>

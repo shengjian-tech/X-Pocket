@@ -15,22 +15,6 @@
             <div class="flex1">{{ $t('set.setPwd') }}</div>
             <img src="../assets/img-right.png" class="img-right" />
           </li>
-          <!-- <li>
-            <div class="circle">
-              <img src="../assets/img-http.png" />
-            </div>
-            <div class="flex1">{{ $t('set.dns') }}</div>
-            <img
-              src="../assets/img-switch-on.png"
-              v-if="currentStatus == 'on'"
-              @click="switchHandle('off')"
-            />
-            <img
-              src="../assets/img-switch.png"
-              v-else
-              @click="switchHandle('on')"
-            />
-          </li> -->
           <li @click="setRsa">
             <div class="circle">
               <img src="../assets/img-rsa.png" />
@@ -65,110 +49,71 @@
         {{ $t('set.version') }} X-Pocket v{{ version }}
       </div>
     </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>设置
-      </div>
-      <div class="setList">
-        <div @click="setNet">
-          <i class="el-icon-s-operation"></i>管理网络<i
-            class="el-icon-arrow-right"
-          ></i>
-        </div>
-        <div @click="setPwd">
-          <i class="el-icon-lock"></i>设置密码<i
-            class="el-icon-arrow-right"
-          ></i>
-        </div>
-        <div class="elright">
-          <div><i class="el-icon-view"></i>域名解析</div>
-          <el-switch
-            v-model="value"
-            @change="getChange"
-            active-color="#13ce66"
-            inactive-color="#DCDFE6"
-          >
-          </el-switch>
-        </div>
-        <div @click="setRsa">
-          <i class="el-icon-s-help"></i>RSA-SHA256证书设置<i
-            class="el-icon-arrow-right"
-          ></i>
-        </div>
-        <!--  <div>
-        <i class="el-icon-view"></i>安全隐私<i class="el-icon-arrow-right"></i>
-      </div>
-      <div>
-        <i class="el-icon-warning-outline"></i>关于<i
-          class="el-icon-arrow-right"
-        ></i>
-      </div> -->
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 export default {
-  name: 'Set',
-  data() {
-    return {
-      value: false,
-      currentStatus: 'off',
-      version: process.env.VUE_APP_POCKET_VERSION,
+  setup() {
+    const router = useRouter()
+    const value = ref(false)
+    const currentStatus = ref('off')
+    const version = ref(process.env.VUE_APP_POCKET_VERSION)
+
+    const goHome = () => {
+      router.push('/Home')
     }
-  },
-  components: { Header },
-  created() {
-    let that = this
-    chrome.storage.local.get(['key'], function (result) {
-      that.value = result.key
-      that.currentStatus = result.key ? 'on' : 'off'
-      console.log('Value retrieved:', that.value)
-    })
-  },
-  methods: {
-    goHome() {
-      this.$router.push('/Home')
-    },
-    setNet() {
-      this.$router.push('/Netlist')
-    },
-    setLanguage() {
-      this.$router.push('/languageSwitch')
-    },
-    setPwd() {
-      this.$router.push('/SetPassword')
-    },
-    setRsa() {
-      this.$router.push('/setrsa')
-    },
-    setWhiteList() {
-      this.$router.push('/setWhiteList')
-    },
-    getChange(v) {
+
+    const setNet = () => {
+      router.push('/Netlist')
+    }
+
+    const setLanguage = () => {
+      router.push('/languageSwitch')
+    }
+
+    const setPwd = () => {
+      router.push('/SetPassword')
+    }
+
+    const setRsa = () => {
+      router.push('/setrsa')
+    }
+
+    const setWhiteList = () => {
+      router.push('/setWhiteList')
+    }
+
+    const getChange = (v) => {
       console.log(v)
-      chrome.storage.local.set({ key: v }, function () {
+      chrome.storage.local.set({ key: v }, () => {
         console.log('Data saved.')
       })
-    },
-    // switchHandle(i) {
-    //   console.log(i, '***i****')
-    //   this.currentStatus = i
-    //   let v = false
-    //   if (this.currentStatus == 'on') {
-    //     v = true
-    //   } else {
-    //     v = false
-    //   }
-    //   console.log(v, '***v***')
-    //   chrome.storage.local.set({ key: v }, function () {
-    //     console.log('Data saved.')
-    //   })
-    // },
+    }
+
+    onMounted(() => {
+      chrome.storage.local.get(['key'], (result) => {
+        value.value = result.key
+        currentStatus.value = result.key ? 'on' : 'off'
+        console.log('Value retrieved:', value.value)
+      })
+    })
+
+    return {
+      value,
+      currentStatus,
+      version,
+      goHome,
+      setNet,
+      setLanguage,
+      setPwd,
+      setRsa,
+      setWhiteList,
+      getChange,
+    }
   },
 }
 </script>

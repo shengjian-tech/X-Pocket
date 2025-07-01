@@ -44,6 +44,8 @@ function _postMessage(message, request, subscriber, reqId) {
 		}, '*');
 	})
 }
+
+// xuper 监听来自background的消息
 let _baiduRequestId = 0
 window.xuper = {
 	request: async function (args) {
@@ -85,6 +87,52 @@ function _baiduPostMessage(message, request, subscriber, reqId) {
 			origin: 'POCKET_PROVIDER',
 			request: request,
 			type: "baidu"
+		}, '*');
+	})
+}
+
+// solana 监听来自background的消息
+let _solanaRequestId = 0
+window.solana = {
+	request: async function (args) {
+		if (!args || typeof args !== 'object' || Array.isArray(args)) {
+			console.log('应为单个非数组对象参数')
+		}
+
+		const {
+			method,
+			params
+		} = args;
+		if (typeof method !== 'string' || method.length === 0) {
+			console.log("'method'属性必须是非空字符串")
+			return
+		}
+		if (
+			params !== undefined &&
+			!Array.isArray(params) &&
+			(typeof params !== 'object' || params === null)
+		) {
+			console.log("如果提供了'params'属性，则该属性必须是对象或数组")
+			return
+		}
+		return _solanaPostMessage('EXTERNAL_REQUEST', args);
+	}
+}
+
+function _solanaPostMessage(message, request, subscriber, reqId) {
+	return new Promise(function (resolve, reject) {
+		const id = reqId || `${Date.now()}.${++_solanaRequestId}`;
+		_handlers[id] = {
+			reject,
+			resolve,
+			subscriber
+		};
+		window.postMessage({
+			id,
+			message,
+			origin: 'POCKET_PROVIDER',
+			request: request,
+			type: "solana"
 		}, '*');
 	})
 }

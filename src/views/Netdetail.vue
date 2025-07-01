@@ -97,138 +97,85 @@
         </div>
       </div>
     </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left"></i>设置/查看网络
-      </div>
-      <div class="form netDetailForm">
-        <el-form ref="form" :model="form" label-width="80px">
-          <el-form-item>
-            <span class="inputlabel">网络名称</span>
-            <el-input
-              v-model="form.netName"
-              placeholder="请输入网络名称"
-            ></el-input>
-          </el-form-item>
-          <el-form-item>
-            <span class="inputlabel">网络类型</span>
-            <el-select v-model="form.type" placeholder="请选择网络类型">
-              <el-option label="XuperOS" value="xuper"></el-option>
-              <el-option label="Ethereum" value="eth"></el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item>
-            <span class="inputlabel">新的RPC URL</span>
-            <el-input
-              v-model="form.node"
-              placeholder="请输入网络URL"
-            ></el-input>
-          </el-form-item>
-          <div v-if="netType == 'xuper'">
-            <el-form-item>
-              <span class="inputlabel">链名</span>
-              <el-input
-                v-model="form.chain"
-                placeholder="请输入网络名称"
-              ></el-input>
-            </el-form-item>
-          </div>
-
-          <div v-if="netType == 'eth'">
-            <el-form-item>
-              <span class="inputlabel">链ID</span>
-              <el-input
-                v-model="form.chainid"
-                placeholder="请输入链ID"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <span class="inputlabel">货币符号</span>
-              <el-input
-                v-model="form.symbol"
-                placeholder="请输入货币符号"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <span class="inputlabel">区块链浏览器URL（可选）</span>
-              <el-input
-                v-model="form.bwUrl"
-                placeholder="请输入区块链浏览器URL"
-              ></el-input>
-            </el-form-item>
-          </div>
-        </el-form>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import NetSelect from '@/components/NetSelect.vue'
+
 export default {
-  name: 'Netlist',
-  data() {
-    return {
-      form: {
-        netName: '',
-        type: '',
-        chain: '',
-        node: '',
-        chainid: '',
-        symbol: '',
+  components: { NetSelect },
+  setup() {
+    const router = useRouter()
+    const form = ref({
+      netName: '',
+      type: '',
+      chain: '',
+      node: '',
+      chainid: '',
+      symbol: '',
+      bwUrl: '',
+    })
+    const chainList = ref([
+      {
+        id: 1,
+        name: 'Ethereum',
+        value: 'eth',
+        sign: 'eth',
       },
-      chainList: [
-        {
-          id: 1,
-          name: 'Ethereum',
-          value: 'eth',
-          sign: 'eth',
-        },
-        {
-          id: 2,
-          name: 'XuperOS',
-          value: 'xuper',
-          sign: 'xuper',
-        },
-      ],
-      currentchain: {
+      {
         id: 2,
         name: 'XuperOS',
         value: 'xuper',
         sign: 'xuper',
       },
-      netList: JSON.parse(localStorage.getItem('netList')),
-      netType: '',
-      netIndex: -1,
+    ])
+    const currentchain = ref({
+      id: 2,
+      name: 'XuperOS',
+      value: 'xuper',
+      sign: 'xuper',
+    })
+    const netType = ref('')
+    const netIndex = ref(-1)
+
+    onMounted(() => {
+      const queryIndex = router.currentRoute.value.query.index
+      netIndex.value = queryIndex
+      const netList = JSON.parse(localStorage.getItem('netList'))
+      form.value = netList[queryIndex]
+      netType.value = netList[queryIndex].type
+      currentchain.value = form.value
+    })
+
+    const toBack = () => {
+      router.push('/Netlist')
     }
-  },
-  components: { Header, NetSelect },
-  mounted() {
-    console.log(this.$route.query.index)
-    this.netIndex = this.$route.query.index
-    this.form = this.netList[this.$route.query.index]
-    this.netType = this.netList[this.$route.query.index].type
-    console.log(this.form, '*****form****')
-    this.currentchain = this.form
-  },
-  methods: {
-    toBack() {
-      this.$router.push('/Netlist')
-    },
-    deleteNet() {
-      let netList = JSON.parse(localStorage.getItem('netList'))
-      netList.splice(this.netIndex, 1)
+
+    const deleteNet = () => {
+      const netList = JSON.parse(localStorage.getItem('netList'))
+      netList.splice(netIndex.value, 1)
       localStorage.setItem('netList', JSON.stringify(netList))
-      this.$router.push('/Netlist')
+      router.push('/Netlist')
       window.location.reload()
-    },
-    onSubmit() {
+    }
+
+    const onSubmit = () => {
       console.log('submit!')
-    },
+    }
+
+    return {
+      form,
+      chainList,
+      currentchain,
+      netType,
+      netIndex,
+      toBack,
+      deleteNet,
+      onSubmit,
+    }
   },
 }
 </script>

@@ -1,15 +1,15 @@
 <template>
   <div class="prompt-box" v-if="show">
-    <img src="../assets/img-succes.png" v-if="type == 'success'" />
-    <img src="../assets/img-warning.png" v-if="type == 'warning'" />
-    <img src="../assets/img-error.png" v-if="type == 'error'" />
+    <img src="../assets/img-succes.png" v-if="type === 'success'" />
+    <img src="../assets/img-warning.png" v-if="type === 'warning'" />
+    <img src="../assets/img-error.png" v-if="type === 'error'" />
     <span
       :class="
-        type == 'success'
+        type === 'success'
           ? 'success'
-          : type == 'warning'
+          : type === 'warning'
           ? 'warning'
-          : type == 'error'
+          : type === 'error'
           ? 'error'
           : ''
       "
@@ -17,28 +17,42 @@
     >
   </div>
 </template>
+
 <script>
+import { ref } from 'vue'
+
 export default {
-  data() {
-    return {
-      show: false,
-      type: 'success',
-      promptText: 'success',
-    }
-  },
-  methods: {
-    showToast(text, type, time) {
-      this.show = true
-      this.type = type
-      this.promptText = text
+  name: 'PromptPopup',
+  setup() {
+    // 响应式数据
+    const show = ref(false)
+    const type = ref('success')
+    const promptText = ref('success')
+
+    // 显示 Toast
+    const showToast = (text, toastType, time) => {
+      show.value = true
+      type.value = toastType
+      promptText.value = text
       const timer = setTimeout(() => {
-        this.show = false
+        show.value = false
         clearTimeout(timer)
       }, time)
-    },
+    }
+
+    return {
+      show,
+      type,
+      promptText,
+      showToast,
+    }
   },
 }
 </script>
+
+<style scoped>
+/* 样式保持不变 */
+</style>
 <style lang="less" scoped>
 .prompt-box {
   position: fixed;

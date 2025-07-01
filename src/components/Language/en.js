@@ -45,6 +45,7 @@ module.exports = {
     msg29: 'Please set password',
     msg30: 'Set successfully, please exit the page login, login again!',
     msg31: 'Execution success!',
+    msg32: 'The private key is invalid!',
   },
   welcome: {
     title: 'Your Daily Space for Connecting Daily Digital Asset',

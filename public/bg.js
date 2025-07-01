@@ -4,9 +4,43 @@ let _handlers = {}
 let _baiduHandlers = {}
 let allMessage = {}
 
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  console.log("bg监听接收消息", request)
+  if (request.method == 'changePopupOpen') {
+    popupOpen = true
+  }
+  if (request.method == 'postPopup') {
+    postPopup()
+  }
+  if (request.method == 'eth_requestAccounts' || request.method =='requestAccounts') {
+    getPopupData(request.method, request.data)
+  }
+  if (request.method == 'getAccounts_info') {
+    getPopupData(request.method, request.data)
+  }
+  if (request.method =='personal_sign' || request.method =='encryptCrypto_sign' || request.method =='decryptCrypto_sign') {
+    getPopupTransferHash(request.method, request.data)
+    getPopupExit()
+  }
+  if (request.method =='eth_sendTransaction') {
+    getPopupTransferHash(request.method, request.data)
+    getPopupExit()
+  }
+  if (request.method == 'xuper_invokeContarct') {
+    getPopupBaiduData(request.method, request.data)
+    getPopupExit()
+  }
+  if (request.method == 'exit') {
+    getPopupExit()
+  }
+});
+
 chrome.runtime.onConnect.addListener((port) => {
+  postPopup()
   port.onMessage.addListener((message, port) => {
-    if (message.request.method == 'eth_requestAccounts') {
+    console.log('bg-onConnect', message)
+    console.log('message.request.method', message.request.method)
+    if (message?.request?.method == 'eth_requestAccounts') {
       handler(message, port)
     }
     if (message.request.method == 'requestAccounts') {
@@ -36,16 +70,18 @@ chrome.runtime.onConnect.addListener((port) => {
     if (message.request.method == 'invoke_contract') {
       handler(message, port)
     }
-    if (message.request.method == 'personal_info') {
+    if (message.request.method == 'getAccounts_info') {
       handler(message, port)
     }
   })
 })
 
-function handler(MessageTypes, port, portId) {
+function handler (MessageTypes, port, portId) {
+  console.log('bg-返回', MessageTypes)
   const { id, message, request, type } = MessageTypes
   const promise = this.handle(id, message, request, port, portId, type)
   promise.then((response) => {
+    
     port.postMessage({
       id,
       response,
@@ -104,7 +140,7 @@ async function handle(id, message, request, port, portId, type) {
       allMessage.request = request
       allMessage.type = type
       return sendInvokeContract(request, type)
-    case 'personal_info':
+    case 'getAccounts_info':
       allMessage.request = request
       allMessage.type = type
       return getPersonInfo(type)
@@ -137,7 +173,11 @@ function sendTransaction(request) {
 
 // 发送签名方法(这个方法判断了是否每次都要弹窗签名弹窗，可以设置白名单，弹一次就不再弹了，直接签名)
 function sendPersonalSign(request, type, message) {
-  let whiteUrl = localStorage.getItem('whiteList') || 'https://assemblylabx.com'
+  // let whiteUrl = localStorage.getItem('whiteList') || 'https://assemblylabx.com'
+  let whiteUrl = ''
+  chrome.storage.local.get(['whiteList'], function(result) {
+    whiteUrl = result.whiteList || 'https://assemblylabx.com';
+  });
   // alert('whiteUrl' + whiteUrl)
   chrome.tabs.query(
     {
@@ -292,17 +332,17 @@ function getPersonInfo(type) {
   openPopup()
 
   return new Promise((resolve, reject) => {
-    _handlers['personal_info'] = {
+    _handlers['getAccounts_info'] = {
       reject,
       resolve,
     }
     if (type == 'baidu') {
-      _baiduHandlers['personal_info'] = {
+      _baiduHandlers['getAccounts_info'] = {
         reject,
         resolve,
       }
     } else {
-      _handlers['personal_info'] = {
+      _handlers['getAccounts_info'] = {
         reject,
         resolve,
       }
@@ -331,7 +371,7 @@ function getPopupTransferHash(method, data) {
   }
 }
 
-function getPopupExit(method, data) {
+function getPopupExit (method, data) {
   allMessage = {}
   closePopup()
 }
@@ -353,7 +393,8 @@ function getLastFocusWindow() {
 }
 
 function postPopup() {
-  chrome.extension.onConnect.addListener((messagePort) => {
+  chrome.runtime.onConnect.addListener((messagePort) => {
+    console.log('bg==',messagePort)
     if (messagePort.name === 'POCKET-popup-background') {
       messagePort.postMessage(allMessage)
       messagePort.onMessage.addListener((message) => {

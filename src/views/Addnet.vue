@@ -91,169 +91,112 @@
       </div>
       <prompt-popup ref="prompt"></prompt-popup>
     </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>添加网络
-      </div>
-      <div class="form addnetForm">
-        <el-form ref="form" :model="form" label-width="80px">
-          <el-form-item>
-            <span class="inputlabel">网络名称</span>
-            <el-input
-              v-model="form.netName"
-              placeholder="请输入网络名称"
-            ></el-input>
-          </el-form-item>
-          <el-form-item>
-            <span class="inputlabel">网络类型</span>
-            <el-select v-model="form.type" placeholder="请选择网络类型">
-              <el-option label="XuperOS" value="xuper"></el-option>
-              <el-option label="Ethereum" value="eth"></el-option>
-            </el-select>
-          </el-form-item>
-
-          <el-form-item>
-            <span class="inputlabel">新的RPC URL</span>
-            <el-input
-              v-model="form.node"
-              placeholder="请输入网络URL"
-            ></el-input>
-          </el-form-item>
-          <div v-if="form.type == 'xuper'">
-            <el-form-item>
-              <span class="inputlabel">链名</span>
-              <el-input
-                v-model="form.chain"
-                placeholder="请输入网络名称"
-              ></el-input>
-            </el-form-item>
-          </div>
-
-          <div v-if="form.type == 'eth'">
-            <el-form-item>
-              <span class="inputlabel">链ID</span>
-              <el-input
-                v-model="form.chainid"
-                placeholder="请输入链ID"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <span class="inputlabel">货币符号</span>
-              <el-input
-                v-model="form.symbol"
-                placeholder="请输入货币符号"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <span class="inputlabel">区块链浏览器URL（可选）</span>
-              <el-input
-                v-model="form.bwUrl"
-                placeholder="请输入区块链浏览器URL"
-              ></el-input>
-            </el-form-item>
-          </div>
-          <el-form-item class="addNetBtnFath">
-            <el-button
-              class="addNetBtn"
-              type="primary"
-              round
-              @click="addNetList()"
-              >添加网络</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
-import NetSelect from '@/components/NetSelect.vue'
-import PromptPopup from '@/components/PromptPopup.vue'
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import NetSelect from '@/components/NetSelect.vue';
+import PromptPopup from '@/components/PromptPopup.vue';
+import { i18n } from '@/main';
+
 export default {
   name: 'Netlist',
-  data() {
-    return {
-      form: {
-        netName: '',
-        type: 'xuper',
-        chain: '',
-        node: '',
-        chainid: '',
-        symbol: '',
-        bwUrl: '',
-        sign: 'xuper',
-        isNewAdd: true,
+  components: { NetSelect, PromptPopup },
+  setup() {
+    const router = useRouter();
+    const prompt = ref(null);
+
+    // 表单数据
+    const form = reactive({
+      netName: '',
+      type: 'xuper',
+      chain: '',
+      node: '',
+      chainid: '',
+      symbol: '',
+      bwUrl: '',
+      sign: 'xuper',
+      isNewAdd: true,
+    });
+
+    // 链列表
+    const chainList = ref([
+      {
+        id: 1,
+        name: 'Ethereum',
+        value: 'eth',
+        sign: 'eth',
       },
-      chainList: [
-        {
-          id: 1,
-          name: 'Ethereum',
-          value: 'eth',
-          sign: 'eth',
-        },
-        {
-          id: 2,
-          name: 'XuperOS',
-          value: 'xuper',
-          sign: 'xuper',
-        },
-      ],
-      currentchain: {
+      {
         id: 2,
         name: 'XuperOS',
         value: 'xuper',
         sign: 'xuper',
       },
-      netList: JSON.parse(localStorage.getItem('netList')),
-    }
-  },
-  components: { Header, NetSelect, PromptPopup },
-  mounted() {},
-  methods: {
-    goHome() {
-      this.$router.push('/Home')
-    },
-    selectedChain(e) {
-      console.log(e, '***e***')
-      this.form.type = e.value
-      this.form.sign = e.value
-      this.currentchain = e
-    },
-    addNetList() {
-      console.log(this.form)
-      if (!this.form.type) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
+    ]);
+
+    // 当前选择的链
+    const currentchain = ref({
+      id: 2,
+      name: 'XuperOS',
+      value: 'xuper',
+      sign: 'xuper',
+    });
+
+    // 网络列表
+    const netList = ref(JSON.parse(localStorage.getItem('netList')) || []);
+
+    // 方法：返回首页
+    const goHome = () => {
+      router.push('/Home');
+    };
+
+    // 方法：选择链
+    const selectedChain = (e) => {
+      console.log(e, '***e***');
+      form.type = e.value;
+      form.sign = e.value;
+      currentchain.value = e;
+    };
+
+    // 方法：添加网络
+    const addNetList = () => {
+      if (!form.type) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg14'), 'warning', 2500);
       } else if (
-        this.form.type == 'xuper' &&
-        (this.form.netName == '' ||
-          this.form.chain == '' ||
-          this.form.node == '')
+        form.type == 'xuper' &&
+        (form.netName == '' || form.chain == '' || form.node == '')
       ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
+        prompt.value.showToast(i18n.global.t('toastMsg.msg14'), 'warning', 2500);
       } else if (
-        this.form.type == 'eth' &&
-        (this.form.netName == '' ||
-          this.form.node == '' ||
-          this.form.chainid == '' ||
-          this.form.symbol == '')
+        form.type == 'eth' &&
+        (form.netName == '' || form.node == '' || form.chainid == '' || form.symbol == '')
       ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
+        prompt.value.showToast(i18n.global.t('toastMsg.msg14'), 'warning', 2500);
       } else {
-        //操作
-        let netList = this.netList
-        netList.push(this.form)
-        localStorage.setItem('netList', JSON.stringify(netList))
-        this.$router.go('-1')
-        // window.location.reload()
+        // 操作
+        netList.value.push({ ...form });
+        localStorage.setItem('netList', JSON.stringify(netList.value));
+        router.go(-1);
       }
-    },
+    };
+
+    return {
+      form,
+      chainList,
+      currentchain,
+      netList,
+      prompt,
+      goHome,
+      selectedChain,
+      addNetList,
+    };
   },
-}
+};
 </script>
+
 <style lang="less" scoped>
 .content {
   padding: 23px 25px;

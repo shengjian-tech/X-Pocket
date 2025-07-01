@@ -1,14 +1,4 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Login from '../views/Login.vue'
-// import {
-//   ifChrome
-// } from "@/utils/setStorage";
-// import {
-//   getTab,
-//   haveRequest
-// } from "@/utils/popup";
-Vue.use(VueRouter)
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
   {
@@ -19,17 +9,12 @@ const routes = [
   {
     path: '/Login',
     name: 'Login',
-    component: Login,
+    component: () => import('../views/Login.vue'),
   },
   {
     path: '/Home',
     name: 'Home',
     component: () => import('../views/Home.vue'),
-  },
-  {
-    path: '/Details',
-    name: 'Details',
-    component: () => import('../views/Details.vue'),
   },
   {
     path: '/Set',
@@ -133,39 +118,9 @@ const routes = [
   },
 ]
 
-const router = new VueRouter({
-  mode: 'hash',
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHashHistory(process.env.BASE_URL),
   routes,
 })
-// router.beforeEach((to, from, next) => {
-//   // return next()
-//   if (to.path === '/login' || to.path === '/connect') return next()
-//   let acc = JSON.parse(localStorage.getItem("currentAccont"));
-//   if (!ifChrome() || !acc) {
-//     next();
-//   } else {
-//     let connectList = JSON.parse(localStorage.getItem("connectList"))
-//     if (!connectList || connectList.length == 0) {
-//       next({
-//         name: 'connect',
-//       });
-//     } else {
-//       getTab().then(res => {
-//         let ifFast = connectList.find(item => {
-//           return item.url == res.url
-//         })
-//         if (ifFast) {
-//           next();
-//         } else {
-//           next({
-//             name: 'connect',
-//           });
-//         }
-//       })
-//     }
-//     next();
-//   }
-// })
 
 export default router

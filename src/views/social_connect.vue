@@ -2,7 +2,7 @@
   <div>
     <div class="container">
       <div class="header">
-        <span class="nav-title">{{ $t('publish.title') }}</span>
+        <span class="nav-title">{{ t('publish.title') }}</span>
       </div>
       <div class="content">
         <div class="comm-request">
@@ -10,152 +10,126 @@
           <p>{{ url }}</p>
         </div>
         <p class="intro-txt">
-          {{ $t('publish.intro') }}
+          {{ t('publish.intro') }}
         </p>
         <div class="current-box">
           <div class="img-circle">
             <img
               src="../assets/img-eth.png"
-              v-if="currentAccont.type == 'eth'"
+              v-if="currentAccount.type === 'eth'"
             />
             <img src="../assets/img-x.png" v-else />
           </div>
           <div class="flex1">
-            <span>{{ $t('comm.current') }}</span>
-            <p>{{ plusXing(currentAccont.address) }}</p>
+            <span>{{ t('comm.current') }}</span>
+            <p>{{ plusXing(currentAccount.address,5,5) }}</p>
           </div>
         </div>
         <div class="msg-box">
-          <p>{{ $t('comm.msg') }}</p>
+          <p>{{ t('comm.msg') }}</p>
           <div class="msg-cont">{{ message }}</div>
           <div class="line"></div>
         </div>
       </div>
       <div class="btn-wrapper">
-        <div class="btn" @click="closeWindow">{{ $t('comm.refuse') }}</div>
-        <div class="btn" @click="getLogin">{{ $t('comm.confirm') }}</div>
+        <div class="btn" @click="closeWindow">{{ t('comm.refuse') }}</div>
+        <div class="btn" @click="getLogin">{{ t('comm.confirm') }}</div>
       </div>
       <prompt-popup ref="prompt"></prompt-popup>
-    </div>
-
-    <div class="connect" style="display: none">
-      <div class="connectBox">
-        <div class="connectTit">发布信息</div>
-        <div>
-          <img :src="favIconUrl" />
-          <div>{{ url }}</div>
-        </div>
-        <div class="conten">
-          只有在您完全理解内容并信任请求网站的情况下，才能进行信息发布。
-          您正在进行信息发布:
-        </div>
-        <div class="conten">
-          <div class="listType">
-            <span style="color: #1e832a">当前</span>
-          </div>
-          <div class="listAddress">{{ plusXing(currentAccont.address) }}</div>
-        </div>
-        <div class="conten accList">
-          <div>消息：</div>
-          <div>{{ message }}</div>
-        </div>
-      </div>
-      <div class="btnBox">
-        <el-button class="width110" round @click="closeWindow">拒绝</el-button>
-        <el-button
-          class="width110 color7657b1"
-          type="primary"
-          round
-          @click="getLogin"
-          >确认</el-button
-        >
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
-import Header from '../components/Header'
-import PromptPopup from '@/components/PromptPopup.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ethers } from 'ethers'
-import moment from 'moment'
-import { KJUR, KEYUTIL, RSAKey, hextob64 } from 'jsrsasign'
+import { KJUR, KEYUTIL, hextob64 } from 'jsrsasign'
 import { sendSocialHash, sendExit } from '@/utils/transaction'
 import { plusXing } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
+import PromptPopup from '@/components/PromptPopup.vue'
+
 export default {
-  name: 'social',
-  data() {
-    return {
-      state: this.$route.query.state,
-      password: '',
-      favIconUrl: '',
-      url: '',
-      color: ['#744f68', '#788890', '#ebd40a', '#1e832a', '#abb7bc'],
-      connect: null,
-      activeItem: [],
-      message: this.$route.query[0].message,
-      signatureString: this.$route.query[0].signatureString,
-      algorithm: this.$route.query[0].algorithm,
-    }
-  },
-  components: { Header, PromptPopup },
-  computed: {
-    accountAllList() {
-      return JSON.parse(localStorage.getItem('acc'))
-    },
-    currentAccont() {
+  name: 'SocialPage',
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+    const { t } = useI18n()
+
+    // 响应式数据
+    const favIconUrl = ref('')
+    const url = ref('')
+    const message = ref(route.query[0]?.message || '')
+    const signatureString = ref(route.query[0]?.signatureString || '')
+    const algorithm = ref(route.query[0]?.algorithm || '')
+    const prompt = ref(null)
+
+    // 计算属性
+    const currentAccount = computed(() => {
       return JSON.parse(localStorage.getItem('currentAccont'))
-    },
-  },
-  mounted() {},
-  methods: {
-    plusXing(val) {
+    })
+    const accountAllList = computed(() => {
+      return JSON.parse(localStorage.getItem('acc'))
+    })
+
+    // 工具函数：加星号显示地址
+    const plusXing = (val) => {
       return plusXing(val, 5, 10)
-    },
-    closeWindow() {
+    }
+
+    // 关闭窗口
+    const closeWindow = () => {
       sendExit()
-    },
-    //开放网络
-    async getLogin() {
-      let that = this
-      let account = JSON.parse(localStorage.getItem('currentAccont'))
+    }
 
-      if (that.algorithm == 'rsa-sha256') {
-        if (localStorage.getItem('privateKeyPem')) {
-          const privateKeyPem = localStorage
-            .getItem('privateKeyPem')
-            .replace(/\\n/g, '\n')
-          const privateKey = KEYUTIL.getKey(privateKeyPem)
-          const signature_data = that.signWithPrivateKey(
-            that.signatureString,
-            privateKey
-          )
-          sendSocialHash('social_sign', signature_data)
+    // 获取登录信息并签名
+    const getLogin = async () => {
+      const account = JSON.parse(localStorage.getItem('currentAccont'))
+
+      if (algorithm.value === 'rsa-sha256') {
+        const privateKeyPem = localStorage.getItem('privateKeyPem')
+        if (privateKeyPem) {
+          const privateKey = KEYUTIL.getKey(privateKeyPem.replace(/\\n/g, '\n'))
+          const signatureData = signWithPrivateKey(signatureString.value, privateKey)
+          sendSocialHash('social_sign', signatureData)
         } else {
-          this.$refs.prompt.showToast(this.$t('toastMsg.msg25'), 'error', 2500)
-          this.$router.push('/setrsa')
+          prompt.value.showToast(t('toastMsg.msg25'), 'error', 2500)
+          router.push('/setrsa')
         }
-      } else if (that.algorithm == 'secp256k1') {
+      } else if (algorithm.value === 'secp256k1') {
         const privateKey = await getPrivateKey()
-
-        // const privateKey = account.privateKey // 用你自己的私钥替换
         const wallet = new ethers.Wallet(privateKey)
-        const messageBytes = ethers.utils.toUtf8Bytes(that.signatureString)
+        const messageBytes = ethers.utils.toUtf8Bytes(signatureString.value)
         const signature = await wallet.signMessage(messageBytes)
         sendSocialHash('social_sign', signature)
       }
-    },
-    signWithPrivateKey(signingString, privateKey) {
+    }
+
+    // 使用私钥签名
+    const signWithPrivateKey = (signingString, privateKey) => {
       const sig = new KJUR.crypto.Signature({ alg: 'SHA256withRSA' })
       sig.init(privateKey)
       sig.updateString(signingString)
       const signature = sig.sign()
-      // 将签名结果进行 Base64 编码
-      const signatureBase64 = hextob64(signature)
-      return signatureBase64
-    },
+      return hextob64(signature)
+    }
+
+    return {
+      favIconUrl,
+      url,
+      message,
+      signatureString,
+      algorithm,
+      currentAccount,
+      accountAllList,
+      plusXing,
+      closeWindow,
+      getLogin,
+      prompt,
+      t,
+    }
   },
 }
 </script>

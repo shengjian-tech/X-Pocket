@@ -23,6 +23,7 @@
           <div class="chain-circle">
             <img src="../assets/img-eth.png" v-if="item.type == 'eth'" />
             <img src="../assets/img-x.png" v-if="item.type == 'xuper'" />
+            <img src="../assets/img-solana.png" v-if="item.type == 'solana'" />
           </div>
           <div class="flex1">
             <p>
@@ -31,7 +32,7 @@
                 $t('linkDetails.current')
               }}</span>
             </p>
-            <p>{{ plusXing(item.address) }}</p>
+            <p>{{ plusXing(item.address,5,10) }}</p>
           </div>
           <img
             src="../assets/img-checked.png"
@@ -46,153 +47,105 @@
 
       <prompt-popup ref="prompt"></prompt-popup>
     </div>
-
-    <div class="connect" style="display: none">
-      <div class="connectBox">
-        <div class="connectTit">连接详情</div>
-        <div>
-          <img :src="favIconUrl" />
-          <div>{{ url }}</div>
-        </div>
-        <div class="conten">
-          已授权该站点访问区块链网络信息、链账户信息、以及发起交易申请的权限。
-        </div>
-        <div class="accList">
-          <div
-            v-for="(item, index) in accountAllList"
-            :key="index"
-            @click="active(item)"
-            class="listBox"
-          >
-            <div class="iconBox">
-              <i class="el-icon-wallet" :style="{ color: color[index] }"></i>
-            </div>
-            <div>
-              <div class="listType">
-                {{ item.type }}
-                <span
-                  v-if="item.address == currentAccont.address"
-                  style="color: #1e832a"
-                  >当前</span
-                >
-              </div>
-              <div class="listAddress">{{ plusXing(item.address) }}</div>
-            </div>
-            <div class="leftIconBox" v-show="iconShow(item)">
-              <i class="el-icon-circle-check" style="color: #67c23a"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="btnBox">
-        <el-button class="width110" round @click="closeWindow">关闭</el-button>
-        <el-button
-          class="width110 color7657b1"
-          type="primary"
-          round
-          @click="editUrl"
-          >确定</el-button
-        >
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { getTab } from '@/utils/popup'
 import { plusXing } from '../assets/js/index'
 import PromptPopup from '@/components/PromptPopup.vue'
+import { i18n } from '@/main';
+
 export default {
-  data() {
-    return {
-      favIconUrl: '',
-      url: '',
-      color: ['#744f68', '#788890', '#ebd40a', '#1e832a', '#abb7bc'],
-      connect: null,
-      activeItem: [],
-      currentS: [],
-    }
-  },
   components: { PromptPopup },
-  computed: {
-    accountAllList() {
+  setup() {
+    const router = useRouter()
+    const favIconUrl = ref('')
+    const url = ref('')
+    const activeItem = ref([])
+    const currentS = ref([])
+    const prompt = ref(null)
+
+    // 计算属性
+    const accountAllList = computed(() => {
       return JSON.parse(localStorage.getItem('acc'))
-    },
-    currentAccont() {
+    })
+
+    const currentAccont = computed(() => {
       return JSON.parse(localStorage.getItem('currentAccont'))
-    },
-  },
-  mounted() {
-    this.getTap()
-  },
-  methods: {
-    toBack() {
-      this.$router.push('/Home')
-    },
-    getTap() {
-      getTab().then((res) => {
-        console.log(res, '---gettab---')
-        this.connect = res
-        this.favIconUrl = res.favIconUrl
-        this.url = res.url
-        let connectList = JSON.parse(localStorage.getItem('connectList'))
-          ? JSON.parse(localStorage.getItem('connectList'))
-          : []
-        connectList.forEach((element) => {
-          if (element.url == this.url) {
-            this.activeItem = element.accountList
-          }
-        })
-      })
-    },
-    plusXing(val) {
-      return plusXing(val, 5, 10)
-    },
-    active(item) {
-      this.currentS = []
-      let index = this.activeItem.findIndex((obj) => {
-        return obj.address == item.address
-      })
-      console.log(index, '**index**')
-      if (index == -1) {
-        this.activeItem.push(item)
-        this.currentS.push(item.address)
-      } else {
-        this.activeItem.splice(index, 1)
-        this.currentS.splice(item.address, 1)
-      }
-      console.log(this.currentS, '****currentS****')
-      console.log(this.activeItem, '***activeItem***')
-    },
-    iconShow(item) {
-      let index = this.activeItem.findIndex((obj) => {
-        return obj.address == item.address
-      })
-      if (index == -1) {
-        return false
-      } else {
-        return true
-      }
-    },
-    closeWindow() {
-      this.$router.go(-1)
-    },
-    editUrl() {
-      if (this.activeItem.length == 0) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg12'), 'warning', 2500)
-        return
-      }
-      let connectList = JSON.parse(localStorage.getItem('connectList'))
-        ? JSON.parse(localStorage.getItem('connectList'))
-        : []
+    })
+
+    // 方法
+    const toBack = () => {
+      router.push('/Home')
+    }
+
+    const getTap = async () => {
+      const res = await getTab()
+      console.log(res, '---gettab---')
+      favIconUrl.value = res.favIconUrl
+      url.value = res.url
+      const connectList = JSON.parse(localStorage.getItem('connectList')) || []
       connectList.forEach((element) => {
-        if (element.url == this.url) {
-          element.accountList = this.activeItem
+        if (element.url === url.value) {
+          activeItem.value = element.accountList
         }
       })
-      localStorage.setItem('connectList', [JSON.stringify(connectList)])
-      this.$refs.prompt.showToast(this.$t('toastMsg.msg13'), 'success', 2500)
-    },
+    }
+
+    const active = (item) => {
+      currentS.value = []
+      const index = activeItem.value.findIndex((obj) => {
+        return obj.address === item.address
+      })
+      console.log(index, '**index**')
+      if (index === -1) {
+        activeItem.value.push(item)
+        currentS.value.push(item.address)
+      } else {
+        activeItem.value.splice(index, 1)
+        currentS.value.splice(item.address, 1)
+      }
+      console.log(currentS.value, '****currentS****')
+      console.log(activeItem.value, '***activeItem***')
+    }
+
+    const editUrl = () => {
+      if (activeItem.value.length === 0) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg12'), 'warning', 2500)
+        return
+      }
+      const connectList = JSON.parse(localStorage.getItem('connectList')) || []
+      console.log('connectList-connectList=', connectList)
+      connectList.forEach((element) => {
+        if (element.url === url.value) {
+          element.accountList = activeItem.value
+        }
+      })
+      localStorage.setItem('connectList', JSON.stringify(connectList))
+      prompt.value.showToast(i18n.global.t('toastMsg.msg13'), 'success', 2500)
+    }
+
+    // 生命周期钩子
+    onMounted(() => {
+      getTap()
+    })
+
+    return {
+      favIconUrl,
+      url,
+      accountAllList,
+      currentAccont,
+      activeItem,
+      currentS,
+      prompt,
+      plusXing,
+      toBack,
+      active,
+      editUrl,
+    }
   },
 }
 </script>

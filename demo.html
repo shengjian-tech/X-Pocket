@@ -10,20 +10,24 @@
     <button id="connectButton" onclick="connect()">连接以太坊</button>
     <div>获取地址为</div>
     <div id="conten"></div>
-    <hr />
+    <!-- <hr />
     <button id="connectButton2" onclick="connectBaidu()">连接百度链</button>
     <div>获取地址为</div>
-    <div id="conten2"></div>
+    <div id="conten2"></div> -->
     <hr />
     <button id="connectButton4" onclick="connectBaidu2()">连接百度链</button>
     <div>获取地址为</div>
     <div id="conten4"></div>
     <hr />
+    <button id="connectButton4" onclick="connectSolana()">连接Solana</button>
+    <div>获取地址为</div>
+    <div id="conten5"></div>
+    <hr />
     <div>
       交易对象地址：<input type="text" id="to" /><br />
       交易金额：<input type="text" id="value" />
     </div>
-    <button id="connectButton3" onclick="connectDemo()">以太坊交易</button>
+    <button id="connectButton3" onclick="ethTranstion()">以太坊交易</button>
     <div>交易哈希为</div>
     <div id="conten3"></div>
     <hr />
@@ -31,15 +35,30 @@
       交易对象地址：<input type="text" id="toB" /><br />
       交易金额：<input type="text" id="valueB" />
     </div>
-    <button id="connectButtonB" onclick="connectBaiduDemo()">百度链交易</button>
+    <button id="connectButtonB" onclick="xuperTranstion()">百度链交易</button>
     <div>交易哈希为</div>
     <div id="contenB"></div>
+
+    <hr />
+    <div>
+      交易对象地址：<input type="text" id="solanaAddress" /><br />
+      交易金额：<input type="text" id="solanaAccount" />
+    </div>
+    <button id="solanaTransBtn" onclick="solanaTranstion()">Solana交易</button>
+    <div>交易哈希为</div>
+    <div id="solanaTransTxid"></div>
 
     <hr />
     <button id="connectButtonB123" onclick="connectSign()">ETH钱包签名</button>
     <input type="text" id="conteninput123" />
     <div>签名sign为:</div>
     <div id="contenB123"></div>
+
+    <hr />
+    <button id="solanaButton" onclick="solanaSign()">Solana网络签名</button>
+    <input type="text" id="solanaInput" />
+    <div>签名sign为:</div>
+    <div id="solanaSignTxt"></div>
 
     <hr />
     <button id="connectButtonA123" onclick="connectSignBaudu()">
@@ -63,6 +82,9 @@
     <hr />
 
     <button id="getAccounts" onclick="getAccInfo()">获取账户信息</button>
+    <div>账户信息为:</div>
+    <div id="info"></div>
+    <hr />
   </body>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script type="application/javascript">
@@ -70,8 +92,36 @@
     // const accounts =  provider.send("eth_requestAccounts",[]);
     // console.log(accounts)
 
+    
+
+    // 以太坊交易
+    async function ethTranstion() {
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          const txObject = {
+            to: document.getElementById('to').value, // 接收方地址
+            value: document.getElementById('value').value, // 转账金额
+          }
+          const txHash = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [
+              {
+                ...txObject,
+                from: 'account',
+              },
+            ],
+          })
+          document.getElementById('conten3').innerHTML =
+            '交易哈希值为：' + txHash
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        document.getElementById('conten3').innerHTML = '没有以太坊钱包'
+      }
+    }
     // 百度交易
-    async function connectBaiduDemo() {
+    async function xuperTranstion() {
       if (typeof window.xuper !== 'undefined') {
         try {
           const txObject = {
@@ -97,30 +147,30 @@
       }
     }
 
-    // 以太坊交易
-    async function connectDemo() {
-      if (typeof window.ethereum !== 'undefined') {
+    // solana交易
+    async function solanaTranstion() {
+      if (typeof window.solana!== 'undefined') {
         try {
           const txObject = {
-            to: document.getElementById('to').value, // 接收方地址
-            value: document.getElementById('value').value, // 转账金额
+            to: document.getElementById('solanaAddress').value, // 接收方地址
+            value: document.getElementById('solanaAccount').value, // 转账金额
           }
-          const txHash = await window.ethereum.request({
+          const txHash = await window.solana.request({
             method: 'eth_sendTransaction',
             params: [
               {
-                ...txObject,
+               ...txObject,
                 from: 'account',
               },
             ],
           })
-          document.getElementById('conten3').innerHTML =
+          document.getElementById('solanaTransTxid').innerHTML =
             '交易哈希值为：' + txHash
         } catch (error) {
           console.log(error)
         }
       } else {
-        document.getElementById('conten3').innerHTML = '没有以太坊钱包'
+        document.getElementById('solanaTransTxid').innerHTML = '没有Solana钱包'
       }
     }
 
@@ -128,19 +178,19 @@
     async function connect() {
       if (typeof window.ethereum !== 'undefined') {
         try {
-          let accounts = await ethereum.request({
+          let accounts = await window.ethereum.request({
             method: 'eth_requestAccounts',
           })
-          console.log(accounts)
+          console.log('eth-accounts=',accounts)
           document.getElementById('conten').innerHTML = accounts
         } catch (error) {
           console.log(error)
         }
         // document.getElementById("connectButton").innerHTML = "连接中";
-        const accounts = await ethereum.request({
-          method: 'eth_accounts',
-        })
-        console.log(accounts)
+        // const accounts = await ethereum.request({
+        //   method: 'eth_accounts',
+        // })
+        // console.log(accounts)
       } else {
         document.getElementById('conten').innerHTML = '没有以太坊钱包'
       }
@@ -178,9 +228,21 @@
         document.getElementById('conten4').innerHTML = '没有百度钱包'
       }
     }
+    async function connectSolana() {
+      if (typeof window.solana!== 'undefined') {
+        try {
+          let a = await window.solana.request({
+            method: 'requestAccounts',
+          })
+          console.log(a)
+          document.getElementById('conten5').innerHTML = a
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    }
 
     async function connectSign() {
-      console.log(123124)
       if (typeof window.ethereum !== 'undefined') {
         try {
           // const txObject = {
@@ -198,7 +260,7 @@
             method: 'personal_sign',
             params: [document.getElementById('conteninput123').value],
           })
-          console.log(a)
+          console.log('eth-sign:',a)
           document.getElementById('contenB123').innerHTML = a
         } catch (error) {
           console.log(error)
@@ -226,6 +288,24 @@
           })
           console.log(a)
           document.getElementById('contenA123').innerHTML = a
+        } catch (error) {
+          console.log(error)
+        }
+      }
+    }
+
+    async function solanaSign(){
+      if (typeof window.solana!== 'undefined') {
+        try {
+          const txObject = {
+            message: document.getElementById('solanaInput').value,
+          }
+          let a = await window.solana.request({
+            method: 'personal_sign',
+            params: [document.getElementById('solanaInput').value],
+          })
+          console.log(a)
+          document.getElementById('solanaSignTxt').innerHTML = a
         } catch (error) {
           console.log(error)
         }
@@ -288,8 +368,8 @@
               },
             ],
           })
-          console.log(a)
-          document.getElementById('contenB789').innerHTML = a
+          console.log('info=',a)
+          document.getElementById('info').innerHTML = JSON.stringify(a)
         } catch (error) {
           console.log(error)
         }

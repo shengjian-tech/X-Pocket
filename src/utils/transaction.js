@@ -1,17 +1,17 @@
 import router from '@/router'
-import { getPrivateKey } from './decryptKey'
-
-const background = chrome.extension.getBackgroundPage()
-const { ethers } = require('ethers')
 
 export function transaction(message) {
   router.push({
     path: '/Transfer',
-    query: message.request.params,
+    query: { params: JSON.stringify(message.request.params) },
   })
 }
 export function sendHash(method, data, type) {
-  background.getPopupTransferHash(method, data)
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 /*********签名 **********/
 export function signTranstion(message) {
@@ -21,60 +21,66 @@ export function signTranstion(message) {
   })
 }
 export function sendSignHash(method, data, type) {
-  background.getPopupTransferHash(method, data)
-  background.getPopupExit()
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 
 export function sendBaiduSignHash(method, data, type) {
-  background.getPopupBaiduData(method, data, type)
-  background.getPopupExit()
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 
-export function sendBaiduInvokeContract(method, data, type) {
-  background.getPopupBaiduData(method, data, type)
-  background.getPopupExit()
+export function sendBaiduInvokeContract (method, data, type) {
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 
 export function sendExit() {
-  background.getPopupExit()
-  router.push({
-    path: '/home',
-    query: {},
+  chrome.runtime.sendMessage({
+    method:'exit'
   })
 }
 
 /******加解密 *****/
-export function encryptCrypto(message) {
+export function encryptCrypto (message) {
+  console.log('-encryptCrypto-message=', message)
   if (JSON.parse(localStorage.getItem('currentAccont'))) {
     router.push({
       path: '/encrypt',
-      query: message.request.params,
+      query: { params: JSON.stringify(message.request.params) },
     })
   }
 }
 export function sendEncryptHash(method, data, type) {
-  background.getPopupTransferHash(method, data)
-  background.getPopupExit()
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 export function decryptCrypto(message) {
   if (JSON.parse(localStorage.getItem('currentAccont'))) {
     router.push({
       path: '/decrypt',
-      query: message.request.params,
+      query: { params: JSON.stringify(message.request.params) },
     })
   }
 }
 export function sendDecryptHash(method, data, type) {
-  background.getPopupTransferHash(method, data)
-  chrome.windows.getAll((all) => {
-    console.log(all, '************all************')
-    all.forEach((element) => {
-      if (element.type == 'popup' && element.focused) {
-        chrome.windows.remove(element.id)
-      }
-    })
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
   })
-  // background.getPopupExit()
 }
 /******end *****/
 
@@ -88,8 +94,11 @@ export function social(message) {
   }
 }
 export function sendSocialHash(method, data, type) {
-  background.getPopupTransferHash(method, data)
-  background.getPopupExit()
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type
+  })
 }
 /******end *****/
 

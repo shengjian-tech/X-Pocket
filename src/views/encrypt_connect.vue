@@ -19,7 +19,7 @@
           </div>
           <div class="flex1">
             <span>{{ $t('comm.current') }}</span>
-            <p>{{ plusXing(currentAccont.address) }}</p>
+            <p>{{ plusXing(currentAccont.address,5,5) }}</p>
           </div>
         </div>
         <div class="msg-box">
@@ -35,113 +35,92 @@
 
       <prompt-popup ref="prompt"></prompt-popup>
     </div>
-
-    <div class="connect" style="display: none">
-      <div class="connectBox">
-        <div class="connectTit">加密信息</div>
-        <div>
-          <img :src="favIconUrl" />
-          <div>{{ url }}</div>
-        </div>
-        <div class="conten">
-          只有在您完全理解内容并信任请求网站的情况下，才能进行信息加密。
-          您正在进行加密:
-        </div>
-        <div class="conten">
-          <div class="listType">
-            <span style="color: #1e832a">当前</span>
-          </div>
-          <div class="listAddress">{{ plusXing(currentAccont.address) }}</div>
-        </div>
-        <div class="conten accList">
-          <div>消息：</div>
-          <div>{{ message }}</div>
-        </div>
-      </div>
-      <div class="btnBox">
-        <el-button class="width110" round @click="closeWindow">拒绝</el-button>
-        <el-button
-          class="width110 color7657b1"
-          type="primary"
-          round
-          @click="addUrl"
-          >加密</el-button
-        >
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { getTab } from '@/utils/popup'
 import { plusXing } from '../assets/js/index'
 import { sendEncryptHash, sendExit } from '@/utils/transaction'
 import PromptPopup from '@/components/PromptPopup.vue'
-const { ethers } = require('ethers')
-const {
-  encryptWithPublicKey,
-  decryptWithPrivateKey,
-  cipher,
-} = require('eth-crypto')
+import { encryptWithPublicKey } from 'eth-crypto-js'
+import { cipher } from 'eth-crypto';
+import { i18n } from '@/main';
+
+
 export default {
-  data() {
-    return {
-      favIconUrl: '',
-      url: '',
-      color: ['#744f68', '#788890', '#ebd40a', '#1e832a', '#abb7bc'],
-      connect: null,
-      activeItem: [],
-      message: this.$route.query[0].message,
-    }
-  },
   components: {
     PromptPopup,
   },
-  computed: {
-    accountAllList() {
+  setup() {
+    const route = useRoute()
+    const favIconUrl = ref('')
+    const url = ref('')
+    const message = ref('')
+    const prompt = ref(null)
+    console.log('--encrypt-route=--',route)
+    // 计算属性
+    const accountAllList = computed(() => {
       return JSON.parse(localStorage.getItem('acc'))
-    },
-    currentAccont() {
-      return JSON.parse(localStorage.getItem('currentAccont'))
-    },
-  },
-  mounted() {
-    this.getTap()
-    // console.log(this.accountAllList);
-  },
-  methods: {
-    getTap() {
-      getTab().then((res) => {
-        console.log(res)
-        this.connect = res
-        this.favIconUrl = res.favIconUrl
-        this.url = res.url
-        this.getActiveItem()
-      })
-    },
-    plusXing(val) {
-      return plusXing(val, 5, 10)
-    },
-    closeWindow() {
-      sendExit()
-    },
+    })
 
-    async addUrl() {
-      let that = this
+    const currentAccont = computed(() => {
+      return JSON.parse(localStorage.getItem('currentAccont'))
+    })
+
+    // 方法
+    const getTap = async () => {
+      const res = await getTab()
+      console.log(res)
+      favIconUrl.value = res.favIconUrl
+      url.value = res.url
+    }
+
+    const closeWindow = () => {
+      sendExit()
+    }
+
+    const addUrl = async () => {
       console.log(JSON.parse(localStorage.getItem('currentAccont')))
-      let account = JSON.parse(localStorage.getItem('currentAccont'))
+      const account = JSON.parse(localStorage.getItem('currentAccont'))
       const pubey = account.publicKey
-      if (account.type == 'eth') {
+
+      if (account.type === 'eth') {
         const encryptedData = await encryptWithPublicKey(
           pubey.split('0x')[1],
-          that.message
+          message.value
         )
-        console.log(encryptWithPublicKey)
         sendEncryptHash('encryptCrypto_sign', cipher.stringify(encryptedData))
       } else {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg26'), 'warning', 2500)
+        prompt.value.showToast(i18n.global.t('toastMsg.msg26'), 'warning', 2500)
       }
-    },
+    }
+
+    // 生命周期钩子
+    onMounted(() => {
+      getTap()
+
+      let query = route.query
+      let params = JSON.parse(query.params)
+      console.log('query', JSON.parse(query.params))
+      if (params && params.length > 0) { 
+        message.value = params[0].message
+      }
+    })
+
+    return {
+      favIconUrl,
+      url,
+      message,
+      currentAccont,
+      accountAllList,
+      prompt,
+      plusXing,
+      closeWindow,
+      addUrl,
+    }
   },
 }
 </script>

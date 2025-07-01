@@ -2,7 +2,7 @@
   <div>
     <div class="container" style="width: 300px; margin: auto">
       <div class="header">
-        <span class="nav-title">{{ $t('sign.title') }}</span>
+        <span class="nav-title">{{ t('sign.title') }}</span>
       </div>
       <div class="content">
         <div class="comm-request">
@@ -10,182 +10,146 @@
           <p>{{ url }}</p>
         </div>
         <p class="intro-txt">
-          {{ $t('sign.intro') }}
+          {{ t('sign.intro') }}
         </p>
         <div class="current-box">
           <div class="img-circle">
-            <img
-              src="../assets/img-eth.png"
-              v-if="currentAccont.type == 'eth'"
-            />
-            <img src="../assets/img-x.png" v-else />
+            <img src="../assets/img-eth.png" v-if="currentAccount.type === 'eth'" />
+            <img src="../assets/img-x.png" v-if="currentAccount.type === 'xuper'" />
+            <img src="../assets/img-solana.png" v-if="currentAccount.type === 'solana'" />
           </div>
           <div class="flex1">
-            <span>{{ $t('comm.current') }}</span>
-            <p>{{ plusXing(currentAccont.address) }}</p>
+            <span>{{ t('comm.current') }}</span>
+            <p>{{ plusXing(currentAccount.address,5,5) }}</p>
           </div>
         </div>
         <div class="msg-box">
-          <p>{{ $t('comm.msg') }}</p>
+          <p>{{ t('comm.msg') }}</p>
           <div class="msg-cont">{{ message[0] }}</div>
           <div class="line"></div>
         </div>
       </div>
       <div class="btn-wrapper">
-        <div class="btn" @click="closeWindow">{{ $t('comm.refuse') }}</div>
-        <div class="btn" @click="addUrl">{{ $t('comm.confirm') }}</div>
-      </div>
-
-      <!-- <confirm-popup
-        ref="confirm"
-        @confirm="sure"
-        @cancel="handleCancel"
-        :title="$t('comm.tips')"
-        >{{ $t('sign.trustinfo') }}</confirm-popup
-      > -->
-    </div>
-
-    <div class="connect" style="display: none">
-      <div class="connectBox">
-        <div class="connectTit">签名请求</div>
-        <div>
-          <img :src="favIconUrl" />
-          <div>{{ url }}</div>
-        </div>
-        <div class="conten">
-          只有在您完全理解内容并信任请求网站的情况下，才能签署此消息。
-          您正在签名:
-        </div>
-        <div class="conten">
-          <div class="listType">
-            <span style="color: #1e832a">当前</span>
-          </div>
-          <div class="listAddress">{{ plusXing(currentAccont.address) }}</div>
-        </div>
-        <div class="conten accList">
-          <div>消息：</div>
-          <div>{{ message[0] }}</div>
-        </div>
-      </div>
-      <div class="btnBox">
-        <el-button class="width110" round @click="closeWindow">拒绝</el-button>
-        <el-button
-          class="width110 color7657b1"
-          type="primary"
-          round
-          @click="addUrl"
-          >签名</el-button
-        >
+        <div class="btn" @click="closeWindow">{{ t('comm.refuse') }}</div>
+        <div class="btn" @click="addUrl">{{ t('comm.confirm') }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getTab } from '@/utils/popup'
 import { plusXing } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
-import { sendSignHash, sendBaiduSignHash, sendExit } from '@/utils/transaction'
+import { sendSignHash, sendExit } from '@/utils/transaction'
+import { signMessage } from '@/utils/solana'
 import { ec as EC } from 'elliptic'
-import ConfirmPopup from '@/components/ConfirmPopup.vue'
 import BN from 'bn.js'
+import { ethers } from 'ethers'
+import { Bytes, concat } from "@ethersproject/bytes";
+import { keccak256 } from "@ethersproject/keccak256";
+import { toUtf8Bytes } from "@ethersproject/strings";
 
-const { ethers } = require('ethers')
 export default {
-  data() {
-    return {
-      favIconUrl: '',
-      url: '',
-      color: ['#744f68', '#788890', '#ebd40a', '#1e832a', '#abb7bc'],
-      connect: null,
-      activeItem: [],
-      message: this.$route.query,
-    }
-  },
-  components: { ConfirmPopup },
-  computed: {
-    accountAllList() {
-      return JSON.parse(localStorage.getItem('acc'))
-    },
-    currentAccont() {
+  name: 'SignPage',
+  setup() {
+    const route = useRoute()
+    const { t } = useI18n()
+
+    // 响应式数据
+    const favIconUrl = ref('')
+    const url = ref('')
+    const message = ref(route.query)
+    const currentAccount = computed(() => {
       return JSON.parse(localStorage.getItem('currentAccont'))
-    },
-  },
-  mounted() {
-    console.log('sign参数')
-    console.log(this.$route.query)
-    this.getTap()
+    })
+    const accountAllList = computed(() => {
+      return JSON.parse(localStorage.getItem('acc'))
+    })
 
-    // let isTrust = localStorage.getItem('isTrust')
-    // if (!isTrust) {
-    //   this.$refs.confirm.showConfirm()
-    // }
-    // console.log(this.accountAllList);
-  },
-  methods: {
-    getTap() {
-      getTab().then((res) => {
-        console.log(res)
-        this.connect = res
-        this.favIconUrl = res.favIconUrl
-        this.url = res.url
-        // this.getActiveItem()
-      })
-    },
-    plusXing(val) {
-      return plusXing(val, 5, 10)
-    },
-    closeWindow() {
+    // 获取当前标签页信息
+    const getTap = async () => {
+      const res = await getTab()
+      favIconUrl.value = res.favIconUrl
+      url.value = res.url
+    }
+
+    // 关闭窗口
+    const closeWindow = () => {
       sendExit()
-    },
+    }
 
-    async addUrl() {
-      let that = this
-      let account = JSON.parse(localStorage.getItem('currentAccont'))
-      if (account.type == 'eth') {
-        let privateKey = await getPrivateKey()
-        console.log('当前账号是 eth--page')
-        console.log(that.message, '---that.message----')
-        // const privateKey = account.privateKey // 用你自己的私钥替换
+    // 添加 URL 并签名
+    const addUrl = async () => {
+      const account = JSON.parse(localStorage.getItem('currentAccont'))
+      if (account.type === 'eth') {
+        const privateKey = await getPrivateKey()
         const wallet = new ethers.Wallet(privateKey)
-        //const provider = new ethers.providers.JsonRpcProvider(net); // 使用你自己的 Infura 项目 ID 替换
-        const messageBytes = ethers.utils.toUtf8Bytes(that.message[0])
+        const messageBytes = ethers.utils.toUtf8Bytes(message.value[0])
         const signature = await wallet.signMessage(messageBytes)
         sendSignHash('personal_sign', signature)
-        // this.$router.push('/Home')
-        // window.close()
-      } else {
-        let privateKey1 = await getPrivateKey()
-        console.log('当前账号是 xuper--page')
-        console.log(that.message, '---that.message----')
-        // console.log(privateKey1, '当前私钥')
-        let privateKey = JSON.parse(privateKey1)
+      }
+      if (account.type === 'xuper') {
+        const messagePrefix = "\x86XuperChain Signed Message:\n";
+        const privateKey1 = await getPrivateKey()
+        const privateKey = JSON.parse(privateKey1)
         const ec = new EC('p256')
-        // const privKey = ec.keyFromPrivate(privateKey.D, 'hex')  //原来写法不对
-        // https://github.com/xuperchain/xuper-sdk-js/blob/master/src/transaction.ts#L309   签名信息
         const bnD = new BN(privateKey.D)
         const privKey = ec.keyFromPrivate(bnD.toArray())
-        const utf8Data = Buffer.from(that.message[0], 'utf-8')
-        const sign = privKey.sign(utf8Data)
-        const r = Buffer.from(sign.r.toArray('be', 32))
-        const s = Buffer.from(sign.s.toArray('be', 32))
-        const x = Buffer.from(privKey.getPublic().getX().toArray('be', 32))
-        const y = Buffer.from(privKey.getPublic().getY().toArray('be', 32))
-        const signatureStr = Buffer.concat([r, s, x, y, utf8Data])
-        const signtext = signatureStr.toString('hex') // 签名字符串
-        console.log(signtext, '---signtext---')
-        // 为了使签名都统一写法
-        sendSignHash('personal_sign', signtext)
-        // sendBaiduSignHash('xuper_sign', signtext, 'baidu') // 这个是原来写法
-      }
-    },
+        let msg = message.value[0]
+        const msgBytes = toUtf8Bytes(msg)
 
-    // sure() {publicKey
-    //   localStorage.setItem('isTrust', 1)
-    // },
-    // handleCancel() {
-    //   localStorage.removeItem('isTrust')
-    // },
+        // 计算消息哈希时加上前缀
+        const msgHash = keccak256(concat([
+          toUtf8Bytes(messagePrefix),
+          toUtf8Bytes(String(msgBytes.length)),
+          msgBytes
+        ]))
+
+        const msgHashBuffer = Buffer.from(msgHash.slice(2), 'hex'); // 转 Buffer
+
+        // 使用私钥对消息进行签名
+        const sign = privKey.sign(msgHashBuffer);
+
+        const r = Buffer.from(sign.r.toArray('be', 32));
+        const s = Buffer.from(sign.s.toArray('be', 32));
+
+        // 计算恢复参数 v
+        const recoveryParam = sign.recoveryParam;  // 0 或 1
+        const v = recoveryParam + 27;  // ECDSA 中 v 通常是 27 或 28
+
+        // 合并签名
+        const signatureStr = Buffer.concat([r, s, Buffer.from([v])]);
+        const signtext = signatureStr.toString('hex');
+        console.log('-signtext=-',signtext);
+        sendSignHash('personal_sign', signtext)
+      }
+      if(account.type === 'solana'){
+        const privateKey = await getPrivateKey()
+        const signature = signMessage(privateKey, message.value[0])
+        sendSignHash('personal_sign', signature)
+      }
+    }
+
+    // 初始化
+    onMounted(() => {
+      getTap()
+    })
+
+    return {
+      favIconUrl,
+      url,
+      message,
+      currentAccount,
+      accountAllList,
+      plusXing,
+      closeWindow,
+      addUrl,
+      t,
+    }
   },
 }
 </script>

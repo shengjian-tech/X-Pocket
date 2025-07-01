@@ -6,7 +6,7 @@
         <img src="../assets/headerlogo.png" />
       </div>
       <div class="info-list" v-if="showInfo">
-        <p>{{ $t('home.myAccount') }}</p>
+        <p>{{ t('home.myAccount') }}</p>
         <ul class="account-ul">
           <li
             v-for="(item, index) in accountAllList"
@@ -22,29 +22,29 @@
         <ul class="list-ul">
           <li @click="handleCommand('a')">
             <img src="../assets/img-add.png" />
-            <div class="flex1">{{ $t('home.newAddress') }}</div>
+            <div class="flex1">{{ t('home.newAddress') }}</div>
           </li>
           <li @click="handleCommand('i')">
             <img src="../assets/img-link.png" />
-            <div class="flex1">{{ $t('home.linkDetails') }}</div>
+            <div class="flex1">{{ t('home.linkDetails') }}</div>
           </li>
           <li @click="handleCommand('c')">
             <img src="../assets/img-set.png" />
-            <div class="flex1">{{ $t('home.set') }}</div>
+            <div class="flex1">{{ t('home.set') }}</div>
           </li>
         </ul>
         <div class="btn-wrapper">
           <div class="btn btn-comm" @click="goLock()">
-            {{ $t('home.btnLock') }}
+            {{ t('home.btnLock') }}
           </div>
-          <div class="btn-comm" @click="goout()">{{ $t('home.btnOut') }}</div>
+          <div class="btn-comm" @click="goout()">{{ t('home.btnOut') }}</div>
         </div>
       </div>
     </div>
     <div class="flex1">
       <div class="select-box" @click="listHandle">
         <img :src="netObj[sign]" class="chain-logo" />
-        <div class="flex1">{{ value }}</div>
+        <div class="flex1">{{ netName }}</div>
         <img src="../assets/img-right.png" class="img-down" />
       </div>
       <ul class="chain-list" v-if="showList">
@@ -64,262 +64,239 @@
         </li>
         <li @click="goAddNet()">
           <img src="../assets/img-add.png" class="chain-logo" />
-          <div class="flex1">{{ $t('home.addNet') }}</div>
+          <div class="flex1">{{ t('home.addNet') }}</div>
         </li>
       </ul>
     </div>
     <prompt-popup ref="prompt"></prompt-popup>
-    <confirm-popup ref="confirm" @confirm="sure" :title="$t('comm.tips')">{{
-      $t('toastMsg.msg9')
-    }}</confirm-popup>
+    <confirm-popup ref="confirm" @confirm="sure" :title="t('comm.tips')">
+      {{ t('toastMsg.msg9') }}
+    </confirm-popup>
   </div>
 </template>
+
 <script>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { plusXing } from '../assets/js/index'
 import { clearStorage } from '@/utils/setStorage'
-import { getLocalAccont } from '@/utils/popup'
 import ConfirmPopup from '@/components/ConfirmPopup.vue'
 import PromptPopup from '@/components/PromptPopup.vue'
+
 export default {
-  data() {
-    return {
-      addressInfo: '',
-      visible: false,
-      addForm: {
-        name: '',
-        contractName: '',
-        methodName: '',
-        formValue: [],
-      },
-      showInfo: false,
-      showList: false,
-      options: [
-        {
-          netName: 'XuperOS',
-          node: 'https://xuper.baidu.com/nodeapi',
-          chain: 'xuper',
-          type: 'xuper',
-          imgUrl: require('../assets/img-eth.png'),
-        },
-      ],
-      value: 'XuperOS',
-      accountAllList: [],
-      choseNet: '',
-      sign: '',
-      netObj: {
-        xuper: require('../assets/img-x.png'),
-        eth: require('../assets/img-eth.png'),
-        polygon: require('../assets/img-polygon.png'),
-      },
-    }
-  },
+  name: 'HeaderNav',
   components: {
     ConfirmPopup,
     PromptPopup,
   },
-  mounted() {
-    console.log('header------mounted')
-    //设置默认网络
-    let netList = JSON.parse(localStorage.getItem('netList'))
-    let currentNet = localStorage.getItem('currentNet')
-      ? JSON.parse(localStorage.getItem('currentNet'))
-      : null
-    this.options = JSON.parse(localStorage.getItem('netList'))
-    let acc = JSON.parse(localStorage.getItem('currentAccont'))
-    let closeState = localStorage.getItem('closeState')
-    let closepwd = localStorage.getItem('closepwd')
-    console.log(closeState, '**closeState**')
-    console.log(closepwd, '**closepwd**')
-    console.log(acc, '**acc**')
-    console.log(currentNet, '**currentNet**')
-    if (acc) {
-      if (closeState == true && closepwd) {
-        this.$router.push('/pwdLogin')
-      } else {
-        if (currentNet) {
-          this.value = currentNet.netName
-          this.sign = currentNet.type == 'xuper' ? 'xuper' : 'eth'
+  setup(props, { emit }) {
+    const router = useRouter()
+    const { t } = useI18n()
+
+    // 响应式数据
+    const showInfo = ref(false)
+    const showList = ref(false)
+    const options = ref([
+      {
+        netName: 'XuperOS',
+        node: 'https://xuper.baidu.com/nodeapi',
+        chain: 'xuper',
+        type: 'xuper',
+        imgUrl: require('../assets/img-eth.png'),
+      },
+    ])
+    const netName = ref('XuperOS')
+    const accountAllList = ref([])
+    const choseNet = ref('')
+    const sign = ref('')
+    const netObj = ref({
+      xuper: require('../assets/img-x.png'),
+      eth: require('../assets/img-eth.png'),
+      polygon: require('../assets/img-polygon.png'),
+      solana : require('../assets/img-solana.png'),
+    })
+    const prompt = ref(null)
+    const confirm = ref(null)
+
+    // 初始化
+    onMounted(() => {
+      const netList = JSON.parse(localStorage.getItem('netList'))
+      const currentNet = localStorage.getItem('currentNet')
+        ? JSON.parse(localStorage.getItem('currentNet'))
+        : null
+      options.value = JSON.parse(localStorage.getItem('netList'))
+      const acc = JSON.parse(localStorage.getItem('currentAccont'))
+      const closeState = localStorage.getItem('closeState')
+      const closepwd = localStorage.getItem('closepwd')
+
+      if (acc) {
+        if (closeState === 'true' && closepwd) {
+          router.push('/pwdLogin')
         } else {
-          this.value = acc.type == 'xuper' ? 'XuperOS' : 'Ethereum'
-          this.sign = acc.type == 'xuper' ? 'xuper' : 'eth'
-        }
-
-        this.choseNet = this.value
-        console.log(this.value)
-        if (localStorage.getItem('accountAllList')) {
-          this.accountAllList = JSON.parse(
-            localStorage.getItem('accountAllList')
-          )
-        }
-        this.addressInfo = plusXing(
-          JSON.parse(localStorage.getItem('currentAccont')).address,
-          5,
-          5
-        )
-        getLocalAccont()
-        if (!currentNet) {
-          if (acc.type == 'xuper') {
-            localStorage.setItem('currentNet', JSON.stringify(netList[0]))
-            // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address,"baidu")
-          } else if (acc.type == 'eth') {
-            // sendAccont('eth_requestAccounts',JSON.parse(localStorage.getItem("currentAccont")).address)
-            localStorage.setItem('currentNet', JSON.stringify(netList[1]))
-          }
-        }
-      }
-    } else {
-      this.$router.push('/Login')
-    }
-  },
-
-  methods: {
-    plusXing,
-    infoHandle() {
-      this.showInfo = !this.showInfo
-    },
-    listHandle() {
-      this.showList = !this.showList
-    },
-    hideCover() {
-      this.showInfo = false
-      this.showList = false
-    },
-    //添加参数
-    addParams() {
-      this.addForm.formValue.push({ value: '', label: '' })
-    },
-    getSetting() {
-      this.$router.push('/Home')
-    },
-    goAddNet() {
-      this.$router.push('/Addnet')
-    },
-    //新增操作
-    submit(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          var localArr = {
-            addList: [],
-          }
-          if (localStorage.getItem('addForm')) {
-            localArr.addList = JSON.parse(
-              localStorage.getItem('addForm')
-            ).addList
-            localArr.addList.push(this.addForm)
-            localStorage.setItem('addForm', JSON.stringify(localArr))
+          if (currentNet) {
+            netName.value = currentNet.netName
+            console.log('netName.value=',netName.value)
+            if(currentNet.type === 'xuper') {
+              sign.value = 'xuper'
+            } else if (currentNet.type === 'eth') {
+              sign.value = 'eth'
+            } else if (currentNet.type ==='solana') {
+              sign.value = 'solana'
+            }
           } else {
-            localArr.addList.push(this.addForm)
-            localStorage.setItem('addForm', JSON.stringify(localArr))
+            if(acc.type === 'xuper') {
+              sign.value = 'xuper'
+              netName.value = 'XuperOS'
+            } else if (acc.type === 'eth') {
+              sign.value = 'eth'
+              netName.value = 'Ethereum'
+            } else if (acc.type ==='solana') {
+              sign.value = 'solana'
+              netName.value = 'Solana'
+            }
           }
-          this.visible = false
-          window.location.reload()
-        } else {
-          return false
+          choseNet.value = netName.value
+          if (localStorage.getItem('accountAllList')) {
+            accountAllList.value = JSON.parse(
+              localStorage.getItem('accountAllList')
+            )
+          }
+          if (!currentNet) {
+            if (acc.type === 'xuper') {
+              localStorage.setItem('currentNet', JSON.stringify(netList[0]))
+            } else if (acc.type === 'eth') {
+              localStorage.setItem('currentNet', JSON.stringify(netList[2]))
+            } else if (acc.type === 'solana') {
+              localStorage.setItem('currentNet', JSON.stringify(netList[3]))
+            }
+          }
         }
-      })
-    },
-    //退出
-    getOut() {
-      localStorage.clear()
-      this.$router.replace('/Login')
-    },
-    // goMakerOne() {
-    //   window.location.href =
-    //     'https://makerone.shengjian.net/front_nft_mobileN/nft_mobileN_home'
-    // },
-
-    //判断数据
-    getSelect(value, item) {
-      console.log(value, '**value***')
-      //切换网络，先看看 是否存在同类型网络账户，如果没有，前去登录。
-      let that = this
-      let accountList = JSON.parse(localStorage.getItem('acc'))
-      let netList = JSON.parse(localStorage.getItem('netList'))
-      console.log(netList, '**netList**')
-      let type = netList[value].type
-      this.choseNet = item.netName
-      this.value = item.netName
-      this.sign = item.sign
-
-      let mapresult = accountList.some(function (item) {
-        return item.type == type
-      })
-      console.log(mapresult, '**mapresult**')
-      if (!mapresult) {
-        //不存在同网络类型账户,前去登录
-        this.$router.push({
-          path: '/login',
-          query: { state: 1, stateName: type },
-        })
-        this.showList = false
       } else {
-        that.accountAllList = [] //符合当前网络类型的 账户列表
-        accountList.map((item) => {
-          if (item.type == type) {
-            that.accountAllList.push(item)
-          }
-        })
+        router.push('/Login')
+      }
+    })
+
+    // 显示/隐藏账户信息
+    const infoHandle = () => {
+      showInfo.value = !showInfo.value
+    }
+
+    // 显示/隐藏网络列表
+    const listHandle = () => {
+      showList.value = !showList.value
+    }
+
+    // 隐藏遮罩层
+    const hideCover = () => {
+      showInfo.value = false
+      showList.value = false
+    }
+
+    // 跳转到添加网络页面
+    const goAddNet = () => {
+      router.push('/Addnet')
+    }
+
+    // 切换网络
+    const getSelect = (value, item) => {
+      const accountList = JSON.parse(localStorage.getItem('acc'))
+      const netList = JSON.parse(localStorage.getItem('netList'))
+      const type = netList[value].type
+      choseNet.value = item.netName
+      netName.value = item.netName
+      sign.value = item.sign
+
+      const mapresult = accountList.some((item) => item.type === type)
+      if (!mapresult) {
+        router.push({ path: '/login', query: { state: 1, stateName: type } })
+        showList.value = false
+      } else {
+        accountAllList.value = accountList.filter((item) => item.type === type)
         localStorage.setItem(
           'accountAllList',
-          JSON.stringify(that.accountAllList)
+          JSON.stringify(accountAllList.value)
         )
-        this.$emit(
-          'transfer',
-          JSON.parse(localStorage.getItem('accountAllList'))[0],
-          netList[value]
-        )
-        this.showList = false
+        emit('transfer', accountAllList.value[0], netList[value])
+        showList.value = false
+
+        // 更新缓存链接
+        const connectList = JSON.parse(localStorage.getItem('connectList'))
+        connectList[0].accountList = accountAllList.value
+        localStorage.setItem('connectList', JSON.stringify(connectList))
       }
-      //存一下正在使用的网络
       localStorage.setItem('currentNet', JSON.stringify(netList[value]))
-    },
+    }
 
-    //锁定
-    goLock() {
-      let closepwd = localStorage.getItem('closepwd')
+    // 锁定账户
+    const goLock = () => {
+      const closepwd = localStorage.getItem('closepwd')
       if (closepwd) {
-        localStorage.setItem('closeState', true)
-        this.$router.push('/pwdLogin')
+        localStorage.setItem('closeState', 'true')
+        router.push('/pwdLogin')
       } else {
-        this.$refs.prompt.showToast(this.$t('comm.msg10'), 'warning', 2500)
-        this.$router.push('/SetPassword')
+        prompt.value.showToast(t('comm.msg10'), 'warning', 2500)
+        router.push('/SetPassword')
       }
-    },
+    }
 
-    handleCommand(command) {
-      console.log(command, '**command**')
-      if (command == 'a') {
-        this.$router.push({ path: '/', query: { state: 1 } })
-      } else if (command == 'b') {
-        this.$refs.prompt.showToast(this.$t('comm.msg11'), 'warning', 2500)
-      } else if (command == 'c') {
-        this.$router.push('/Set')
-      } else if (command == 'i') {
-        this.$router.push('/connectList')
+    // 处理命令
+    const handleCommand = (command) => {
+      if (command === 'a') {
+        router.push({ path: '/', query: { state: 1 } })
+      } else if (command === 'c') {
+        router.push('/Set')
+      } else if (command === 'i') {
+        router.push('/connectList')
       }
-    },
+    }
 
-    //给父组件传递消息
-    changeAccount(item, net) {
-      console.log(item, '**item**')
-      this.$emit('transfer', item, net)
-      this.showInfo = false
-      // window.location.reload();
-    },
+    // 切换账户
+    const changeAccount = (item) => {
+      emit('transfer', item)
+      showInfo.value = false
+    }
 
-    //goout
-    goout() {
-      this.$refs.confirm.showConfirm()
-    },
-    sure() {
-      //退出
+    // 退出登录
+    const goout = () => {
+      confirm.value.showConfirm()
+    }
+
+    // 确认退出
+    const sure = () => {
       localStorage.clear()
       clearStorage()
-      this.$router.push('/login')
-    },
+      router.push('/login')
+    }
+
+    return {
+      showInfo,
+      showList,
+      options,
+      netName,
+      accountAllList,
+      choseNet,
+      sign,
+      netObj,
+      prompt,
+      confirm,
+      infoHandle,
+      listHandle,
+      hideCover,
+      goAddNet,
+      getSelect,
+      goLock,
+      handleCommand,
+      changeAccount,
+      goout,
+      sure,
+      plusXing,
+      t,
+    }
   },
 }
 </script>
+
 <style lang="less" scoped>
 .header-nav {
   display: flex;
@@ -475,6 +452,10 @@ export default {
         border-radius: 8px;
         margin-bottom: 4px;
         cursor: pointer;
+        img{
+          width: 24px;
+          height: 24px;
+        }
         .flex1 {
           flex: 1;
           color: white;

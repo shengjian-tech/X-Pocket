@@ -20,61 +20,47 @@
             <img src="../assets/img-right.png" class="img-right" />
           </li>
         </ul>
-        <div class="btn" @click="goAdd()">{{ $t('home.addNet') }}</div>
-      </div>
-    </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>设置/管理网络
-      </div>
-      <div class="setList">
-        <div
-          v-for="(item, index) in netList"
-          :key="index"
-          @click="setNetWork(index)"
-        >
-          <i class="el-icon-position"></i>{{ item.netName
-          }}<i class="el-icon-arrow-right"></i>
-        </div>
-      </div>
-      <div class="setbtn setNetlistBtn">
-        <el-button class="addNetBtn" type="primary" round @click="goAdd()"
-          >添加网络</el-button
-        >
+        <div class="btn" @click="goAdd">{{ $t('home.addNet') }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'Netlist',
-  data() {
-    return {
-      netList: JSON.parse(localStorage.getItem('netList')),
-      netObj: {
-        xuper: require('../assets/img-x.png'),
-        eth: require('../assets/img-eth.png'),
-        polygon: require('../assets/img-polygon.png'),
-      },
+  setup() {
+    const router = useRouter()
+    const netList = ref(JSON.parse(localStorage.getItem('netList')))
+    const netObj = ref({
+      xuper: require('../assets/img-x.png'),
+      eth: require('../assets/img-eth.png'),
+      polygon: require('../assets/img-polygon.png'),
+      solana: require('../assets/img-solana.png'),
+    })
+
+    const goHome = () => {
+      router.push('/Set')
     }
-  },
-  components: { Header },
-  created() {},
-  methods: {
-    goHome() {
-      this.$router.push('/Set')
-    },
-    goAdd() {
-      this.$router.push('/Addnet')
-    },
-    setNetWork(index) {
-      console.log(index)
-      this.$router.push(`/Netdetail?index=${index}`)
-    },
+
+    const goAdd = () => {
+      router.push('/Addnet')
+    }
+
+    const setNetWork = (index) => {
+      router.push(`/Netdetail?index=${index}`)
+    }
+
+    return {
+      netList,
+      netObj,
+      goHome,
+      goAdd,
+      setNetWork,
+    }
   },
 }
 </script>

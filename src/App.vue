@@ -4,20 +4,26 @@
   </div>
 </template>
 <script>
-import { setOpen, createdMessage } from '@/utils/popup'
+import { onMounted, onBeforeUnmount } from 'vue';
+import { setOpen, createdMessage } from '@/utils/popup';
+
 export default {
-  created() {
-    console.log('插件打开')
-    createdMessage()
-    setOpen(true)
-    window.addEventListener('beforeunload', (e) => {
-      setOpen(false)
-    })
-  },
-  beforeDestroy() {
-    setOpen(false)
-  },
-}
+  setup() {
+    onMounted(() => {
+      console.log('插件打开');
+      createdMessage();
+      setOpen(true);
+
+      window.addEventListener('beforeunload', () => {
+        setOpen(false);
+      });
+    });
+
+    onBeforeUnmount(() => {
+      setOpen(false);
+    });
+  }
+};
 </script>
 <style lang="less">
 body,
@@ -135,5 +141,9 @@ p {
     color: rgba(255, 255, 255, 0.5);
     word-break: break-all;
   }
+}
+
+.el-loading-spinner .path{
+  stroke: #40fff5 !important;
 }
 </style>

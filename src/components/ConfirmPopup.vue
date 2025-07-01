@@ -1,45 +1,66 @@
 <template>
   <div class="popup-box" v-if="show">
     <div class="popup-cont">
-      <div class="title">{{ title }}<img src="../assets/img-help.png" /></div>
+      <div class="title">
+        {{ title }}<img src="../assets/img-help.png" />
+      </div>
       <div class="content">
         <slot></slot>
       </div>
       <div class="btn-box">
-        <div class="btn" @click="cancel">{{ $t('comm.cancel') }}</div>
-        <div class="btn" @click="sure">{{ $t('comm.confirm') }}</div>
+        <div class="btn" @click="cancel">{{ t('comm.cancel') }}</div>
+        <div class="btn" @click="sure">{{ t('comm.confirm') }}</div>
       </div>
     </div>
   </div>
 </template>
+
 <script>
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+
 export default {
-  data() {
-    return {
-      show: false,
-    }
-  },
+  name: 'ConfirmPopup',
   props: {
     title: {
       type: String,
       default: 'Tips',
     },
   },
-  methods: {
-    showConfirm() {
-      this.show = true
-    },
-    cancel() {
-      this.show = false
-      this.$emit('cancel')
-    },
-    sure() {
-      this.show = false
-      this.$emit('confirm')
-    },
+  setup(props, { emit }) {
+    const { t } = useI18n()
+
+    // 响应式数据
+    const show = ref(false)
+
+    // 显示弹窗
+    const showConfirm = () => {
+      show.value = true
+    }
+
+    // 取消操作
+    const cancel = () => {
+      show.value = false
+      emit('cancel')
+    }
+
+    // 确认操作
+    const sure = () => {
+      show.value = false
+      emit('confirm')
+    }
+
+    return {
+      show,
+      showConfirm,
+      cancel,
+      sure,
+      t,
+    }
   },
 }
 </script>
+
 <style lang="less" scoped>
 .popup-box {
   position: absolute;

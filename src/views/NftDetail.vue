@@ -25,58 +25,48 @@
         </ul>
       </div>
     </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>首页/NFTS
-      </div>
-      <div class="nftDetail">
-        <img class="nftImg" :src="data.image_uri" alt="" />
-        <div class="detailbg">
-          <div>
-            名称: <span>{{ data.name }}</span>
-          </div>
-          <div>
-            交易哈希：<span>{{ data.hash }}</span>
-          </div>
-          <div>
-            Token_id：<span>{{ data.token_id }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
 export default {
   name: 'NftDetail',
-  data() {
-    return {
-      form: {
-        netName: '',
-        type: '',
-        chain: '',
-        node: '',
-        chainid: '',
-        symbol: '',
-      },
-      netList: JSON.parse(localStorage.getItem('netList')),
-      netType: '',
-      data: JSON.parse(this.$route.query.item),
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+
+    const form = ref({
+      netName: '',
+      type: '',
+      chain: '',
+      node: '',
+      chainid: '',
+      symbol: '',
+    })
+
+    const netList = ref(JSON.parse(localStorage.getItem('netList')))
+    const netType = ref('')
+    const data = ref(JSON.parse(route.query.item))
+
+    const goHome = () => {
+      router.push('/Home')
     }
-  },
-  components: { Header },
-  mounted() {},
-  methods: {
-    goHome() {
-      this.$router.push('/Home')
-    },
-    onSubmit() {
+
+    const onSubmit = () => {
       console.log('submit!')
-    },
+    }
+
+    return {
+      form,
+      netList,
+      netType,
+      data,
+      goHome,
+      onSubmit,
+    }
   },
 }
 </script>

@@ -161,683 +161,227 @@
         {{ $t('set.version') }} X-Pocket v{{ version }}
       </div>
     </div>
-
-    <div class="home" style="display: none">
-      <div class="help">
-        <home-header @transfer="getAccound"></home-header>
-      </div>
-      <div class="avatarHeader">
-        <div class="address_el">
-          <div class="addressTitle">区块链地址</div>
-
-          <div class="addressCont">
-            {{ addressInfo }}
-            <i
-              class="el-icon-copy-document copycont"
-              :data-clipboard-text="address"
-              @click="copy"
-            ></i>
-          </div>
-        </div>
-      </div>
-      <div class="avatar">
-        <img class="avatarImg" src="../assets/headerlogo.png" alt="" />
-        <div class="blancetext">{{ balanceMoney }}</div>
-        <div class="nowPlugin" v-if="plugname">
-          <span>正在展示{{ plugname }}插件</span>
-          <i class="el-icon-sort newPluginIcon" @click="changePlug()"></i>
-        </div>
-        <div class="nowPlugin" v-else>
-          <span>还未安装插件,快安装插件体验吧</span>
-        </div>
-        <div class="tab tabSetList">
-          <div
-            class="grid-content bg-purple tablistCont"
-            style="cursor: pointer"
-            @click="goSearchFun()"
-          >
-            <p class="eliconFat"><i class="el-icon-search"></i></p>
-            <p class="eliconFont" style="font-size: 14px">查询</p>
-          </div>
-          <div
-            class="grid-content bg-purple tablistCont"
-            style="cursor: pointer"
-            @click="goTransFun()"
-          >
-            <p class="eliconFat"><i class="el-icon-sort"></i></p>
-            <p class="eliconFont" style="font-size: 14px">转移</p>
-          </div>
-
-          <div
-            class="grid-content bg-purple tablistCont"
-            style="cursor: pointer"
-            @click="getPlugMethod()"
-          >
-            <p class="eliconFat"><i class="el-icon-menu"></i></p>
-            <p class="eliconFont" style="font-size: 14px">插件市场</p>
-          </div>
-          <template v-if="plugState">
-            <div
-              class="grid-content bg-purple tablistCont"
-              style="cursor: pointer"
-              v-for="(item, index) in tabsSetList.addList"
-              :key="index"
-              @click="getDetails(index)"
-            >
-              <p class="eliconFat"><i :class="item.icon"></i></p>
-              <p class="eliconFont" style="font-size: 14px">{{ item.name }}</p>
-            </div>
-          </template>
-        </div>
-      </div>
-      <el-tabs type="border-card" class="firstTabs">
-        <el-tab-pane label="NFTS">
-          <div class="detailTabs">
-            <el-tabs
-              class="tabslist"
-              v-model="activeName"
-              @tab-click="handleClick"
-            >
-              <el-tab-pane name="1">
-                <span slot="label"
-                  ><img
-                    class="labelListImg"
-                    src="../assets/nfts.png"
-                    alt=""
-                    srcset=""
-                    v-if="tabslistTabName == '1'"
-                  />
-                  <img
-                    class="labelListImg"
-                    src="../assets/nftFont.png"
-                    alt=""
-                    srcset=""
-                    v-else
-                  />NFTS
-                </span>
-                <div class="balancelist">
-                  <div
-                    class="grid-content bg-purple nftsClass"
-                    v-for="(items, index) in nfts"
-                    :key="index"
-                  >
-                    <div @click="goNftDetail(items)">
-                      <img :src="items.image_uri" alt="" srcset="" />
-                    </div>
-                    <div>{{ items.name }}</div>
-                  </div>
-                </div>
-              </el-tab-pane>
-              <el-tab-pane name="2">
-                <span slot="label">
-                  <img
-                    class="labelListImg"
-                    src="../assets/copyfont-1.png"
-                    alt=""
-                    srcset=""
-                    v-if="tabslistTabName == '2'"
-                  />
-                  <img
-                    class="labelListImg"
-                    src="../assets/copyfont.png"
-                    alt=""
-                    srcset=""
-                    v-else
-                  />
-                  版权存证</span
-                >
-                <div>暂无更多数据</div>
-              </el-tab-pane>
-              <el-tab-pane name="3">
-                <span slot="label">
-                  <img
-                    class="labelListImg"
-                    src="../assets/gameFont-1.png"
-                    alt=""
-                    srcset=""
-                    v-if="tabslistTabName == '3'"
-                  />
-                  <img
-                    class="labelListImg"
-                    src="../assets/gameFont.png"
-                    alt=""
-                    srcset=""
-                    v-else
-                  />
-                  游戏道具</span
-                >
-                <div>暂无更多数据</div>
-              </el-tab-pane>
-              <el-tab-pane name="4">
-                <span slot="label">
-                  <img
-                    class="labelListImg"
-                    src="../assets/priFont-1.png"
-                    alt=""
-                    srcset=""
-                    v-if="tabslistTabName == '4'"
-                  />
-                  <img
-                    class="labelListImg"
-                    src="../assets/priFont.png"
-                    alt=""
-                    srcset=""
-                    v-else
-                  />
-                  区块链域名</span
-                >
-                <div>暂无更多数据</div>
-              </el-tab-pane>
-            </el-tabs>
-          </div>
-        </el-tab-pane>
-        <el-tab-pane label="Tokens">
-          <div class="tokensStyles">
-            <div class="tokenslist">
-              <span class="tokenslist_firstspan">Tokens</span>
-              <span class="tokenslist_lastspan">余额</span>
-            </div>
-            <div
-              class="tokenslist tokenslistBottom"
-              v-for="(items, index) in tokens"
-              :key="index"
-            >
-              <span class="tokenslist_bottom_left">
-                <img src="../assets/avatar.png" alt="" srcset="" />
-                <span>{{ items.name }}</span>
-              </span>
-              <span class="tokenslist_bottom_right">{{ items.balance }}</span>
-            </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-
-      <!-- <el-drawer title="插件市场" :visible.sync="drawer" size="80%">
-        <div class="drawerBtn">
-          <div class="plugList">
-            <div
-              class="listdetail"
-              v-for="(item, index) in pluginsList"
-              :key="index"
-            >
-              <img :src="item[3].logo" alt="" />
-              <span>{{ item[1].name }}</span>
-              <el-button
-                v-if="item[4].state && item[4].state == 1"
-                class="addNetBtnHome drawerDisable"
-                type="primary"
-                round
-                >已安装</el-button
-              >
-              <el-button
-                v-else
-                class="addNetBtnHome"
-                type="primary"
-                round
-                @click="installFile(index)"
-                >安装</el-button
-              >
-            </div>
-          </div>
-        </div>
-      </el-drawer> -->
-
-      <el-drawer title="已安装插件" :visible.sync="isdrawer" size="80%">
-        <div class="drawerBtn">
-          <div class="plugList">
-            <div
-              class="listdetail"
-              v-for="(item, index) in isplugList"
-              :key="index"
-            >
-              <img :src="item.plugLogo" alt="" />
-              <span>{{ item.plugName }}</span>
-
-              <el-button
-                class="addNetBtn"
-                type="primary"
-                round
-                @click="selectChangePlug(index)"
-                >选择</el-button
-              >
-            </div>
-          </div>
-        </div>
-      </el-drawer>
-
-      <el-dialog :visible.sync="dialogVisible" width="90%">
-        <el-form
-          style="text-align: left"
-          label-position="top"
-          :rules="rules"
-          :model="ruleForm"
-          ref="ruleForm"
-          label-width="100px"
-          class="demo-ruleForm"
-        >
-          <el-form-item label="网络名称" prop="netName">
-            <el-input
-              v-model="ruleForm.netName"
-              placeholder="请输入网络名称"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="网络节点" prop="node">
-            <el-input
-              v-model="ruleForm.node"
-              placeholder="请输入网络节点"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="链名" prop="chain">
-            <el-input
-              v-model="ruleForm.chain"
-              placeholder="请输入链名"
-            ></el-input>
-          </el-form-item>
-        </el-form>
-        <span slot="footer" class="dialog-footer">
-          <el-button size="small" @click="dialogVisible = false"
-            >取 消</el-button
-          >
-          <el-button size="small" type="primary" @click="submitForm('ruleForm')"
-            >确 定</el-button
-          >
-        </span>
-      </el-dialog>
-    </div>
   </div>
 </template>
+
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
 import { plusXing } from '../assets/js/index'
-import { getPrivateKey } from '@/utils/decryptKey'
+import { getSolanaBalance } from '@/utils/solana'
 import Clipboard from 'clipboard'
 import { ethers } from 'ethers'
 import axios from 'axios'
 import HomeHeader from '@/components/HomeHeader.vue'
 import PromptPopup from '@/components/PromptPopup.vue'
-const Base64 = require('js-base64').Base64
+import { i18n } from '@/main';
+
 export default {
-  name: 'Home',
-  data() {
-    return {
-      currentTab: 0,
-      currentTab2: 0,
-      addressInfo: '',
-      address: JSON.parse(localStorage.getItem('currentAccont')).address,
-      balanceMoney: 0,
-      dialogVisible: false,
-      ruleForm: {
-        netName: '',
-        node: '',
-        chain: '',
-      },
-      node: '',
-      chain: '',
-      value: 'XuperOS',
-      rules: {
-        netName: [
-          { required: true, message: '网络名称不能为空', trigger: 'blur' },
-        ],
-        node: [
-          { required: true, message: '网络节点不能为空', trigger: 'blur' },
-        ],
-        chain: [{ required: true, message: '链名不能为空', trigger: 'blur' }],
-      },
-      options: [
-        {
-          netName: 'XuperOS',
-          node: 'https://xuper.baidu.com/nodeapi',
-          chain: 'xuper',
-        },
-      ],
-      activeName: '1',
-      drawer: false,
-      isdrawer: false,
-      componentsList: [],
-      isplugList: [],
-      addFromState: '',
-      tabsSetList: '',
-      plugname: '',
-      plugList: [], //已经安装的插件集合
-      idArray: [], //已经安装的插件id
-      pluginsList: [], //
-      pluginsTabList: [],
-      nfts: [], //当年账户的nfts
-      tokens: [], //tokens列表
-      plugState: true, //插件显示状态。
-      tabslistTabName: 1,
-      version: process.env.VUE_APP_POCKET_VERSION,
-    }
-  },
   components: { HomeHeader, PromptPopup },
-  created() {
-    this.addressInfo = plusXing(
-      JSON.parse(localStorage.getItem('currentAccont')).address,
-      5,
-      5
-    )
-    // let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-    // let installed = JSON.parse(localStorage.getItem('installed'))
-    // if (currentPlug) {
-    //   this.plugname = currentPlug.plugName
-    //   this.tabsSetList = currentPlug
-    //   console.log(this.tabsSetList)
-    //   this.pluginsTabList = currentPlug.tabCont
-    // } else {
-    //   if (installed) {
-    //     let currentPlug = installed[installed.length - 1]
-    //     this.plugname = currentPlug.plugName
-    //     this.tabsSetList = currentPlug
-    //     localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
-    //   }
-    // }
-    //登录成功后 显示余额
-    let currentNet = JSON.parse(localStorage.getItem('currentNet'))
+  setup() {
+    const router = useRouter()
+    const currentTab = ref(0)
+    const currentTab2 = ref(0)
+    const addressInfo = ref('')
+    const address = ref(JSON.parse(localStorage.getItem('currentAccont')).address)
+    const balanceMoney = ref('0.00')
+    const drawer = ref(false)
+    const nfts = ref([])
+    const tokens = ref([])
+    const version = ref(process.env.VUE_APP_POCKET_VERSION)
+    const prompt = ref(null)
 
-    if (currentNet && currentNet.type == 'xuper') {
-      //调用xuper网络
-      this.balance()
-    } else if (currentNet && currentNet.type == 'eth') {
-      this.ethBalance()
-    }
-    //tokens
-    this.getTokensList()
-  },
-  mounted() {
-    this.gettablist()
-  },
-  methods: {
-    tabChose(i) {
-      this.currentTab = i
-    },
-    tabChose2(i) {
-      this.currentTab2 = i
-      console.log(this.currentTab2, '**this.currentTab2**')
-      if (this.currentTab2 == 0) {
-        this.gettablist()
+    const accountAllList = computed(() => {
+      return JSON.parse(localStorage.getItem('acc'))
+    })
+
+    const currentAccont = computed(() => {
+      return JSON.parse(localStorage.getItem('currentAccont'))
+    })
+
+    onMounted(() => {
+      addressInfo.value = plusXing(currentAccont.value.address, 5, 5)
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      
+      if (currentNet && currentNet.type === 'xuper') {
+        balance()
+      } else if (currentNet && currentNet.type === 'eth') {
+        ethBalance()
       }
-    },
-    noFun() {
-      this.$refs.prompt.showToast(this.$t('toastMsg.msg7'), 'error', 2500)
-    },
-    goSearchFun() {
-      this.$router.push({ path: '/Search' })
-    },
-    goTransFun() {
-      this.$router.push({ path: '/Transfer' })
-    },
+      else if (currentNet && currentNet.type ==='solana') {
+        solanaBalance()
+      }
+      getTokensList()
+      gettablist()
+    })
 
-    getPlugMethodTest() {
-      this.$router.push({ path: '/test' })
-    },
+    const tabChose = (i) => {
+      currentTab.value = i
+    }
 
-    //判断数据
-    getSelect(value) {
-      this.options.forEach((item) => {
-        if (value == item.netName) {
-          this.node = item.node
-          this.chain = item.chain
-          localStorage.setItem('nodeApi', item.node)
-          localStorage.setItem('chain', item.chain)
-        }
-      })
-    },
-    //添加网络
-    submitForm(formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          var netArr = {
-            netList: [],
-          }
-          if (localStorage.getItem('netList')) {
-            netArr.netList = JSON.parse(localStorage.getItem('netList')).netList
-            netArr.netList.push(this.ruleForm)
-            localStorage.setItem('netList', JSON.stringify(netArr))
-          } else {
-            netArr.netList.push(this.ruleForm)
-            localStorage.setItem('netList', JSON.stringify(netArr))
-          }
-          this.dialogVisible = false
-          window.location.reload()
-        } else {
-          return false
-        }
-      })
-    },
-    //查询余额
-    getDetails(index) {
-      this.$router.push({
-        path: '/Pluglist',
-        query: { index: JSON.stringify(index) },
-      })
-    },
-    //nft详情
-    goNftDetail(item) {
-      this.$router.push({
-        path: '/NftDetail',
-        query: { item: JSON.stringify(item) },
-      })
-    },
-    async balance() {
+    const tabChose2 = (i) => {
+      currentTab2.value = i
+      if (currentTab2.value === 0) {
+        gettablist()
+      }
+    }
+
+    const goSearchFun = () => {
       let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+      if (currentNet && currentNet.type === 'eth') {
+        router.push({ path: '/Search' })
+      } else {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg26'), 'warning', 2500)
+      }
+    }
+
+    const goTransFun = () => {
+      router.push({ path: '/Transfer' })
+    }
+
+    const getAccound = (msg, net) => {
+      localStorage.setItem('currentAccont', JSON.stringify(msg))
+      addressInfo.value = plusXing(msg.address, 5, 5)
+      if (net) {
+        localStorage.setItem('currentNet', JSON.stringify(net))
+        if (net.type === 'xuper') {
+          balance()
+        } else if (net.type === 'eth') {
+          ethBalance()
+        } else if (net.type ==='solana') {
+          solanaBalance()
+        }
+      } else {
+        const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+        if (currentNet.type === 'xuper') {
+          balance()
+        } else if (currentNet.type === 'eth') {
+          ethBalance()
+        } else if (currentNet.type === 'solana') {
+          solanaBalance()
+        }
+      }
+      getTokensList()
+    }
+
+    const copy = () => {
+      const clipboard = new Clipboard('.copycont')
+      clipboard.on('success', () => {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg2'), 'success', 2500)
+        clipboard.destroy()
+      })
+      clipboard.on('error', () => {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg3'), 'warning', 2500)
+        clipboard.destroy()
+      })
+    }
+
+    const balance = async () => {
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
       const node = currentNet.node
       const chain = currentNet.chain
       const params = {
-        server: node, // ip, port
-        fee: '400', // fee
-        endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-        endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+        server: node,
+        fee: '400',
+        endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
+        endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
       }
-      let nodeStatus = null
-      if (node === 'https://xuper.baidu.com/nodeapi') {
-        nodeStatus = [
-          Endorsement({
-            transfer: params,
-            makeTransaction: params,
-          }),
-        ]
-      } else {
-        nodeStatus = null
+      const nodeStatus = node === 'https://xuper.baidu.com/nodeapi' ? [Endorsement(params)] : null
+      const xsdk = new XuperSDK({ node, chain, plugins: nodeStatus })
+      try {
+        const result = await xsdk.getBalance(currentAccont.value.address)
+        balanceMoney.value = (result.bcs[0].balance / 100000).toFixed(3)
+        localStorage.setItem('banlance', balanceMoney.value)
+      } catch (err) {
+        console.error(err)
       }
-      const xsdk = new XuperSDK({
-        node,
-        chain,
-        plugins: nodeStatus,
-      })
-      const getBalance = async (address) => {
-        // eslint-disable-next-line no-useless-catch
-        try {
-          const result = await xsdk.getBalance(address)
-          this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3)
-          localStorage.setItem('banlance', this.balanceMoney)
-          console.log(this.balanceMoney)
-        } catch (err) {
-          throw err
-        }
-      }
-      getBalance(currentAccont.address)
-    },
+    }
 
-    //接受 header 子组件传递过来的内容
-
-    getAccound(msg, net) {
-      console.log(msg, '*****msg****')
-      console.log(net, '*****net****')
-      localStorage.setItem('currentAccont', JSON.stringify(msg))
-      this.addressInfo = plusXing(
-        JSON.parse(localStorage.getItem('currentAccont')).address,
-        5,
-        5
-      )
-      // let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      // console.log(currentPlug.type, '****currentPlug***')
-
-      if (net) {
-        localStorage.setItem('currentNet', JSON.stringify(net))
-        if (net.type == 'xuper') {
-          this.balance()
-        } else if (net.type == 'eth') {
-          this.ethBalance()
-        }
-      } else {
-        let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-        if (currentNet.type == 'xuper') {
-          this.balance()
-        } else if (currentNet.type == 'eth') {
-          this.ethBalance()
-        }
-      }
-
-      // if (currentPlug && net && currentPlug.type == net.type) {
-      //   this.plugState = true
-      // } else {
-      //   this.plugState = false
-      // }
-
-      this.getTokensList()
-    },
-
-    //切换选项卡
-    handleClick(tab, event) {
-      console.log(tab.name)
-      this.tabslistTabName = tab.name
-    },
-
-    //切换插件
-    changePlug() {
-      this.isplugList = JSON.parse(localStorage.getItem('installed'))
-      this.isdrawer = true
-    },
-
-    //复制
-    copy() {
-      console.log(this.address, '****address*****')
-      var clipboard = new Clipboard('.copycont')
-      console.log(clipboard, 'clipboard')
-      clipboard.on('success', (e) => {
-        console.log('success')
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg2'), 'success', 2500)
-        clipboard.destroy()
-      })
-      clipboard.on('error', (e) => {
-        console.log('error')
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg3'), 'warning', 2500)
-        clipboard.destroy()
-      })
-    },
-
-    // selectChangePlug(index) {
-    //   let that = this
-    //   let installed = JSON.parse(localStorage.getItem('installed'))
-    //   let currentPlug = installed[index]
-    //   that.plugname = installed[index].plugName
-    //   that.tabsSetList = currentPlug
-    //   localStorage.setItem('currentPlug', JSON.stringify(currentPlug))
-    //   that.isdrawer = false
-    // },
-
-    //eth查询余额
-    async ethBalance() {
-      console.log('---eth查询余额---')
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+    const ethBalance = async () => {
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
       const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
-      let heightBlock = await provider.getBlockNumber()
-      console.log(heightBlock)
-      let address = currentAccont.address
-      provider.getBalance(address).then((balance) => {
-        // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-        let etherString = ethers.utils.formatEther(balance)
-        console.log('Balance: ' + etherString)
-        this.balanceMoney = etherString
+      provider.getBalance(currentAccont.value.address).then((balance) => {
+        balanceMoney.value = ethers.utils.formatEther(balance)
+        localStorage.setItem('banlance', balanceMoney.value)
       })
-    },
-    //
-    gettablist() {
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      if (currentPlug) {
-        let item = currentPlug.tabCont[0][0]
-        console.log(item)
-        axios({
-          url: `${item.nftsurl}/${currentAccont.address}?contract_address=${item.contract_address}`,
-          method: 'GET',
-          headers: {
-            'X-API-KEY': item.xapikey,
-          },
-          data: {},
-        }).then((res) => {
-          console.log(res, '*****res*******')
-          if (res.data.status == 'success' && res.data.statusCode == '200') {
-            this.nfts = JSON.parse(res.data.result)
-          } else {
-            message.error(res.data.message)
-          }
-        })
+    }
+    const solanaBalance = async () => {
+      const balanceInfo = await getSolanaBalance(currentAccont.value.address)
+      console.log('-solana-balanceInfo=',balanceInfo)
+      if(balanceInfo && balanceInfo.success) {
+        balanceMoney.value = balanceInfo.balance
+        localStorage.setItem('banlance', balanceMoney.value)
       }
-    },
+    }
 
-    //获取当前网络tokens 列表
-    getTokensList() {
-      let netList = JSON.parse(localStorage.getItem('netList'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-
-      let tokenslist = []
-      netList.map((item) => {
-        if (item.type == 'xuper' && currentAccont.type == 'xuper') {
-          const node = item.node
-          const chain = item.chain
-          const params = {
-            server: node, // ip, port
-            fee: '400', // fee
-            endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-            endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
-          }
-          const xsdk = new XuperSDK({
-            node,
-            chain,
-            plugins: [
-              Endorsement({
-                transfer: params,
-                makeTransaction: params,
-              }),
-            ],
-          })
-          const getBalance = async (address) => {
-            try {
-              const result = await xsdk.getBalance(address)
-              // this.balanceMoney = (result.bcs[0].balance / 100000).toFixed(3)
-              let xuperBalance = (result.bcs[0].balance / 100000).toFixed(3)
-              tokenslist.push({
-                name: item.chain,
-                balance: xuperBalance,
-              })
-              console.log(tokenslist, '----xuper-tokenList-----')
-            } catch (err) {
-              throw err
-            }
-          }
-          getBalance(currentAccont.address)
-        } else if (item.type == 'eth' && currentAccont.type == 'eth') {
-          const provider = new ethers.providers.JsonRpcProvider(item.node)
-          let address = currentAccont.address
-          provider.getBalance(address).then((balance) => {
-            // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-            let etherString = ethers.utils.formatEther(balance)
-            tokenslist.push({
-              name: item.chain,
-              balance: etherString,
-              netName: item.netName,
-            })
-
-            console.log(tokenslist, '----eth-tokenList-----')
-          })
+    const gettablist = async () => {
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      if (currentPlug) {
+        const item = currentPlug.tabCont[0][0]
+        const response = await axios({
+          url: `${item.nftsurl}/${currentAccont.value.address}?contract_address=${item.contract_address}`,
+          method: 'GET',
+          headers: { 'X-API-KEY': item.xapikey },
+        })
+        if (response.data.status === 'success' && response.data.statusCode === '200') {
+          nfts.value = JSON.parse(response.data.result)
+        } else {
+          console.error(response.data.message)
         }
-      })
-      this.tokens = tokenslist
-      console.log(this.tokens, '*****this.tokens****')
-    },
+      }
+    }
+
+    const getTokensList = async () => {
+      const netList = JSON.parse(localStorage.getItem('netList'))
+      const tokenslist = []
+      for (const item of netList) {
+        if (item.type === 'xuper' && currentAccont.value.type === 'xuper') {
+          const xsdk = new XuperSDK({
+            node: item.node,
+            chain: item.chain,
+            plugins: [Endorsement({ server: item.node, fee: '400' })],
+          })
+          try {
+            const result = await xsdk.getBalance(currentAccont.value.address)
+            tokenslist.push({ name: item.chain, balance: (result.bcs[0].balance / 100000).toFixed(3) })
+          } catch (err) {
+            console.error(err)
+          }
+        } else if (item.type === 'eth' && currentAccont.value.type === 'eth') {
+          const provider = new ethers.providers.JsonRpcProvider(item.node)
+          const balance = await provider.getBalance(currentAccont.value.address)
+          tokenslist.push({ name: item.chain, balance: ethers.utils.formatEther(balance), netName: item.netName })
+        }
+      }
+      tokens.value = tokenslist
+    }
+
+    return {
+      currentTab,
+      currentTab2,
+      addressInfo,
+      address,
+      balanceMoney,
+      drawer,
+      nfts,
+      tokens,
+      version,
+      prompt,
+      accountAllList,
+      currentAccont,
+      tabChose,
+      tabChose2,
+      goSearchFun,
+      goTransFun,
+      getAccound,
+      copy,
+      balance,
+      ethBalance,
+      gettablist,
+      getTokensList,
+      solanaBalance,
+    }
   },
 }
 </script>

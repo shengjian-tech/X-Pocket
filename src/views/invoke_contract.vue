@@ -22,7 +22,7 @@
           </div>
           <div class="flex1">
             <span>{{ $t('comm.current') }}</span>
-            <p>{{ plusXing(currentAccont.address) }}</p>
+            <p>{{ plusXing(currentAccont.address,5,5) }}</p>
           </div>
         </div>
         <div class="msg-box">
@@ -58,134 +58,83 @@
       </div>
       <prompt-popup ref="prompt"></prompt-popup>
     </div>
-
-    <div class="connect" style="display: none">
-      <div class="connectBox">
-        <div class="connectTit">签名请求</div>
-        <div>
-          <img :src="favIconUrl" />
-          <div>{{ url }}</div>
-        </div>
-        <div class="conten">
-          只有在您完全理解内容并信任请求网站的情况下，才能签署此消息。
-          您正在签名:
-        </div>
-        <div class="conten">
-          <div class="listType">
-            <span style="color: #1e832a">当前</span>
-          </div>
-          <div class="listAddress">{{ plusXing(currentAccont.address) }}</div>
-        </div>
-        <div class="conten accList">
-          <div>消息：</div>
-          <div>{{ message[0] }}</div>
-        </div>
-      </div>
-      <div class="btnBox">
-        <el-button class="width110" round @click="closeWindow">拒绝</el-button>
-        <el-button
-          class="width110 color7657b1"
-          type="primary"
-          round
-          @click="sureInvokeContract"
-          >签名</el-button
-        >
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
-import { XchainAddrToEvm, EvmToXchainAddr } from '../assets/js/index'
 import { getTab } from '@/utils/popup'
 import { plusXing } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
 import { sendBaiduInvokeContract, sendExit } from '@/utils/transaction'
-import ConfirmPopup from '@/components/ConfirmPopup.vue'
 import PromptPopup from '@/components/PromptPopup.vue'
+import { i18n } from '@/main';
 
 export default {
-  data() {
-    return {
-      favIconUrl: '',
-      url: '',
-      color: ['#744f68', '#788890', '#ebd40a', '#1e832a', '#abb7bc'],
-      connect: null,
-      activeItem: [],
-      message: this.$route.query,
-    }
-  },
-  components: { ConfirmPopup, PromptPopup },
-  computed: {
-    accountAllList() {
+  components: { PromptPopup },
+  setup() {
+    const route = useRoute()
+    const favIconUrl = ref('')
+    const url = ref('')
+    const message = ref(route.query)
+    const prompt = ref(null)
+
+    const accountAllList = computed(() => {
       return JSON.parse(localStorage.getItem('acc'))
-    },
-    currentAccont() {
+    })
+
+    const currentAccont = computed(() => {
       return JSON.parse(localStorage.getItem('currentAccont'))
-    },
-  },
-  mounted() {
-    console.log(this.$route.query, '--invoke参数--')
-    this.getTap()
-  },
-  methods: {
-    getTap() {
-      getTab().then((res) => {
-        console.log(res)
-        this.connect = res
-        this.favIconUrl = res.favIconUrl
-        this.url = res.url
-      })
-    },
-    plusXing(val) {
-      return plusXing(val, 5, 10)
-    },
-    closeWindow() {
-      let resObj = {
+    })
+
+    onMounted(() => {
+      console.log(route.query, '--invoke参数--')
+      getTap()
+    })
+
+    const getTap = async () => {
+      const res = await getTab()
+      console.log(res)
+      favIconUrl.value = res.favIconUrl
+      url.value = res.url
+    }
+
+    const closeWindow = () => {
+      const resObj = {
         message: 'refused',
       }
       sendBaiduInvokeContract('xuper_invokeContarct', resObj, 'baidu')
-      // sendExit()
-    },
+    }
 
-    async sureInvokeContract() {
-      let account = JSON.parse(localStorage.getItem('currentAccont'))
+    const sureInvokeContract = async () => {
+      const account = JSON.parse(localStorage.getItem('currentAccont'))
 
-      if (account.type == 'eth') {
+      if (account.type === 'eth') {
         console.log('当前账号是 eth')
       } else {
         console.log('当前是合约页面-xuper')
-        let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-        let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-        // const node = 'http://192.168.1.121:37301'
-        const node = currentNet.node // 'https://xuper.baidu.com/nodeapi'(开放网络)
-        const chain = currentNet.chain // 'xuper'
-        const acc = currentAccont // 这个账户对象里面必须只包含（address，chain，privateKey，publicKey，type）
-        acc.privateKey = JSON.parse(await getPrivateKey()) // 因为私钥加密过所以解密后必须要转成对象
-        delete acc.rString // 登陆后缓存账户里面加了加密的随机数字符串，调用合约要删除无用的key
-        const contractName = 'fuwen' // 合约名称
-        const methodName = 'savekey' // 合约方法
+        const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+        const currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+        const node = currentNet.node
+        const chain = currentNet.chain
+        const acc = { ...currentAccont }
+        acc.privateKey = JSON.parse(await getPrivateKey())
+        delete acc.rString
+
+        const contractName = 'fuwen'
+        const methodName = 'savekey'
         const params = {
           server: node,
-          fee: '400', // 服务费
+          fee: '400',
           endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
           endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
         }
 
-        let nodeStatus = []
-        if (node === 'https://xuper.baidu.com/nodeapi') {
-          nodeStatus = [
-            Endorsement({
-              transfer: params,
-              makeTransaction: params,
-            }),
-          ]
-        } else {
-          nodeStatus = []
-        }
+        const nodeStatus = node === 'https://xuper.baidu.com/nodeapi' ? [Endorsement(params)] : []
 
-        let xsdk = new XuperSDK({
+        const xsdk = new XuperSDK({
           node,
           chain,
           env: {
@@ -195,7 +144,8 @@ export default {
           },
           plugins: nodeStatus,
         })
-        let obj = this.message[0].message
+
+        const obj = message.value[0].message
         const args = {
           key: obj.transactionId,
         }
@@ -209,10 +159,8 @@ export default {
           to: obj.to,
           data: obj.data,
         }
-        let desc2 = JSON.stringify(desc)
-        // console.log(args, '--args--')
-        // console.log(desc, '--desc--')
-        // console.log(desc2, '--desc2--')
+        const desc2 = JSON.stringify(desc)
+
         try {
           const demo = await xsdk.invokeContarct(
             contractName,
@@ -223,30 +171,34 @@ export default {
             acc,
             desc2
           )
-          // console.log(demo, '--demo--')
-          let txId = xsdk.transactionIdToHex(demo.transaction.txid) // 解析txid
-          // console.log(txId, '--txId--')
-          // console.log(demo.transaction.desc, '--demo.transaction.desc--')
+          const txId = xsdk.transactionIdToHex(demo.transaction.txid)
           const res = await xsdk.postTransaction(demo.transaction, acc)
           console.log(res, '----res----')
-          let resObj = {
+          const resObj = {
             txid: txId,
           }
-
           sendBaiduInvokeContract('xuper_invokeContarct', resObj, 'baidu')
         } catch (err) {
-          // err 是空 证明调用成功，不是 就是执行失败。
           if (err) {
             console.log(err, '---invokeContarct err--')
-            this.$refs.prompt.showToast(
-              this.$t('toastMsg.msg21'),
-              'error',
-              2500
-            )
+            prompt.value.showToast(i18n.global.t('toastMsg.msg21'), 'error', 2500)
           }
         }
       }
-    },
+    }
+
+    return {
+      favIconUrl,
+      url,
+      message,
+      prompt,
+      accountAllList,
+      currentAccont,
+      getTap,
+      plusXing,
+      closeWindow,
+      sureInvokeContract,
+    }
   },
 }
 </script>

@@ -4,298 +4,243 @@
       <img src="../assets/img-bg.png" class="bg-img2" />
       <div class="header">
         <img src="../assets/img-back.png" class="img-back" @click="goHome" />
-        <span class="nav-title">{{ $t('transfer.title') }}</span>
+        <span class="nav-title">{{ t('transfer.title') }}</span>
       </div>
       <div class="content">
         <div class="pwd-set">
           <div class="set-box">
             <div class="pwd-top">
-              <span>{{ $t('transfer.name1') }}</span>
+              <span>{{ t('transfer.name1') }}</span>
             </div>
             <textarea
-              v-model="form.address"
-              :placeholder="$t('comm.placeholder')"
+              v-model="reciverAddress"
+              :placeholder="t('comm.placeholder')"
             ></textarea>
           </div>
         </div>
         <div class="pwd-set">
           <div class="set-box">
             <div class="pwd-top">
-              <span>{{ $t('transfer.name2') }}</span>
+              <span>{{ t('transfer.name2') }}</span>
             </div>
             <input
               type="number"
-              v-model="form.value"
-              :placeholder="$t('comm.placeholder')"
+              v-model="transferAmount"
+              :placeholder="t('comm.placeholder')"
             />
           </div>
         </div>
-        <div v-if="balanceMoney" class="balanceMoneytext">
-          {{ $t('transfer.current') }}:{{ balanceMoney }}
+        <div class="balanceMoneytext">
+          {{ t('transfer.current') }}: {{ balanceMoney }}
         </div>
       </div>
-      <div class="btn-wrapper">
-        <div class="btn" @click="confirmHandle">{{ $t('comm.confirm') }}</div>
+      <div class="btn-wrapper" v-loading="loading" element-loading-background="transparent">
+        <div class="btn" @click="confirmHandle">{{ t('comm.confirm') }}</div>
       </div>
+      <!-- 引入的组件 -->
       <prompt-popup ref="prompt"></prompt-popup>
       <confirm-popup
         ref="confirm"
-        :title="$t('transfer.tips')"
+        :title="t('transfer.tips')"
         @confirm="confirmBtn"
       >
         <ul class="confirm-ul">
-          <li>{{ $t('transfer.name3') }}{{ dialogContent.to }}</li>
-          <li>{{ $t('transfer.name4') }}{{ dialogContent.value }}</li>
-          <li>{{ $t('transfer.name5') }}{{ dialogContent.gas }}</li>
+          <li>{{ t('transfer.name3') }}{{ plusXing(reciverAddress, 5, 5) }}</li>
+          <li>{{ t('transfer.name4') }}{{ transferAmount }}</li>
         </ul>
       </confirm-popup>
-    </div>
-
-    <div
-      class="setTrans setLeft"
-      v-loading.fullscreen.lock="fullscreenLoading"
-      style="display: none"
-    >
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>首页/转移
-      </div>
-      <div class="form transferForm">
-        <el-form ref="form" :model="form" label-width="80px">
-          <el-form-item>
-            <span class="inputlabel">接收方地址</span>
-            <el-input
-              v-model="form.address"
-              placeholder="请输入接收方地址"
-            ></el-input>
-          </el-form-item>
-
-          <el-form-item>
-            <span class="inputlabel">转移金额</span>
-            <el-input
-              v-model="form.value"
-              placeholder="请输入转移金额"
-            ></el-input>
-          </el-form-item>
-          <div v-if="balanceMoney" class="balanceMoneytext">
-            当前余额:{{ balanceMoney }}
-          </div>
-
-          <el-form-item class="addNetBtnFath">
-            <el-button
-              class="addNetBtn"
-              type="primary"
-              round
-              @click="addNetList()"
-              >确认</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
-      <el-dialog
-        title="确认转账"
-        :visible.sync="dialogVisible"
-        width="50%"
-        class="transferDio"
+      <confirm-popup
+        ref="confirm2"
+        :title="t('transfer.tips')"
       >
-        <div>
-          <span class="disotatle">转入方地址：</span>
-          {{ dialogContent.to }}
-        </div>
-        <div>
-          <span class="disotatle">转移金额：</span>{{ dialogContent.value }}
-        </div>
-        <div>
-          <span class="disotatle">消耗Gas：</span>{{ dialogContent.gas }}
-        </div>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="confirmBtn">确 定</el-button>
-        </span>
-      </el-dialog>
+        <p>{{ t("nftDetails.name2") }}:{{ txId }}</p>
+      </confirm-popup>
     </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
-import ConfirmPopup from '@/components/ConfirmPopup.vue'
-import PromptPopup from '@/components/PromptPopup.vue'
-import { getPrivateKey } from '@/utils/decryptKey'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ethers } from 'ethers'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
 import { sendHash } from '@/utils/transaction'
+import { plusXing } from '../assets/js/index'
+import { getPrivateKey } from '@/utils/decryptKey'
+import { transferSol,getSolanaBalance } from '@/utils/solana'
+import { solanaNetwork } from '@/utils/network'
+import PromptPopup from '@/components/PromptPopup.vue' // 引入 PromptPopup 组件
+import ConfirmPopup from '@/components/ConfirmPopup.vue' // 引入 ConfirmPopup 组件
+
 export default {
-  name: 'Transfer',
-  data() {
-    return {
-      form: {
-        address: '',
-        value: '',
-      },
-      balanceMoney: '',
-      dialogVisible: false,
-      netList: JSON.parse(localStorage.getItem('netList')),
-      dialogContent: {},
-      fullscreenLoading: false,
-    }
+  name: 'TransferPage',
+  components: {
+    PromptPopup, // 注册 PromptPopup 组件
+    ConfirmPopup, // 注册 ConfirmPopup 组件
   },
-  components: { Header, ConfirmPopup, PromptPopup },
-  mounted() {
-    this.ethBalance()
-    if (this.$route.query) {
-      this.form.address = this.$route.query[0]?.to || ''
-      this.form.value = this.$route.query[0]?.value || ''
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+    const { t } = useI18n()
+    const reciverAddress = ref('')
+    const transferAmount = ref('')
+    const balanceMoney = ref('0.00')
+    const prompt = ref(null)
+    const confirm = ref(null)
+    const confirm2 = ref(null)
+    const isExit = ref(false)
+    const txId = ref('')
+    const loading = ref(false)
+
+    // 初始化
+    onMounted(() => {
+      getCurrentBalance()
+      const query = route.query
+      if(!query.params) return
+      const params = JSON.parse(query.params)
+      if (params && params.length > 0) {
+        isExit.value = true
+        reciverAddress.value = params[0].to || ''
+        transferAmount.value = params[0].value || ''
+      } else {
+        isExit.value = false
+      }
+    })
+
+    // 返回首页
+    const goHome = () => {
+      router.push('/Home')
     }
-  },
-  methods: {
-    goHome() {
-      this.$router.push('/Home')
-    },
 
-    confirmHandle() {
-      if (!this.form.address) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg22'),
-          'warning',
-          2500
-        )
+    // 确认转账
+    const confirmHandle = () => {
+      if (!reciverAddress.value) {
+        return prompt.value.showToast(t('toastMsg.msg22'), 'warning', 2500)
       }
-      if (!this.form.value) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg23'),
-          'warning',
-          2500
-        )
+      if (!transferAmount.value) {
+        return prompt.value.showToast(t('toastMsg.msg23'), 'warning', 2500)
       }
-      if (this.balanceMoney == 0) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg24'),
-          'warning',
-          2500
-        )
+      if (balanceMoney.value == 0) {
+        return prompt.value.showToast(t('toastMsg.msg24'), 'warning', 2500)
       }
-      this.$refs.confirm.showConfirm()
-    },
+      confirm.value.showConfirm()
+    }
 
-    //eth查询余额
-    async ethBalance() {
-      console.log()
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      if (currentNet.type == 'eth') {
-        let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+    // 查询余额
+    const getCurrentBalance = async () => {
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const currentAccount = JSON.parse(localStorage.getItem('currentAccont'))
+
+      if (currentNet.type === 'eth') {
         const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
-        let heightBlock = await provider.getBlockNumber()
-        console.log(heightBlock)
-        let address = currentAccont.address
-        provider.getBalance(address).then((balance) => {
-          // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-          let etherString = ethers.utils.formatEther(balance)
-          console.log('Balance: ' + etherString)
-          this.balanceMoney = etherString
-        })
-      }
-    },
-    async addNetList() {
-      console.log(this.form)
-      let that = this
-
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-
-      if (currentNet.type == 'xuper') {
-        const node = 'https://xuper.baidu.com/nodeapi'
-        const chain = 'xuper'
-        const params = {
-          server: 'https://xuper.baidu.com/nodeapi', // ip, port
-          fee: '400', // fee
-          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+        const balance = await provider.getBalance(currentAccount.address)
+        balanceMoney.value = ethers.utils.formatEther(balance)
+      } else if (currentNet.type === 'xuper') {
+        const xsdk = await initXuperSDK()
+        const balance = await xsdk.getBalance(currentAccount.address)
+        balanceMoney.value = (balance.bcs[0].balance / 100000).toFixed(3) || 0
+      } else if (currentAccount.type === 'solana') {
+        const solanaInfo = await getSolanaBalance(currentAccount.address)
+        if (solanaInfo && solanaInfo.success) {
+          balanceMoney.value = solanaInfo.balance
+        } else {
+          balanceMoney.value = 0
         }
-        const xsdk = new XuperSDK({
-          node,
-          chain,
-          plugins: [
-            Endorsement({
-              transfer: params,
-              makeTransaction: params,
-            }),
-          ],
-        })
-        // const xuperPassword = localStorage.getItem('xuperPassword')
-        // const xuperKey = localStorage.getItem('xuperKey')
-        // const acc = xsdk.import(xuperPassword, xuperKey, true)
-        // console.log(acc)
+      }
+    }
+
+    // 初始化 XuperSDK
+    const initXuperSDK = async () => {
+      const node = 'https://xuper.baidu.com/nodeapi'
+      const chain = 'xuper'
+      const params = {
+        server: 'https://xuper.baidu.com/nodeapi',
+        fee: '400',
+        endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
+        endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
+      }
+      return new XuperSDK({
+        node,
+        chain,
+        plugins: [Endorsement({ transfer: params, makeTransaction: params })],
+      })
+    }
+
+    // 确认转账按钮
+    const confirmBtn = async () => {
+      loading.value = true
+      const currentAccount = JSON.parse(localStorage.getItem('currentAccont'))
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+
+      if (currentNet.type === 'xuper') {
+        const xsdk = await initXuperSDK()
         const tx = await xsdk.transfer({
-          to: this.form.address,
-          amount: this.form.value,
+          to: reciverAddress.value,
+          amount: transferAmount.value,
           fee: '0.1',
         })
-        // console.log(tx)
         await xsdk.postTransaction(tx)
+        txId.value = tx.hash
         sendHash('eth_sendTransaction', tx.hash)
-        this.$notify({
-          title: '交易成功',
-          dangerouslyUseHTMLString: true,
-          message: `交易哈希: ${tx.hash}`,
-          type: 'success',
-          duration: 0,
-        })
-        // this.$message.error("请切换网络使用");
-        // return false;
-      } else if (currentAccont.type == 'eth') {
-        //地址转账
+        notifySuccess(tx.hash)
+        loading.value = false
+      } else if (currentAccount.type === 'eth') {
         const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
-        that.fullscreenLoading = true
-
-        let privateKey = await getPrivateKey()
-        // let privateKey = currentAccont.privateKey
-
-        let wallet = new ethers.Wallet(privateKey, provider)
-        let gasPrice = await provider.getGasPrice()
-
-        console.log(ethers.utils.formatUnits(gasPrice))
-        let object = {
-          to: that.form.address,
-          value: that.form.value,
-          gas: ethers.utils.formatUnits(gasPrice),
-        }
-        that.dialogContent = object
-        that.fullscreenLoading = false
-        that.dialogVisible = true
+        const privateKey = await getPrivateKey()
+        const wallet = new ethers.Wallet(privateKey, provider)
+        const gasPrice = await provider.getGasPrice()
+        const tx = await wallet.sendTransaction({
+          gasLimit: 21000,
+          gasPrice,
+          to: reciverAddress.value,
+          value: ethers.utils.parseUnits(transferAmount.value, 'ether'),
+        })
+        txId.value = tx.hash
+        sendHash('eth_sendTransaction', tx.hash)
+        notifySuccess(tx.hash)
+        loading.value = false
+      } else if (currentAccount.type === 'solana') {
+        const privateKey = await getPrivateKey()
+        const netWork = solanaNetwork
+        transferSol(privateKey, reciverAddress.value, transferAmount.value, netWork).then((tx) => {
+          console.log('-solana-tx=', tx)
+          txId.value = tx
+          if(isExit.value){
+            sendHash('eth_sendTransaction', tx)
+          } else {
+            notifySuccess()
+          }
+          loading.value = false
+        }).catch((err) => {
+          txId.value = err
+          notifySuccess()
+          loading.value = false
+        })
       }
-    },
+    }
 
-    async confirmBtn() {
-      let that = this
-      that.fullscreenLoading = true
-      that.dialogVisible = false
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
+    // 通知成功
+    const notifySuccess = () => {
+      confirm2.value.showConfirm()
+    }
 
-      let privateKey = await getPrivateKey()
-      // let privateKey = currentAccont.privateKey
-
-      let wallet = new ethers.Wallet(privateKey, provider)
-      let gasPrice = await provider.getGasPrice()
-      // sendHash("eth_sendTransaction",'aaaaa')
-      let tx = await wallet.sendTransaction({
-        gasLimit: 21000,
-        gasPrice: gasPrice,
-        to: that.form.address,
-        value: ethers.utils.parseUnits(that.form.value),
-      })
-      that.fullscreenLoading = false
-      sendHash('eth_sendTransaction', tx.hash)
-      this.$notify({
-        title: '交易成功',
-        dangerouslyUseHTMLString: true,
-        message: `交易哈希: ${tx.hash}`,
-        type: 'success',
-        duration: 0,
-      })
-    },
+    return {
+      reciverAddress,
+      transferAmount,
+      balanceMoney,
+      prompt,
+      confirm,
+      confirm2,
+      goHome,
+      confirmHandle,
+      confirmBtn,
+      isExit,
+      t,
+      loading,
+      txId,
+      plusXing,
+    }
   },
 }
 </script>

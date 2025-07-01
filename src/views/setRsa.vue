@@ -4,110 +4,92 @@
       <img src="../assets/img-bg.png" class="bg-img2" />
       <div class="header">
         <img src="../assets/img-back.png" class="img-back" @click="toBack" />
-        <span class="nav-title">{{ $t('rsa.name') }}</span>
+        <span class="nav-title">{{ t('rsa.name') }}</span>
       </div>
       <div class="content">
         <div class="pwd-set">
           <div class="set-box">
             <div class="pwd-top">
-              <span>{{ $t('rsa.name') }}</span>
+              <span>{{ t('rsa.name') }}</span>
             </div>
             <textarea
               v-model="form.password"
-              :placeholder="$t('comm.placeholder')"
+              :placeholder="t('comm.placeholder')"
             ></textarea>
           </div>
         </div>
       </div>
       <div class="btn-wrapper">
-        <div class="btn" @click="addNetList">{{ $t('comm.confirm') }}</div>
+        <div class="btn" @click="addNetList">{{ t('comm.confirm') }}</div>
       </div>
 
       <prompt-popup ref="prompt"></prompt-popup>
       <confirm-popup
         ref="confirm"
-        :title="$t('comm.tips')"
+        :title="t('comm.tips')"
         @confirm="sure"
         @cancel="sure"
       >
-        {{ $t('toastMsg.msg17') }}
+        {{ t('toastMsg.msg17') }}
       </confirm-popup>
-    </div>
-
-    <div class="set" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>设置RSA密钥
-      </div>
-      <div class="form setpwdForm">
-        <el-form ref="form" :model="form" label-width="80px">
-          <el-form-item>
-            <span class="inputlabel">设置RSA密钥</span>
-            <el-input
-              type="textarea"
-              :autosize="{ minRows: 5, maxRows: 8 }"
-              v-model="form.password"
-              placeholder="请设置RSA-SHA256私钥"
-            ></el-input>
-          </el-form-item>
-
-          <el-form-item class="setPwdBtnFath">
-            <el-button
-              class="addNetBtn"
-              type="primary"
-              round
-              @click="addNetList()"
-              >设置</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import Header from '../components/Header'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import PromptPopup from '@/components/PromptPopup.vue'
 import ConfirmPopup from '@/components/ConfirmPopup.vue'
+
 export default {
-  name: 'setRsa',
-  data() {
-    return {
-      form: {
-        password: '',
-        norpwd: '',
-      },
-      netList: JSON.parse(localStorage.getItem('netList')),
+  name: 'SetRsa',
+  components: { PromptPopup, ConfirmPopup },
+  setup() {
+    const router = useRouter()
+    const { t } = useI18n()
+
+    const form = reactive({
+      password: '',
+      norpwd: '',
+    })
+
+    const netList = ref(JSON.parse(localStorage.getItem('netList')))
+    const prompt = ref(null)
+    const confirm = ref(null)
+
+    const toBack = () => {
+      router.back()
     }
-  },
-  components: { Header, PromptPopup, ConfirmPopup },
-  mounted() {},
-  methods: {
-    toBack() {
-      this.$router.back()
-    },
-    goHome() {
-      this.$router.push('/Home')
-    },
-    sure() {
-      localStorage.setItem(
-        'privateKeyPem',
-        this.form.password.replace(/\n/g, '\\n')
-      )
-      this.$router.push('/Set')
-    },
-    addNetList() {
-      console.log(this.form)
-      if (!this.form.password) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg14'),
-          'warning',
-          1500
-        )
+
+    const goHome = () => {
+      router.push('/Home')
+    }
+
+    const sure = () => {
+      localStorage.setItem('privateKeyPem', form.password.replace(/\n/g, '\\n'))
+      router.push('/Set')
+    }
+
+    const addNetList = () => {
+      if (!form.password) {
+        return prompt.value.showToast(t('toastMsg.msg14'), 'warning', 1500)
       }
-      this.$refs.confirm.showConfirm()
-    },
+      confirm.value.showConfirm()
+    }
+
+    return {
+      form,
+      netList,
+      prompt,
+      confirm,
+      toBack,
+      goHome,
+      sure,
+      addNetList,
+      t,
+    }
   },
 }
 </script>

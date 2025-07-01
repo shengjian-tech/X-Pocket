@@ -7,74 +7,37 @@ import {
   social,
   invokeContract,
 } from '@/utils/transaction'
+import { signMessage } from './solana'
 import router from '@/router'
 import { getPrivateKey } from './decryptKey'
 import { ec as EC } from 'elliptic'
-const { ethers } = require('ethers')
 
-const background = chrome.extension.getBackgroundPage()
-let PopupToBackgroundPort = chrome.extension.connect({
+const { ethers } = require('ethers')
+let PopupToBackgroundPort = chrome.runtime.connect({
   name: 'POCKET-popup-background',
 })
 let _handlers = {}
+
 export function sendAccont(method, data, type) {
-  console.log(method, data, type, '******method, data, type******')
+  console.log('popupp-method-data-type=',method, data, type)
+  chrome.runtime.sendMessage({
+    method,
+    data,
+    type,
+  })
+  if(method == 'getAccounts_info') return
   if (type == 'xuper') {
-    background.getPopupBaiduData(method, data, type)
     setStorage('baiduAddress', data)
   } else {
-    background.getPopupData(method, data)
     setStorage('address', data)
   }
 }
 
-export function getLocalAccont() {
-  // let AccList = JSON.parse(localStorage.getItem("acc"))
-  let connectList = JSON.parse(localStorage.getItem('connectList')) || []
-  let banlance = localStorage.getItem('banlance') // 余额
-  let version = process.env.VUE_APP_POCKET_INT_VERSION // 钱包版本号
-  let infoObj = {
-    version,
-    banlance,
-  }
-  getTab().then((res) => {
-    let ifFast = connectList.find((item) => {
-      return item.url == res.url
-    })
-    if (JSON.stringify(_handlers) != '{}') {
-      if (ifFast) {
-        ifFast.accountList.forEach((item) => {
-          switch (item.type) {
-            case 'xuper':
-              sendAccont('eth_requestAccounts', [item.address], 'baidu')
-              sendAccont('requestAccounts', item.address, 'baidu')
-              sendInfo('personal_info', infoObj, 'baidu')
-              break
-            case 'eth':
-              sendAccont('eth_requestAccounts', [item.address])
-              sendAccont('eth_requestAccounts_publicKey', [item.publicKey])
-              sendAccont('personal_sign', item.address)
-              sendInfo('personal_info', infoObj)
-              break
-
-            default:
-              break
-          }
-        })
-      } else {
-        router.push('/connect')
-      }
-    }
-  })
-  // console.log(background)
-  // console.log(AccList)
-}
-
 export function setOpen(val) {
-  background.changePopupOpen(val)
-}
-export function haveRequest() {
-  return background.haveRequest()
+  chrome.runtime.sendMessage({
+    method:'changePopupOpen',
+    data:val,
+  })
 }
 export async function getTab() {
   return new Promise((resolve, reject) => {
@@ -101,13 +64,69 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
 })
 
+function getAccounts (type) {
+  let connectList = JSON.parse(localStorage.getItem('connectList')) || []
+  let banlance = localStorage.getItem('banlance') || 0 // 余额
+  let version = process.env.VUE_APP_POCKET_INT_VERSION // 钱包版本号
+  let infoObj = {
+    version,
+    banlance,
+  }
+
+  getTab().then((res) => {
+    let ifFast = connectList.find((item) => {
+      return item.url == res.url
+    })
+    if (JSON.stringify(_handlers) != '{}') {
+      if (ifFast) {
+        ifFast.accountList.forEach((item) => {
+          console.log('--popup-getLocalAccont=', item)
+          if (item.type == 'xuper') {
+            if (type == 'requestAccounts') {
+              sendAccont('eth_requestAccounts', [item.address], 'baidu')
+            }
+            if (type == 'getAccounts_info') {
+              sendAccont('getAccounts_info', infoObj, 'baidu')
+            }
+          }
+          if(item.type=='eth') {
+            if (type == 'eth_requestAccounts') {
+              sendAccont('eth_requestAccounts', [item.address],'eth')
+            }
+            if (type == 'getAccounts_info') {
+              sendAccont('getAccounts_info', infoObj,'eth')
+            }
+            if(type == 'eth_requestAccounts_publicKey') {
+              sendAccont('eth_requestAccounts_publicKey', [item.publicKey],'eth')
+            }
+          }
+          if(item.type == 'solana') {
+            if (type == 'requestAccounts') {
+              sendAccont('eth_requestAccounts', [item.address],'solana')
+            }
+            if (type == 'getAccounts_info') {
+              sendAccont('getAccounts_info', infoObj, 'solana')
+            }
+          }
+        })
+      } else {
+        router.push('/connect')
+      }
+    }
+  })
+
+}
+
 export async function createdMessage() {
   localStorage.setItem('isTrust', 1)
-  background.postPopup()
+  chrome.runtime.sendMessage({
+    method:'postPopup',
+    data:'',
+  })
   PopupToBackgroundPort.onMessage.addListener((message) => {
-    console.log('message--------')
-    console.log(message)
+    console.log('popup-createdMessage=',message)
     if (message.request) {
+      getAccounts(message.request.method)
       routerPush()
       switch (message.request.method) {
         case 'eth_requestAccounts':
@@ -142,7 +161,7 @@ export async function createdMessage() {
           invokeContract(message)
           postMessage(message.request.method)
           break
-        case 'personal_info':
+        case 'getAccounts_info':
           postMessage(message.request.method)
           break
 
@@ -155,11 +174,7 @@ export async function createdMessage() {
 export async function routerPush() {
   let connectList = JSON.parse(localStorage.getItem('connectList'))
   let acc = JSON.parse(localStorage.getItem('currentAccont'))
-  console.log('下面是_handlers')
-  console.log(JSON.stringify(_handlers))
   if (JSON.stringify(_handlers) != '{}') {
-    console.log('下面是acc')
-    console.log(acc)
     if (acc) {
       if (_handlers?.request?.method == 'personal_sign') {
         router.push('/signconnect')
@@ -201,8 +216,6 @@ export function postMessage(method) {
 
 // 签名
 async function signConnect(msg) {
-  console.log(msg, '******msg******')
-  console.log(JSON.parse(localStorage.getItem('currentAccont')))
   let account = JSON.parse(localStorage.getItem('currentAccont'))
   console.log(account)
   if (account.type == 'eth') {
@@ -215,11 +228,16 @@ async function signConnect(msg) {
     const signature = await wallet.signMessage(messageBytes)
     // sendSignHash('personal_sign', signature)
     console.log(signature, '**************signature*************')
-    background.getPopupTransferHash('personal_sign', signature)
+    // background.getPopupTransferHash('personal_sign', signature)
+    chrome.runtime.sendMessage({
+      method:'personal_sign',
+      data:signature,
+    })
     // background.getPopupExit('personal_sign', signature)
     // this.$router.push('/Home')
     // window.close()
-  } else {
+  }
+  if (account.type == 'xuper') {
     let privateKey1 = await getPrivateKey()
     console.log('当前账号是 xuper')
     // console.log(privateKey1, '当前私钥')
@@ -240,11 +258,20 @@ async function signConnect(msg) {
     // sendBaiduSignHash('xuper_sign', signtext, 'baidu')
     console.log(signtext, '**************signtext*************')
     // background.getPopupBaiduData('xuper_sign', signtext, 'baidu') // 这个是原来写法
-    background.getPopupTransferHash('personal_sign', signtext) //这个是和签名弹窗里面的发送签名写法统一（新的）
+    //background.getPopupTransferHash('personal_sign', signtext) //这个是和签名弹窗里面的发送签名写法统一（新的）
+    chrome.runtime.sendMessage({
+      method:'personal_sign',
+      data:signtext,
+    })
+  }
+  if (account.type == 'solana') {
+    console.log('当前账号是 solana')
+    let privateKey = await getPrivateKey()
+    const signature = signMessage(privateKey, message.value[0])
+    chrome.runtime.sendMessage({
+      method:'personal_sign',
+      data:signature,
+    })
   }
 }
 
-// 发送个人信息
-async function sendInfo(method, data, type) {
-  background.getPopupBaiduData(method, data, type)
-}

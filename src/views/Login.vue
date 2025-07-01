@@ -102,11 +102,11 @@
               src="../assets/img-copy.png"
               class="file-btn"
               :data-clipboard-text="privateKey"
-              @click="copypwd()"
+              @click="copypwd"
             />
           </div>
           <div class="bottom">
-            <div class="create-key" @click="createPkey()" v-if="isEthKey">
+            <div class="create-key" @click="createPkey" v-if="isEthKey">
               <img src="../assets/img-add.png" />{{ $t('login.createKey') }}
             </div>
             <span v-else></span>
@@ -116,6 +116,32 @@
           </div>
         </div>
       </template>
+
+      <!-- solana -->
+      <template v-if="selectVal.value == 'solana'">
+        <div class="comm-pw">
+          <p>{{ $t('login.key') }}</p>
+          <div class="copy-box">
+            <input
+              type="text"
+              v-model="solanaPrivateKey"
+              :placeholder="$t('pwdLogin.placeholder')"
+            />
+            <img
+              src="../assets/img-copy.png"
+              class="file-btn"
+              :data-clipboard-text="solanaPrivateKey"
+              @click="copypwd"
+            />
+          </div>
+          <div class="bottom">
+            <div class="create-key" @click="createSolanaPriviteKey">
+              <img src="../assets/img-add.png" />{{ $t('login.createKey') }}
+            </div>
+          </div>
+        </div>
+      </template>
+
 
       <!-- 设置密码 -->
       <div class="comm-pw">
@@ -142,7 +168,10 @@
         <div class="btn" @click="getLogin" v-if="selectVal.value == 'xuper'">
           {{ $t('comm.confirm') }}
         </div>
-        <div class="btn" @click="getEthLogin" v-else>
+        <div class="btn" @click="getEthLogin" v-if="selectVal.value == 'eth'">
+          {{ $t('comm.confirm') }}
+        </div>
+        <div class="btn" @click="getSolanaLogin" v-if="selectVal.value == 'solana'">
           {{ $t('comm.confirm') }}
         </div>
       </div>
@@ -155,341 +184,259 @@
 </template>
 
 <script>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { netListData } from '@/utils/staticData'
+import {validatePrivateKey,getPublicKeyFromPrivateKey} from '@/utils/solana'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
-import Header from '../components/Header'
+import { ethers } from 'ethers'
+import { Keypair } from '@solana/web3.js'
+import bs58 from 'bs58'
+import { routerPush } from '@/utils/popup'
+import CryptoJS, { AES } from 'crypto-js'
+import Clipboard from 'clipboard'
 import ConfirmPopup from '@/components/ConfirmPopup.vue'
 import PromptPopup from '@/components/PromptPopup.vue'
-import Clipboard from 'clipboard'
-import { ethers, utils } from 'ethers'
-import { routerPush } from '@/utils/popup'
-import CryptoJS, { enc, AES } from 'crypto-js'
+import { i18n } from '@/main';
 
 export default {
-  name: 'Login',
-  data() {
-    return {
-      showPwd: false,
-      isEthKey: true,
-      isXuperKey: true,
-      nowEth: true,
-      xuperKey: false,
-      nowXuper: true,
-      state: this.$route.query.state,
-      private_key: '',
-      password: '',
-      setpwd: '',
-      key: '',
-      detailData: this.$route.query.detail,
-      privateKey: '', //以太坊私钥
-      netList: [
-        {
-          chain: 'xuper',
-          netName: 'XuperOS',
-          node: 'https://xuper.baidu.com/nodeapi',
-          type: 'xuper',
-          sign: 'xuper',
-        },
-        {
-          chain: 'eth',
-          netName: 'Polygon-Testnet',
-          node: 'https://rpc-mumbai.maticvigil.com',
-          type: 'eth',
-          chainid: 80001,
-          sign: 'polygon',
-        },
-        {
-          chain: 'eth',
-          netName: 'Ethereum',
-          node: 'https://eth.llamarpc.com',
-          // node: 'https://mainnet.infura.io/v3/6833d8eeb842734ecaa7278a0',
-          type: 'eth',
-          chainid: 1,
-          sign: 'eth',
-        },
-      ],
-      options: [
-        {
-          value: 'xuper',
-          label: 'XuperOS',
-        },
-        {
-          value: 'eth',
-          label: 'Ethereum',
-        },
-      ],
-      chainList: [
-        {
-          name: 'Ethereum',
-          value: 'eth',
-          imgUrl: require('../assets/img-eth.png'),
-        },
-        {
-          name: 'XuperOS',
-          value: 'xuper',
-          imgUrl: require('../assets/img-x.png'),
-        },
-      ],
-      selectVal: '',
-      value: this.$route.query.stateName
-        ? this.$route.query.stateName
-        : 'xuper',
-      other_state: false,
-    }
-  },
-  components: { Header, ConfirmPopup, PromptPopup },
-  mounted() {
-    if (
-      localStorage.getItem('currentAccont') &&
-      !this.$route.query.state == 1
-    ) {
-      this.$router.push('/Home')
-    }
+  components: { ConfirmPopup, PromptPopup },
+  setup() {
+    const router = useRouter()
+    const showPwd = ref(false)
+    const isEthKey = ref(true)
+    const isXuperKey = ref(true)
+    const nowEth = ref(true)
+    const xuperKey = ref(false)
+    const nowXuper = ref(true)
+    const private_key = ref('')
+    const password = ref('')
+    const setpwd = ref('')
+    const privateKey = ref('')
+    const solanaPrivateKey = ref('')
+    const solanaAddress = ref('')
+    const selectVal = ref({
+      name: 'XuperOS',
+      value: 'xuper',
+      imgUrl: require('../assets/img-x.png'),
+    })
+    const prompt = ref(null)
+    const confirm = ref(null)
+    const refFile = ref(null)
+    const netList = netListData
 
-    let netList = localStorage.getItem('netList')
-    if (netList && netList != 'undefined') {
-      localStorage.setItem('netList', netList)
-    } else {
-      localStorage.setItem('netList', JSON.stringify(this.netList))
-    }
+    onMounted(() => {
+      if (
+        localStorage.getItem('currentAccont') &&
+        !router.currentRoute.value.query.state === 1
+      ) {
+        router.push('/Home')
+      }
 
-    let stype = this.$route.query.stateName
-    if (stype && stype != 'undefined') {
-      if (stype == 'eth') {
-        this.selectVal = this.chainList[0]
-      }
-      if (stype == 'xuper') {
-        this.selectVal = this.chainList[1]
-      }
-    } else {
-      this.selectVal = this.chainList[1]
-    }
-  },
-  methods: {
-    toBack() {
-      this.$router.push('/')
-    },
-    swithkey() {
-      this.isEthKey = !this.isEthKey
-      if (this.isEthKey) {
-        this.nowEth = false
-      }
-    },
-    xuperSwitch(i) {
-      if (i == 1) {
-        this.isXuperKey = false
-        this.xuperKey = true
-        this.nowXuper = true
+      let storedNetList = localStorage.getItem('netList')
+      if (storedNetList && storedNetList !== 'undefined') {
+        localStorage.setItem('netList', storedNetList)
       } else {
-        this.isXuperKey = true
-        this.xuperKey = false
-        this.nowXuper = false
+        localStorage.setItem('netList', JSON.stringify(netList))
       }
-    },
 
-    // 随机生成32位字符串
-    generateRandomString() {
-      let characters =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+      const stype = router.currentRoute.value.query.stateName
+      if (stype && stype !== 'undefined') {
+        if(stype ==='eth') {
+          selectVal.value = { name: 'Ethereum', value: 'eth', imgUrl: require('../assets/img-eth.png') }
+        }
+        if(stype ==='xuper') {
+          selectVal.value = { name: 'XuperOS', value: 'xuper', imgUrl: require('../assets/img-x.png') }
+        }
+        if(stype === 'solana') {
+          selectVal.value = { name: 'Solana', value: 'solana', imgUrl: require('../assets/img-solana.png') }
+        }
+      }
+    })
+
+    const toBack = () => {
+      router.push('/')
+    }
+
+    const swithkey = () => {
+      isEthKey.value = !isEthKey.value
+      if (isEthKey.value) {
+        nowEth.value = false
+      }
+    }
+
+    const xuperSwitch = (i) => {
+      if (i === 1) {
+        isXuperKey.value = false
+        xuperKey.value = true
+        nowXuper.value = true
+      } else {
+        isXuperKey.value = true
+        xuperKey.value = false
+        nowXuper.value = false
+      }
+    }
+
+    const copypwd = () => {
+      const clipboard = new Clipboard('.file-btn')
+      clipboard.on('success', () => {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg2'), 'success', 2500)
+        clipboard.destroy()
+      })
+      clipboard.on('error', () => {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg3'), 'warning', 2500)
+        clipboard.destroy()
+      })
+    }
+
+    const createPkey = () => {
+      const wallet = ethers.Wallet.createRandom().privateKey
+      privateKey.value = wallet
+      confirm.value.showConfirm()
+    }
+
+    const clickLoad = () => {
+      refFile.value.dispatchEvent(new MouseEvent('click'))
+    }
+
+    const fileLoad = () => {
+      const selectedFile = refFile.value.files[0]
+      private_key.value = selectedFile.name
+      const reader = new FileReader()
+      reader.readAsText(selectedFile)
+      reader.onload = function () {
+        private_key.value = this.result
+      }
+    }
+
+    const generateRandomString = () => {
+      const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
       let randomString = ''
       for (let i = 0; i < 32; i++) {
-        let randomIndex = Math.floor(Math.random() * characters.length)
+        const randomIndex = Math.floor(Math.random() * characters.length)
         randomString += characters.charAt(randomIndex)
       }
-      return new Promise((resolve) => resolve(randomString))
-    },
+      return randomString
+    }
 
-    //复制
-    copypwd() {
-      var clipboard = new Clipboard('.file-btn')
-      clipboard.on('success', (e) => {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg2'), 'success', 2500)
-        clipboard.destroy()
-      })
-      clipboard.on('error', (e) => {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg3'), 'warning', 2500)
-        clipboard.destroy()
-      })
-    },
+    const encipherPwd = () => {
+      const hashBuffer = CryptoJS.SHA512(setpwd.value)
+      const byteArray = []
+      for (let i = 0; i < hashBuffer.words.length; i++) {
+        const word = hashBuffer.words[i]
+        byteArray.push((word >> 24) & 0xff)
+        byteArray.push((word >> 16) & 0xff)
+        byteArray.push((word >> 8) & 0xff)
+        byteArray.push(word & 0xff)
+      }
+      const hashHex = byteArray.map((byte) => String.fromCharCode(byte)).join('')
+      localStorage.setItem('closepwd', btoa(hashHex))
+    }
 
-    // 创建私钥
-    createPkey() {
-      const wallet = ethers.Wallet.createRandom().privateKey
-      // console.log(wallet)
-      this.privateKey = wallet
-      this.$refs.confirm.showConfirm()
-    },
+    const createSolanaPriviteKey = () => {
+      // 生成账户
+      const keypair = Keypair.generate();
+      const publicKey = keypair.publicKey.toBase58();
+      solanaAddress.value = publicKey;
+      const secretKey = keypair.secretKey;
+      const secretKeyBase58 = bs58.encode(secretKey) 
+      solanaPrivateKey.value = secretKeyBase58
+      confirm.value.showConfirm()
+    }
 
-    goHome() {
-      this.$router.push('/Home')
-    },
-
-    //切换登录方式
-    // otherLogin() {
-    //   this.other_state == true
-    //     ? (this.other_state = false)
-    //     : (this.other_state = true)
-    // },
-
-    //开放网络
-    async getLogin() {
-      if (
-        this.private_key == '' &&
-        this.selectVal.value == 'xuper' &&
-        this.isXuperKey
-      ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg4'), 'warning', 2500)
-      } else if (
-        this.password == '' &&
-        this.selectVal.value == 'xuper' &&
-        !this.isXuperKey
-      ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg5'), 'warning', 2500)
-      } else if (!this.setpwd) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg29'), 'warning', 2500)
+    const getLogin = async () => {
+      if (private_key.value === '' && selectVal.value.value === 'xuper' && isXuperKey.value) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg4'), 'warning', 2500)
+      } else if (password.value === '' && selectVal.value.value === 'xuper' && !isXuperKey.value) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg5'), 'warning', 2500)
+      } else if (!setpwd.value) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg29'), 'warning', 2500)
       } else {
         const node = 'https://xuper.baidu.com/nodeapi'
         const chain = 'xuper'
         const params = {
-          server: 'https://xuper.baidu.com/nodeapi', // ip, port
-          fee: '400', // fee
-          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+          server: 'https://xuper.baidu.com/nodeapi',
+          fee: '400',
+          endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
+          endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
         }
         const xsdk = new XuperSDK({
           node,
           chain,
-          plugins: [
-            Endorsement({
-              transfer: params,
-              makeTransaction: params,
-            }),
-          ],
+          plugins: [Endorsement(params)],
         })
         let acc = null
-        if (!this.isXuperKey) {
-          if (this.password == '') {
-            return this.$refs.prompt.showToast(
-              this.$t('toastMsg.msg5'),
-              'warning',
-              2500
-            )
+        if (!isXuperKey.value) {
+          if (password.value === '') {
+            return prompt.value.showToast(i18n.global.t('toastMsg.msg5'), 'warning', 2500)
           }
-          acc = xsdk.retrieve(this.password, 'SimplifiedChinese')
-
-          // 缓存助记词
-          localStorage.setItem('xuperSimplifiedChinese', this.password)
+          acc = xsdk.retrieve(password.value, 'SimplifiedChinese')
+          localStorage.setItem('xuperSimplifiedChinese', password.value)
         } else {
-          acc = xsdk.import(this.password, this.key)
-          //缓存密码和秘钥
-          // localStorage.setItem('xuperPassword', this.password)
-          // localStorage.setItem('xuperKey', this.key)
+          acc = xsdk.import(password.value, private_key.value)
         }
 
         if (acc) {
-          let accont
-          let rString = await this.generateRandomString()
-          // 对私钥进行AES加密（用随机字符串）
-          const encipher = AES.encrypt(
-            JSON.stringify(acc.privateKey),
-            rString
-          ).toString()
-
-          // 随机字符串AES加密
-          const randS = AES.encrypt(rString, acc?.address).toString()
-          // console.log(randS, '***加密后的字符串***')
-          // localStorage.setItem('randS', randS)
-
-          // 加密密码
-          this.encipherPwd()
-
+          const rString = generateRandomString()
+          const encipher = AES.encrypt(JSON.stringify(acc.privateKey), rString).toString()
+          const randS = AES.encrypt(rString, acc.address).toString()
           acc.type = 'xuper'
           acc.chain = 'xuper'
           acc.privateKey = encipher
           acc.rString = randS
 
-          if (localStorage.getItem('acc')) {
-            //先判断 本地有没有账户，如果有的话，就push进去
-            accont = JSON.parse(localStorage.getItem('acc'))
-            accont.push(acc)
-          } else {
-            accont = []
-            accont.push(acc)
-          }
-
-          let obj = {}
-          let newAcc = accont.reduce((cur, next) => {
-            obj[next.address]
-              ? ''
-              : (obj[next.address] = true && cur.push(next))
+          let accont = JSON.parse(localStorage.getItem('acc')) || []
+          accont.push(acc)
+          const obj = {}
+          const newAcc = accont.reduce((cur, next) => {
+            obj[next.address] ? '' : (obj[next.address] = true && cur.push(next))
             return cur
           }, [])
 
-          if (localStorage.getItem('accountAllList')) {
-            let accountAllList = JSON.parse(
-              localStorage.getItem('accountAllList')
-            )
-            accountAllList.push(acc)
-            localStorage.setItem(
-              'accountAllList',
-              JSON.stringify(accountAllList)
-            )
-          } else {
-            let accountAllList = []
-            accountAllList.push(acc)
-            localStorage.setItem(
-              'accountAllList',
-              JSON.stringify(accountAllList)
-            )
-          }
-
           localStorage.setItem('currentAccont', JSON.stringify(acc))
           localStorage.setItem('acc', JSON.stringify(newAcc))
+          encipherPwd()
 
-          //如果是调用插件进来，未登录情况下，登录后，需要跳转到对应页面。
-          //begin
-          if (this.detailData) {
-            let data = JSON.parse(this.detailData)
-            if (data.message == 'OpenNFT_transfer') {
-              this.$router.push({
+          const detailData = router.currentRoute.value.query.detail
+          if (detailData) {
+            const data = JSON.parse(detailData)
+            if (data.message === 'OpenNFT_transfer') {
+              router.push({
                 path: '/Details',
                 query: {
                   index: '转移资产',
-                  detail: this.detailData,
+                  detail: detailData,
                 },
               })
-            } else if (data.message == 'OpenNFT_demand') {
-              this.$router.push({
+            } else if (data.message === 'OpenNFT_demand') {
+              router.push({
                 path: '/Details',
                 query: {
                   index: '查询NFT余额',
-                  detail: this.detailData,
+                  detail: detailData,
                 },
               })
             }
           } else {
-            this.$router.push('/Home')
+            router.push('/Home')
           }
           routerPush()
-          //end
         } else {
-          this.$refs.prompt.showToast(this.$t('toastMsg.msg6'), 'error', 2500)
+          prompt.value.showToast(i18n.global.t('toastMsg.msg6'), 'error', 2500)
         }
       }
-    },
+    }
 
-    // 以太坊 获取主账户
-    async getEthLogin() {
-      if (this.privateKey == '' && this.selectVal.value == 'eth') {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg5'), 'warning', 2500)
-      } else if (!this.setpwd) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg29'), 'warning', 2500)
+    const getEthLogin = async () => {
+      if (privateKey.value === '' && selectVal.value.value === 'eth') {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg5'), 'warning', 2500)
+      } else if (!setpwd.value) {
+        prompt.value.showToast(i18n.global.t('toastMsg.msg29'), 'warning', 2500)
       } else {
         let accObject
-        if (!this.isEthKey) {
-          //助记词登录
-          let mnemonic = this.privateKey
-          let hdnode = ethers.utils.HDNode.fromMnemonic(mnemonic)
-          // console.log(hdnode, '***hdnode***')
+        if (!isEthKey.value) {
+          const mnemonic = privateKey.value
+          const hdnode = ethers.utils.HDNode.fromMnemonic(mnemonic)
           accObject = {
             address: hdnode.address,
             privateKey: hdnode.privateKey,
@@ -498,27 +445,15 @@ export default {
             chain: 'eth',
           }
         } else {
-          //私钥登录
-          const privateKey = this.privateKey
           const provider = new ethers.providers.JsonRpcProvider(
             JSON.parse(localStorage.getItem('netList'))[1].node
           )
-          const wallet = new ethers.Wallet(privateKey, provider)
-          let accountAddress = wallet.address
-          let rString = await this.generateRandomString()
-          // console.log(privateKey, '***privateKey***')
-          // 对私钥进行AES加密（用随机字符串）
-          const encipherKey = AES.encrypt(this.privateKey, rString).toString()
-
-          // 随机字符串AES加密
-          const randS = AES.encrypt(rString, accountAddress).toString()
-          // localStorage.setItem('randS', randS)
-
-          // 加密密码
-          this.encipherPwd()
-
+          const wallet = new ethers.Wallet(privateKey.value, provider)
+          const rString = generateRandomString()
+          const encipherKey = AES.encrypt(privateKey.value, rString).toString()
+          const randS = AES.encrypt(rString, wallet.address).toString()
           accObject = {
-            address: accountAddress,
+            address: wallet.address,
             privateKey: encipherKey,
             publicKey: wallet.publicKey,
             type: 'eth',
@@ -526,74 +461,99 @@ export default {
             rString: randS,
           }
         }
-        // console.log(accObject, '***accObject***')
-        let acc
-        if (localStorage.getItem('acc')) {
-          //先判断 本地有没有账户，如果有的话，就push进去
-          // console.log(JSON.parse(localStorage.getItem('acc')))
-          acc = JSON.parse(localStorage.getItem('acc'))
-          acc.push(accObject)
-        } else {
-          acc = []
-          acc.push(accObject)
-        }
-        let obj = {}
-        let newAcc = acc.reduce((cur, next) => {
+
+        let acc = JSON.parse(localStorage.getItem('acc')) || []
+        acc.push(accObject)
+        const obj = {}
+        const newAcc = acc.reduce((cur, next) => {
           obj[next.address] ? '' : (obj[next.address] = true && cur.push(next))
           return cur
         }, [])
 
         localStorage.setItem('acc', JSON.stringify(newAcc))
         localStorage.setItem('currentAccont', JSON.stringify(accObject))
+        encipherPwd()
 
-        this.$router.push('/Home')
+        router.push('/Home')
         routerPush()
       }
-    },
+    }
 
-    clickLoad() {
-      this.$refs.refFile.dispatchEvent(new MouseEvent('click'))
-    },
-    fileLoad() {
-      const that = this
-      //获取读取的文件File对象
-      const selectedFile = this.$refs.refFile.files[0]
-      that.private_key = selectedFile.name
-      var reader = new FileReader()
-      reader.readAsText(selectedFile)
-      reader.onload = function () {
-        that.key = this.result
+    const getSolanaLogin = async () => {
+      if (!solanaPrivateKey.value && selectVal.value.value === 'solana') {
+        return prompt.value.showToast(i18n.global.t('toastMsg.msg5'), 'warning', 2500)
       }
-    },
+      if (!setpwd.value && selectVal.value.value === 'solana') {
+        return prompt.value.showToast(i18n.global.t('toastMsg.msg29'), 'warning', 2500)
+      }
 
-    // 随机生成32位字符串
-    generateRandomString() {
-      let characters =
-        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-      let randomString = ''
-      for (let i = 0; i < 32; i++) {
-        let randomIndex = Math.floor(Math.random() * characters.length)
-        randomString += characters.charAt(randomIndex)
+      const isValid = await validatePrivateKey(solanaPrivateKey.value)
+      console.log('isValid=', isValid)
+      if (!isValid) {
+        return prompt.value.showToast(i18n.global.t('toastMsg.msg32'), 'warning', 2500)
       }
-      return new Promise((resolve) => resolve(randomString))
-    },
 
-    // 加密密码
-    encipherPwd() {
-      let hashBuffer = CryptoJS.SHA512(this.setpwd)
-      let byteArray = []
-      for (let i = 0; i < hashBuffer.words.length; i++) {
-        const word = hashBuffer.words[i]
-        byteArray.push((word >> 24) & 0xff)
-        byteArray.push((word >> 16) & 0xff)
-        byteArray.push((word >> 8) & 0xff)
-        byteArray.push(word & 0xff)
+      // 根据私钥解析出公钥和地址
+      const solanaPublicKey = await getPublicKeyFromPrivateKey(solanaPrivateKey.value)
+      console.log('solanaPublicKey=', solanaPublicKey)
+      solanaAddress.value = solanaPublicKey
+      const rString = generateRandomString()
+      const encipherKey = AES.encrypt(solanaPrivateKey.value, rString).toString()
+      const randS = AES.encrypt(rString,solanaAddress.value).toString()
+      let accObject = {
+        address: solanaAddress.value,
+        privateKey: encipherKey,
+        publicKey: solanaAddress.value,
+        type: 'solana',
+        chain: 'solana',
+        rString: randS,
       }
-      const hashHex = byteArray
-        .map((byte) => String.fromCharCode(byte))
-        .join('')
-      localStorage.setItem('closepwd', btoa(hashHex))
-    },
+
+      let acc = JSON.parse(localStorage.getItem('acc')) || []
+      acc.push(accObject)
+      const obj = {}
+      const newAcc = acc.reduce((cur, next) => {
+        obj[next.address] ? '' : (obj[next.address] = true && cur.push(next))
+        return cur
+      }, [])
+
+      localStorage.setItem('acc', JSON.stringify(newAcc))
+      localStorage.setItem('currentAccont', JSON.stringify(accObject))
+      encipherPwd()
+
+      router.push('/Home')
+      routerPush()
+    }
+
+    return {
+      showPwd,
+      isEthKey,
+      isXuperKey,
+      nowEth,
+      xuperKey,
+      nowXuper,
+      private_key,
+      password,
+      setpwd,
+      privateKey,
+      solanaPrivateKey,
+      selectVal,
+      prompt,
+      confirm,
+      refFile,
+      solanaAddress,
+      toBack,
+      swithkey,
+      xuperSwitch,
+      copypwd,
+      createPkey,
+      clickLoad,
+      fileLoad,
+      getLogin,
+      getEthLogin,
+      getSolanaLogin,
+      createSolanaPriviteKey,
+    }
   },
 }
 </script>

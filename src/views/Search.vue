@@ -22,18 +22,14 @@
             <div class="pwd-top">
               <span>{{ $t('handle.name') }}</span>
             </div>
-            <!-- <textarea
-              v-model="addForm.name"
-              :placeholder="$t('comm.placeholder')"
-            ></textarea> -->
             <div class="radio-box">
               <div class="comm-radio" @click="choseContractType(0)">
-                <img src="../assets/img-checked.png" v-if="chosedConVal == 0" />
+                <img src="../assets/img-checked.png" v-if="chosedConVal === 0" />
                 <img src="../assets/img-check.png" v-else />
                 evm
               </div>
               <div class="comm-radio" @click="choseContractType(1)">
-                <img src="../assets/img-checked.png" v-if="chosedConVal == 1" />
+                <img src="../assets/img-checked.png" v-if="chosedConVal === 1" />
                 <img src="../assets/img-check.png" v-else />
                 wasm
               </div>
@@ -47,12 +43,12 @@
             </div>
             <div class="radio-box">
               <div class="comm-radio" @click="choseType(0)">
-                <img src="../assets/img-checked.png" v-if="chosedVal == 0" />
+                <img src="../assets/img-checked.png" v-if="chosedVal === 0" />
                 <img src="../assets/img-check.png" v-else />
                 {{ $t('handle.deal') }}
               </div>
               <div class="comm-radio" @click="choseType(1)">
-                <img src="../assets/img-checked.png" v-if="chosedVal == 1" />
+                <img src="../assets/img-checked.png" v-if="chosedVal === 1" />
                 <img src="../assets/img-check.png" v-else />
                 {{ $t('handle.query') }}
               </div>
@@ -128,249 +124,115 @@
         </ul>
       </confirm-popup>
     </div>
-
-    <div class="setSearch" style="display: none">
-      <Header />
-      <div class="headermap">
-        <i class="el-icon-arrow-left" @click="goHome"></i>首页/操作
-      </div>
-      <div class="form formsearch">
-        <el-form
-          style="text-align: left"
-          label-position="top"
-          :model="addForm"
-          ref="addForm"
-          label-width="100px"
-        >
-          <el-form-item label="操作名称" prop="name">
-            <el-input
-              v-model="addForm.name"
-              placeholder="请输入您要添加的操作名称"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="操作类型" prop="type">
-            <el-radio-group v-model="addForm.type">
-              <el-radio label="transaction">交易</el-radio>
-              <el-radio label="query">查询</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="合约名" prop="contractName">
-            <el-input
-              v-model="addForm.contractName"
-              placeholder="请输入合约名"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="方法名" prop="methodName">
-            <el-input
-              v-model="addForm.methodName"
-              placeholder="请输入方法名"
-            ></el-input>
-          </el-form-item>
-          <div>
-            <a class="addParams" @click="addParams">添加操作参数</a>
-
-            <el-row
-              :gutter="20"
-              v-for="(item, index) in addForm.formValue"
-              :key="index"
-            >
-              <el-col :span="10">
-                <el-form-item label="参数">
-                  <el-input
-                    v-model="item.label"
-                    placeholder="请输入您要添加的参数"
-                  ></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="10">
-                <el-form-item label="参数值">
-                  <el-input
-                    v-model="item.value"
-                    placeholder="请输入您要添加的参数值"
-                  ></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="4">
-                <i
-                  @click.prevent="removeDomain(item)"
-                  style="font-size: 24px; margin-top: 35%; cursor: pointer"
-                  class="el-icon-remove-outline"
-                ></i>
-              </el-col>
-            </el-row>
-          </div>
-        </el-form>
-        <span slot="footer" class="dialog-footer">
-          <el-button size="small" @click="visible = false">取 消</el-button>
-          <el-button
-            size="small"
-            class="submitSearch"
-            type="primary"
-            @click="submit('addForm')"
-            >确 定</el-button
-          >
-        </span>
-      </div>
-
-      <el-dialog title="详细" :visible.sync="dialogVisible" width="30%">
-        <pre class="preStyle">{{ doalogContent }}</pre>
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false">取 消</el-button>
-          <el-button type="primary" @click="dialogVisible = false"
-            >确 定</el-button
-          >
-        </span>
-      </el-dialog>
-    </div>
   </div>
 </template>
 
 <script>
-import PromptPopup from '@/components/PromptPopup.vue'
-import ConfirmPopup from '@/components/ConfirmPopup.vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import XuperSDK, { Endorsement } from '@xuperchain/xuper-sdk'
 import { XchainAddrToEvm, EvmToXchainAddr } from '../assets/js/index'
 import { getPrivateKey } from '@/utils/decryptKey'
 import { ethers } from 'ethers'
+import PromptPopup from '@/components/PromptPopup.vue'
+import ConfirmPopup from '@/components/ConfirmPopup.vue'
+import { i18n } from '@/main';
+
 export default {
-  name: 'Netlist',
-  data() {
-    return {
-      dialogVisible: false,
-      doalogContent: '',
-      form: {
-        netName: '',
-        type: '',
-        chain: '',
-        node: '',
-        chainid: '',
-        symbol: '',
-        bwUrl: '',
-      },
-      addForm: {
-        name: '',
-        type: 'transaction',
-        contractName: '',
-        methodName: '',
-        formValue: [],
-      },
-      netObj: {
-        xuper: require('../assets/img-x.png'),
-        eth: require('../assets/img-eth.png'),
-        polygon: require('../assets/img-polygon.png'),
-      },
-      netList: JSON.parse(localStorage.getItem('netList')),
-      chosedVal: 0,
-      chosedConVal: 0,
-      contractType: 'evm',
-      currentNet: null,
-    }
-  },
   components: { PromptPopup, ConfirmPopup },
-  mounted() {
-    this.currentNet = localStorage.getItem('currentNet')
-      ? JSON.parse(localStorage.getItem('currentNet'))
-      : null
-  },
-  methods: {
-    cancelHandle() {
-      this.$router.go(-1)
-    },
-    choseContractType(i) {
-      this.chosedConVal = i
-      if (this.chosedConVal == 0) {
-        this.contractType = 'evm'
-      } else {
-        this.contractType = 'wasm'
-      }
-    },
-    choseType(i) {
-      this.chosedVal = i
-      if (this.chosedVal == 0) {
-        this.addForm.type = 'transaction'
-      } else {
-        this.addForm.type = 'query'
-      }
-    },
-    //新增操作
-    submit(formName) {
-      let netWork = JSON.parse(localStorage.getItem('currentNet')) //判断当前网络类型
+  setup() {
+    const router = useRouter()
+    const dialogVisible = ref(false)
+    const doalogContent = ref('')
+    const addForm = ref({
+      name: '',
+      type: 'transaction',
+      contractName: '',
+      methodName: '',
+      formValue: [],
+    })
+    const netObj = ref({
+      xuper: require('../assets/img-x.png'),
+      eth: require('../assets/img-eth.png'),
+      polygon: require('../assets/img-polygon.png'),
+      solana: require('../assets/img-solana.png'),
+    })
+    const netList = ref(JSON.parse(localStorage.getItem('netList')))
+    const chosedVal = ref(0)
+    const chosedConVal = ref(0)
+    const contractType = ref('evm')
+    const currentNet = ref(
+      localStorage.getItem('currentNet')
+        ? JSON.parse(localStorage.getItem('currentNet'))
+        : null
+    )
+    const prompt = ref(null)
+    const confirm = ref(null)
 
-      if (!this.addForm.contractName) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg19'),
-          'error',
-          2500
-        )
+    const cancelHandle = () => {
+      router.go(-1)
+    }
+
+    const choseContractType = (i) => {
+      chosedConVal.value = i
+      contractType.value = i === 0 ? 'evm' : 'wasm'
+    }
+
+    const choseType = (i) => {
+      chosedVal.value = i
+      addForm.value.type = i === 0 ? 'transaction' : 'query'
+    }
+
+    const submit = (formName) => {
+      const netWork = JSON.parse(localStorage.getItem('currentNet'))
+
+      if (!addForm.value.contractName) {
+        return prompt.value.showToast(i18n.global.t('toastMsg.msg19'), 'error', 2500)
       }
-      if (!this.addForm.methodName) {
-        return this.$refs.prompt.showToast(
-          this.$t('toastMsg.msg20'),
-          'error',
-          2500
-        )
+      if (!addForm.value.methodName) {
+        return prompt.value.showToast(i18n.global.t('toastMsg.msg20'), 'error', 2500)
       }
 
-      if (netWork.type == 'xuper') {
-        this.publicMethod(this.addForm)
-      } else if (netWork.type == 'eth') {
-        this.etnPublicMethod(this.addForm)
+      if (netWork.type === 'xuper') {
+        publicMethod(addForm.value)
+      } else if (netWork.type === 'eth') {
+        etnPublicMethod(addForm.value)
       }
+    }
 
-      // this.$refs[formName].validate((valid) => {
-      //   if (valid) {
-      //     console.log(valid)
-      //     console.log(this.addForm)
-      //     if (netWork.type == 'xuper') {
-      //       this.publicMethod(this.addForm)
-      //     } else if (netWork.type == 'eth') {
-      //       this.etnPublicMethod(this.addForm)
-      //     }
-      //   } else {
-      //     return false
-      //   }
-      // })
-    },
-    //通用方法
-    async publicMethod(formName) {
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
+    const publicMethod = async (formName) => {
+      const currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
 
-      console.log(formName)
-
-      let contractName = formName.contractName
-      let methodName = formName.methodName
-      let setType = formName.type
+      const contractName = formName.contractName
+      const methodName = formName.methodName
+      const setType = formName.type
 
       const node = currentNet.node
       const chain = currentNet.chain
-      const acc = currentAccont
+      const acc = { ...currentAccont }
       acc.privateKey = JSON.parse(await getPrivateKey())
       delete acc.rString
 
       const params = {
-        server: node, // ip, port
-        fee: '400', // fee
-        endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n', // sign address
-        endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT', // fee address
+        server: node,
+        fee: '400',
+        endorseServiceCheckAddr: 'jknGxa6eyum1JrATWvSJKW3thJ9GKHA9n',
+        endorseServiceFeeAddr: 'aB2hpHnTBDxko3UoP2BpBZRujwhdcAFoT',
       }
+
       let xsdk
-      if (setType == 'query') {
-        //查询操作
+      if (setType === 'query') {
         xsdk = new XuperSDK({ node, chain })
       } else {
         xsdk = new XuperSDK({
           node,
           chain,
-          plugins: [
-            Endorsement({
-              transfer: params,
-              makeTransaction: params,
-            }),
-          ],
+          plugins: [Endorsement(params)],
         })
       }
+
       const commonFunc = async (contractName, methodName, args) => {
         try {
           const objects = Object.fromEntries(
@@ -389,76 +251,47 @@ export default {
             const demo = await xsdk.queryTransaction(
               Buffer.from(args.txId, 'hex').toString('base64')
             )
-            let txid = xsdk.transactionIdToHex(demo.transaction.txid)
-            let obj = {
-              txid,
-            }
-            this.doalogContent = obj
-            this.$refs.confirm.showConfirm()
+            const txid = xsdk.transactionIdToHex(demo.transaction.txid)
+            doalogContent.value = { txid }
+            confirm.value.showConfirm()
           } else {
-            console.log(this.contractType, '----contractType----')
             const demo = await xsdk.invokeSolidityContarct(
               contractName,
               methodName,
-              this.contractType,
+              contractType.value,
               args,
               '0',
               acc
             )
-            let txid = xsdk.transactionIdToHex(demo.transaction.txid)
-            let obj = {
-              txid,
-            }
-            this.doalogContent = obj
-            this.$refs.confirm.showConfirm()
+            const txid = xsdk.transactionIdToHex(demo.transaction.txid)
+            doalogContent.value = { txid }
+            confirm.value.showConfirm()
           }
         } catch (err) {
-          if (err) {
-            console.log(err)
-            this.$refs.prompt.showToast(
-              this.$t('toastMsg.msg21'),
-              'error',
-              2500
-            )
-          } else {
-            this.$refs.prompt.showToast(
-              this.$t('toastMsg.msg31'),
-              'success',
-              2500
-            )
-          }
+          console.error(err)
+          prompt.value.showToast(i18n.global.t('toastMsg.msg21'), 'error', 2500)
         }
       }
-      if (JSON.stringify(this.ruleForm) == '{}') {
-        this.ruleForm = { '': '1' }
-      }
-      commonFunc(contractName, methodName, formName.formValue)
-    },
 
-    //
-    async etnPublicMethod(formName) {
-      let currentPlug = JSON.parse(localStorage.getItem('currentPlug'))
-      let currentNet = JSON.parse(localStorage.getItem('currentNet'))
-      let currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
-      console.log(formName)
+      commonFunc(contractName, methodName, formName.formValue)
+    }
+
+    const etnPublicMethod = async (formName) => {
+      const currentNet = JSON.parse(localStorage.getItem('currentNet'))
+      const currentAccont = JSON.parse(localStorage.getItem('currentAccont'))
       const provider = new ethers.providers.JsonRpcProvider(currentNet.node)
-      let from = formName.formValue
-      const objects = Object.fromEntries(
-        from.map((item) => [item.label, item.value])
+      const from = Object.fromEntries(
+        formName.formValue.map((item) => [item.label, item.value])
       )
-      from = objects
-      console.log(from)
-      if (formName.methodName == 'getBlance') {
-        let address = currentAccont.address
+
+      if (formName.methodName === 'getBlance') {
+        const address = currentAccont.address
         provider.getBalance(address).then((balance) => {
-          // 余额是 BigNumber (in wei); 格式化为 ether 字符串
-          let etherString = ethers.utils.formatEther(balance)
-          console.log('Balance: ' + etherString)
-          this.doalogContent = `Balance: ${etherString}`
-          this.dialogVisible = true
+          const etherString = ethers.utils.formatEther(balance)
+          doalogContent.value = `Balance: ${etherString}`
+          dialogVisible.value = true
         })
-      } else if (formName.methodName == 'addrContract') {
-        //地址解析
+      } else if (formName.methodName === 'addrContract') {
         const { ens_abi } = require('../utils/ENSRegistry.json')
         const ensRegistryAddr = from.ensRegistryAddr
         const ensRegistry = new ethers.Contract(
@@ -468,68 +301,69 @@ export default {
         )
         const nodeHash = ethers.utils.namehash(from.url)
         const resolverAddr = await ensRegistry.resolver(nodeHash)
-        this.doalogContent = `域名解析地址: ${resolverAddr}`
-        this.dialogVisible = true
+        doalogContent.value = `域名解析地址: ${resolverAddr}`
+        dialogVisible.value = true
       } else if (
-        formName.type == 'transaction' &&
-        formName.methodName == 'transfer'
+        formName.type === 'transaction' &&
+        formName.methodName === 'transfer'
       ) {
-        //地址转账
-        let privateKey = from.privateKey
-        let wallet = new ethers.Wallet(privateKey, provider)
-        let gasPrice = await provider.getGasPrice()
-        let tx = await wallet.sendTransaction({
+        const privateKey = from.privateKey
+        const wallet = new ethers.Wallet(privateKey, provider)
+        const gasPrice = await provider.getGasPrice()
+        const tx = await wallet.sendTransaction({
           gasLimit: 21000,
           gasPrice: gasPrice,
           to: from.toaddress,
           value: ethers.utils.parseUnits(from.value),
         })
-        this.doalogContent = `交易哈希: ${tx.hash}`
-        this.dialogVisible = true
+        doalogContent.value = `交易哈希: ${tx.hash}`
+        dialogVisible.value = true
       }
-    },
+    }
 
-    //添加参数
-    addParams() {
-      this.addForm.formValue.push({ value: '', label: '' })
-    },
-    removeDomain(item) {
-      var index = this.addForm.formValue.indexOf(item)
+    const addParams = () => {
+      addForm.value.formValue.push({ value: '', label: '' })
+    }
+
+    const removeDomain = (item) => {
+      const index = addForm.value.formValue.indexOf(item)
       if (index !== -1) {
-        this.addForm.formValue.splice(index, 1)
+        addForm.value.formValue.splice(index, 1)
       }
-    },
-    goHome() {
-      this.$router.push('/Home')
-    },
-    addNetList() {
-      console.log(this.form)
-      if (!this.form.type) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
-      } else if (
-        this.form.type == 'xuper' &&
-        (this.form.netName == '' ||
-          this.form.chain == '' ||
-          this.form.node == '')
-      ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
-      } else if (
-        this.form.type == 'eth' &&
-        (this.form.netName == '' ||
-          this.form.node == '' ||
-          this.form.chainid == '' ||
-          this.form.symbol == '')
-      ) {
-        this.$refs.prompt.showToast(this.$t('toastMsg.msg14'), 'warning', 2500)
-      } else {
-        //操作
-        let netList = this.netList
-        netList.push(this.form)
-        localStorage.setItem('netList', JSON.stringify(netList))
-        this.$router.push('/Netlist')
-        window.location.reload()
-      }
-    },
+    }
+
+    const goHome = () => {
+      router.push('/Home')
+    }
+
+    onMounted(() => {
+      currentNet.value = localStorage.getItem('currentNet')
+        ? JSON.parse(localStorage.getItem('currentNet'))
+        : null
+    })
+
+    return {
+      dialogVisible,
+      doalogContent,
+      addForm,
+      netObj,
+      netList,
+      chosedVal,
+      chosedConVal,
+      contractType,
+      currentNet,
+      prompt,
+      confirm,
+      cancelHandle,
+      choseContractType,
+      choseType,
+      submit,
+      publicMethod,
+      etnPublicMethod,
+      addParams,
+      removeDomain,
+      goHome,
+    }
   },
 }
 </script>

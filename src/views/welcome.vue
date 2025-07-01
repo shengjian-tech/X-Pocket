@@ -17,9 +17,8 @@
         now1 ? '' : 'titleAnimate1',
       ]"
     >
-      <!-- <p>{{ $t('welcome.title') }}</p> -->
       <div class="tips-txt" v-if="currentPage != 1">
-        {{ $t('welcome.sunTitle') }}
+        {{ t('welcome.sunTitle') }}
       </div>
     </div>
     <div
@@ -37,107 +36,95 @@
     </div>
     <div class="btn-wrapper">
       <div class="btn" @click="currentPage = 2" v-if="currentPage == 1">
-        {{ $t('welcome.nextBtn') }}
+        {{ t('welcome.nextBtn') }}
       </div>
-      <div class="btn" @click="confirm" v-else>{{ $t('comm.confirm') }}</div>
+      <div class="btn" @click="confirm" v-else>{{ t('comm.confirm') }}</div>
     </div>
   </div>
 </template>
+
 <script>
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { netListData,chainListData } from '@/utils/staticData'
+import { useI18n } from 'vue-i18n'
 import NetSelect from '@/components/NetSelect.vue'
+
 export default {
-  data() {
-    return {
-      langType: '1',
-      currentPage: 2,
-      now1: true,
-      chainList: [
-        {
-          id: 1,
-          name: 'Ethereum',
-          value: 'eth',
-          sign: 'eth',
-        },
-        {
-          id: 2,
-          name: 'XuperOS',
-          value: 'xuper',
-          sign: 'xuper',
-        },
-      ],
-      netList: [
-        {
-          chain: 'xuper',
-          netName: 'XuperOS',
-          node: 'https://xuper.baidu.com/nodeapi',
-          type: 'xuper',
-          sign: 'xuper',
-        },
-        {
-          chain: 'eth',
-          netName: 'Polygon-Testnet',
-          node: 'https://rpc-mumbai.maticvigil.com',
-          type: 'eth',
-          chainid: 80001,
-          sign: 'polygon',
-        },
-        {
-          chain: 'eth',
-          netName: 'Ethereum',
-          node: 'https://eth.llamarpc.com',
-          // node: 'https://mainnet.infura.io/v3/68',
-          type: 'eth',
-          chainid: 1,
-          sign: 'eth',
-        },
-      ],
-      currentchain: {
-        id: 2,
-        name: 'XuperOS',
-        value: 'xuper',
-        sign: 'xuper',
-      },
-      isShow: false,
-    }
-  },
+  name: 'WelcomePage',
   components: {
     NetSelect,
   },
-  mounted() {
-    if (
-      localStorage.getItem('currentAccont') &&
-      !this.$route.query.state == 1
-    ) {
-      this.$router.push('/Home')
-    }
-    if (this.$route.query && this.$route.query.state == 1) {
-      this.currentPage = 2
+  setup() {
+    const router = useRouter()
+    const route = useRoute()
+    const { t } = useI18n()
+
+    // 响应式数据
+    const currentPage = ref(2)
+    const now1 = ref(true)
+    const chainList = ref(chainListData)
+    const netList = ref(netListData)
+    const currentchain = ref({
+      id: 2,
+      name: 'XuperOS',
+      value: 'xuper',
+      sign: 'xuper',
+    })
+    const isShow = ref(false)
+
+    // 初始化
+    onMounted(() => {
+      if (
+        localStorage.getItem('currentAccont') &&
+        !route.query.state == 1
+      ) {
+        router.push('/Home')
+      }
+      if (route.query && route.query.state == 1) {
+        currentPage.value = 2
+      }
+
+      const storedNetList = localStorage.getItem('netList')
+      if (storedNetList && storedNetList !== 'undefined') {
+        localStorage.setItem('netList', storedNetList)
+      } else {
+        localStorage.setItem('netList', JSON.stringify(netList.value))
+      }
+      console.log(localStorage.getItem('netList'), '8888')
+    })
+
+    // 选择链
+    const selectedChain = (e) => {
+      currentchain.value = e
     }
 
-    let netList = localStorage.getItem('netList')
-    if (netList && netList != 'undefined') {
-      localStorage.setItem('netList', netList)
-    } else {
-      localStorage.setItem('netList', JSON.stringify(this.netList))
-    }
-    console.log(localStorage.getItem('netList'), '8888')
-  },
-  methods: {
-    selectedChain(e) {
-      this.currentchain = e
-    },
-    confirm() {
-      this.$router.push({
+    // 确认操作
+    const confirm = () => {
+      router.push({
         path: '/Login',
         query: {
           state: 1,
-          stateName: this.currentchain.value,
+          stateName: currentchain.value.value,
         },
       })
-    },
+    }
+
+    return {
+      currentPage,
+      now1,
+      chainList,
+      netList,
+      currentchain,
+      isShow,
+      selectedChain,
+      confirm,
+      t,
+    }
   },
 }
 </script>
+
 <style lang="less" scoped>
 .bg-img {
   position: absolute;
